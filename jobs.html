@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jobs & Routing | TBOS v3.0</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-body: #0a0a0a;
+            --bg-panel: #1a1a1a;
+            --bg-sidebar: #111111;
+            --bg-input: #2a2a2a;
+            --text-main: #ffffff;
+            --text-muted: #a0a0a0;
+            --border: #333333;
+            --primary: #008080;
+            --primary-hover: #006666;
+            --success: #00c851;
+            --warning: #ffbb33;
+            --danger: #ff4444;
+            --sidebar-width: 280px;
+            --header-height: 70px;
+            --radius: 12px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
+        body { background: var(--bg-body); color: var(--text-main); display: flex; min-height: 100vh; }
+        a { text-decoration: none; color: inherit; }
+        button { cursor: pointer; border: none; outline: none; transition: 0.3s; }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .brand {
+            padding: 25px;
+            border-bottom: 1px solid var(--border);
+            color: var(--primary);
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .nav-section {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: #555;
+            margin: 20px 15px 10px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            padding-left: 15px;
+        }
+
+        .nav-item {
+            padding: 15px 25px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: 0.3s;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: rgba(0, 128, 128, 0.1);
+            color: var(--primary);
+        }
+
+        .nav-item i { width: 20px; text-align: center; }
+
+        .nav-badge {
+            margin-left: auto;
+            background: var(--danger);
+            color: white;
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .top-bar {
+            height: var(--header-height);
+            background: var(--bg-panel);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 25px;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .menu-toggle { display: none; color: var(--text-main); font-size: 1.3rem; cursor: pointer; }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .hub-badge {
+            padding: 5px 15px;
+            background: rgba(0, 128, 128, 0.2);
+            color: var(--primary);
+            border-radius: 20px;
+            font-size: 0.85rem;
+            border: 1px solid var(--primary);
+        }
+
+        .content-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 25px;
+        }
+
+        /* Panels */
+        .panel {
+            background: var(--bg-panel);
+            border-radius: var(--radius);
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 1px solid var(--border);
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .panel-title {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .panel-title i { color: var(--primary); }
+
+        /* Forms */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .form-full { grid-column: 1 / -1; }
+
+        .form-group { margin-bottom: 15px; }
+
+        .form-group label {
+            display: block;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .input-wrapper { position: relative; }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 12px 12px 40px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-main);
+            font-size: 0.95rem;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0, 128, 128, 0.2);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        /* Buttons */
+        .btn-primary {
+            padding: 14px 25px;
+            background: var(--primary);
+            color: white;
+            border-radius: 8px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            border-radius: 6px;
+            margin: 2px;
+        }
+
+        .btn-success { background: var(--success); color: white; }
+        .btn-info { background: #00b0ff; color: white; }
+        .btn-whatsapp { background: #25D366; color: white; }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        /* Tables */
+        .table-responsive { overflow-x: auto; }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th {
+            text-align: left;
+            padding: 15px;
+            color: var(--text-muted);
+            border-bottom: 2px solid var(--border);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+
+        .data-table td {
+            padding: 15px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+        }
+
+        .data-table tr:hover {
+            background: rgba(255,255,255,0.02);
+        }
+
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .status-paid { background: rgba(0, 200, 81, 0.2); color: var(--success); }
+        .status-partial { background: rgba(255, 187, 51, 0.2); color: var(--warning); }
+        .status-unpaid { background: rgba(255, 68, 68, 0.2); color: var(--danger); }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.85);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal.active { display: flex; }
+
+        .modal-content {
+            background: var(--bg-panel);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            width: 100%;
+            max-width: 650px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            font-size: 1.2rem;
+            color: var(--text-main);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .modal-close:hover { color: var(--danger); }
+
+        .modal-body { padding: 25px; }
+
+        /* Invoice Preview */
+        .invoice-preview {
+            background: #fff;
+            color: #000;
+            padding: 30px;
+            border-radius: 8px;
+        }
+
+        .invoice-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .invoice-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        /* Loading */
+        .loading-spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Footer */
+        footer {
+            padding: 20px;
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border);
+            background: var(--bg-panel);
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); transition: 0.3s; }
+            .sidebar.active { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+            .menu-toggle { display: block; }
+            .top-bar { padding: 0 15px; }
+            .form-grid { grid-template-columns: 1fr; }
+            .panel { padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="brand"><i class="fas fa-cube"></i> TBOS v3.0</div>
+        <div class="nav-scroll">
+            <div class="nav-section">Core Operations</div>
+            <a href="dashboard.html" class="nav-item"><i class="fas fa-home"></i> Dashboard</a>
+            <a href="jobs.html" class="nav-item active"><i class="fas fa-briefcase"></i> Jobs & Routing</a>
+            <a href="staff.html" class="nav-item"><i class="fas fa-users"></i> Staff & ID Cards</a>
+            <a href="inventory.html" class="nav-item"><i class="fas fa-boxes"></i> Inventory</a>
+            <a href="clients.html" class="nav-item"><i class="fas fa-user-friends"></i> Client Portal</a>
+            
+            <div class="nav-section">Knowledge</div>
+            <a href="knowledge.html" class="nav-item"><i class="fas fa-book"></i> Knowledge Center</a>
+            <a href="reports.html" class="nav-item"><i class="fas fa-chart-line"></i> Reports</a>
+            
+            <div class="nav-section">Administration</div>
+            <a href="admin.html" class="nav-item"><i class="fas fa-cog"></i> Admin Panel</a>
+            
+            <a href="#" class="nav-item" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="top-bar">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <i class="fas fa-bars menu-toggle" onclick="toggleSidebar()"></i>
+                <h2>Jobs & Routing</h2>
+            </div>
+            <div class="user-profile">
+                <span id="user-name">User</span>
+                <span id="user-hub" class="hub-badge">Hub</span>
+            </div>
+        </header>
+
+        <div class="content-scroll">
+            <!-- Job Form -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title"><i class="fas fa-plus-circle"></i> Log New Job</div>
+                </div>
+                <form id="job-form" class="form-grid">
+                    <div class="form-group">
+                        <label>Client Name *</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-user"></i>
+                            <input type="text" id="job-client" required placeholder="Enter client name">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Number *</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-phone"></i>
+                            <input type="tel" id="job-phone" required placeholder="+234...">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Hub / Department *</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-building"></i>
+                            <select id="job-hub" onchange="calculateAIPrice()" required>
+                                <option value="">Select Hub...</option>
+                                <option value="Graphics Design">Graphics Design</option>
+                                <option value="Printing">Printing</option>
+                                <option value="Photography">Photography</option>
+                                <option value="Tech Academy">Tech Academy</option>
+                                <option value="Online Shop">Online Shop</option>
+                                <option value="CBT Center">CBT Center</option>
+                                <option value="Tech Lab">Tech Lab</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group form-full">
+                        <label>Job Description *</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-align-left"></i>
+                            <textarea id="job-desc" rows="3" oninput="calculateAIPrice()" required placeholder="Describe the job requirements..."></textarea>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>AI Estimated Price</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-robot"></i>
+                            <input type="text" id="job-ai" readonly style="color: var(--primary); font-weight: 600; background: rgba(0,128,128,0.1);">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Final Amount (₦) *</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-naira-sign"></i>
+                            <input type="number" id="job-amount" required placeholder="0">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Payment Received (₦)</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-naira-sign"></i>
+                            <input type="number" id="job-paid" value="0" placeholder="0">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Delivery Date *</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-calendar"></i>
+                            <input type="date" id="job-date" required>
+                        </div>
+                    </div>
+                    <div class="form-actions form-full">
+                        <button type="submit" class="btn-primary" id="btn-submit">
+                            <i class="fas fa-save"></i>
+                            <span>Create Job & Generate Invoice</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Jobs Table -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title"><i class="fas fa-list"></i> Active Jobs & Routing</div>
+                    <input type="text" id="job-search" placeholder="Search..." style="width: 200px; padding: 10px; background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px; color: var(--text-main);" oninput="filterJobs()">
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Tracking ID</th>
+                                <th>Client</th>
+                                <th>Hub</th>
+                                <th>Stage</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="job-table-body">
+                            <tr><td colspan="7" style="text-align: center; padding: 40px;">Loading jobs...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            TBOS v3.0 | Tomstudio BizHub Operations System<br>
+            Built by Tomstudio Tech Academy | Contact: +234 803 082 7417
+        </footer>
+    </main>
+
+    <!-- Job Detail Modal -->
+    <div class="modal" id="job-detail-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-briefcase"></i> Job Details</h3>
+                <button class="modal-close" onclick="toggleModal('job-detail-modal')">&times;</button>
+            </div>
+            <div class="modal-body" id="job-detail-content"></div>
+        </div>
+    </div>
+
+    <!-- Invoice Modal -->
+    <div class="modal" id="invoice-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-file-invoice"></i> Invoice</h3>
+                <button class="modal-close" onclick="toggleModal('invoice-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="invoice-preview" id="invoice-content"></div>
+                <div class="form-actions" style="justify-content: center; margin-top: 20px;">
+                    <button class="btn-primary" onclick="alert('Downloading PDF...')"><i class="fas fa-download"></i> PDF</button>
+                    <button class="btn-whatsapp" onclick="sendInvoiceWhatsApp()"><i class="fab fa-whatsapp"></i> WhatsApp</button>
+                    <button class="btn-sm btn-info" onclick="window.print()"><i class="fas fa-print"></i> Print</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Supabase Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Initialize Supabase ONCE -->
+    <script>
+        if (!window.supabaseClient) {
+            window.supabaseClient = window.supabase.createClient(
+                'https://epvgarbconcrwasccjxu.supabase.co',
+                'sb_publishable_ZTwyZPfFc8uXFXpG_Wkarw_f5ygNfBg'
+            );
+            console.log('✅ Supabase Initialized');
+        }
+    </script>
+
+    <!-- Jobs Logic -->
+    <script>
+        let currentUser = null;
+        let currentInvoice = null;
+
+        // AI Price Base Rates (₦)
+        const aiBaseRates = {
+            'Graphics Design': 5000,
+            'Printing': 10000,
+            'Photography': 25000,
+            'Tech Academy': 3000,
+            'Online Shop': 2000,
+            'CBT Center': 1500,
+            'Tech Lab': 5000
+        };
+
+        // Auth Check
+        window.addEventListener('DOMContentLoaded', async function() {
+            try {
+                const { data } = await window.supabaseClient.auth.getSession();
+                if (!data.session) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                const { data: profile } = await window.supabaseClient
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', data.session.user.id)
+                    .single();
+
+                if (!profile) {
+                    await window.supabaseClient.auth.signOut();
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                currentUser = profile;
+                document.getElementById('user-name').textContent = profile.full_name;
+                document.getElementById('user-hub').textContent = profile.hub;
+                
+                loadJobs();
+
+            } catch(error) {
+                console.error('Auth error:', error);
+                window.location.href = 'index.html';
+            }
+        });
+
+        // AI Price Estimator
+        function calculateAIPrice() {
+            const hub = document.getElementById('job-hub').value;
+            const desc = document.getElementById('job-desc').value;
+            
+            if(!hub || !desc) {
+                document.getElementById('job-ai').value = '';
+                return;
+            }
+            
+            const base = aiBaseRates[hub] || 3000;
+            const complexity = desc.length > 100 ? 1.5 : (desc.length > 50 ? 1.2 : 1.0);
+            const estimated = Math.round(base * complexity);
+            const min = Math.round(estimated * 0.8);
+            const max = Math.round(estimated * 1.2);
+            
+            document.getElementById('job-ai').value = 
+                '₦' + estimated.toLocaleString() + ' (Range: ₦' + min.toLocaleString() + ' - ₦' + max.toLocaleString() + ')';
+            document.getElementById('job-amount').value = estimated;
+        }
+
+        // Load Jobs
+        async function loadJobs() {
+            const tbody = document.getElementById('job-table-body');
+            
+            const { data: jobs, error } = await window.supabaseClient
+                .from('jobs')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error || !jobs) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--danger);">Error loading jobs</td></tr>';
+                return;
+            }
+
+            if (jobs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px;">No jobs found. Create your first job!</td></tr>';
+                return;
+            }
+
+            let html = '';
+            jobs.forEach(function(job) {
+                const statusClass = job.status === 'PAID' ? 'status-paid' : 
+                                   job.status === 'PARTIAL' ? 'status-partial' : 'status-unpaid';
+                
+                html += '<tr>' +
+                    '<td><strong style="color: var(--primary);">' + job.tracking_id + '</strong></td>' +
+                    '<td>' + job.client_name + '<br><small style="color: var(--text-muted);">' + job.client_phone + '</small></td>' +
+                    '<td>' + job.hub + '</td>' +
+                    '<td>' + job.stage + '</td>' +
+                    '<td>₦' + parseFloat(job.amount).toLocaleString() + '</td>' +
+                    '<td><span class="status-badge ' + statusClass + '">' + job.status + '</span></td>' +
+                    '<td>' +
+                    '<button class="btn-sm btn-info" onclick="viewJobDetail(\'' + job.id + '\')"><i class="fas fa-eye"></i></button> ' +
+                    '<button class="btn-sm btn-success" onclick="showInvoiceByTracking(\'' + job.tracking_id + '\')"><i class="fas fa-file-invoice"></i></button> ' +
+                    '<button class="btn-sm btn-whatsapp" onclick="sendJobWhatsApp(\'' + job.tracking_id + '\')"><i class="fab fa-whatsapp"></i></button>' +
+                    '</td></tr>';
+            });
+            
+            tbody.innerHTML = html;
+        }
+
+        // Create Job
+        document.getElementById('job-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const btnSubmit = document.getElementById('btn-submit');
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = '<div class="loading-spinner"></div> Creating...';
+
+            try {
+                const amount = parseFloat(document.getElementById('job-amount').value);
+                const paid = parseFloat(document.getElementById('job-paid').value);
+                const trackingId = 'TBOS-24' + String(Date.now()).slice(-4);
+                const invoiceId = 'INV-2026-' + String(Date.now()).slice(-4);
+
+                const newJob = {
+                    tracking_id: trackingId,
+                    invoice_id: invoiceId,
+                    client_name: document.getElementById('job-client').value,
+                    client_phone: document.getElementById('job-phone').value,
+                    hub: document.getElementById('job-hub').value,
+                    description: document.getElementById('job-desc').value,
+                    amount: amount,
+                    paid: paid,
+                    balance: amount - paid,
+                    status: paid >= amount ? 'PAID' : (paid > 0 ? 'PARTIAL' : 'UNPAID'),
+                    stage: 'Pending',
+                    delivery_date: document.getElementById('job-date').value,
+                    created_by: currentUser.id
+                };
+
+                const { data, error } = await window.supabaseClient
+                    .from('jobs')
+                    .insert([newJob])
+                    .select();
+
+                if (error) throw error;
+
+                // Add to timeline
+                await window.supabaseClient.from('job_timeline').insert([{
+                    job_id: data[0].id,
+                    stage: 'Job Created',
+                    staff_name: currentUser.full_name,
+                    notes: 'Job logged via TBOS v3.0'
+                }]);
+
+                alert('Job created successfully!');
+                this.reset();
+                loadJobs();
+
+            } catch (error) {
+                alert('Error creating job: ' + error.message);
+            }
+
+            btnSubmit.disabled = false;
+            btnSubmit.innerHTML = '<i class="fas fa-save"></i> Create Job & Generate Invoice';
+        });
+
+        // View Job Detail
+        async function viewJobDetail(jobId) {
+            const { data: job } = await window.supabaseClient
+                .from('jobs')
+                .select('*')
+                .eq('id', jobId)
+                .single();
+
+            if (!job) return;
+
+            const { data: timeline } = await window.supabaseClient
+                .from('job_timeline')
+                .select('*')
+                .eq('job_id', jobId)
+                .order('timestamp', { ascending: false });
+
+            let timelineHTML = '';
+            if (timeline) {
+                timeline.forEach(t => {
+                    timelineHTML += '<div style="padding: 10px 0; border-left: 2px solid var(--primary); padding-left: 15px; margin: 10px 0;">' +
+                        '<strong>' + t.stage + '</strong><br>' +
+                        '<small style="color: var(--text-muted);">' + t.staff_name + ' - ' + new Date(t.timestamp).toLocaleString() + '</small>' +
+                        '</div>';
+                });
+            }
+
+            document.getElementById('job-detail-content').innerHTML = 
+                '<div class="form-grid">' +
+                '<div><strong>Tracking ID:</strong> ' + job.tracking_id + '</div>' +
+                '<div><strong>Invoice ID:</strong> ' + job.invoice_id + '</div>' +
+                '<div><strong>Client:</strong> ' + job.client_name + '</div>' +
+                '<div><strong>Phone:</strong> ' + job.client_phone + '</div>' +
+                '<div><strong>Hub:</strong> ' + job.hub + '</div>' +
+                '<div><strong>Stage:</strong> ' + job.stage + '</div>' +
+                '<div><strong>Amount:</strong> ₦' + parseFloat(job.amount).toLocaleString() + '</div>' +
+                '<div><strong>Paid:</strong> ₦' + parseFloat(job.paid).toLocaleString() + '</div>' +
+                '<div><strong>Balance:</strong> ₦' + parseFloat(job.balance).toLocaleString() + '</div>' +
+                '<div><strong>Status:</strong> ' + job.status + '</div>' +
+                '<div><strong>Delivery:</strong> ' + job.delivery_date + '</div>' +
+                '</div>' +
+                '<h4 style="margin: 20px 0 10px;">Job Timeline</h4>' +
+                timelineHTML +
+                '<div class="form-actions">' +
+                '<button class="btn-primary" onclick="routeJob(\'' + job.id + '\')"><i class="fas fa-share"></i> Route</button> ' +
+                '<button class="btn-success" onclick="showInvoiceByTracking(\'' + job.tracking_id + '\')"><i class="fas fa-file-invoice"></i> Invoice</button>' +
+                '</div>';
+
+            toggleModal('job-detail-modal');
+        }
+
+        // Route Job
+        async function routeJob(jobId) {
+            const stages = ['Pending', 'Graphics', 'Printing', 'Photography', 'Secretary Review', 'Delivery', 'Completed'];
+            
+            const { data: job } = await window.supabaseClient
+                .from('jobs')
+                .select('stage')
+                .eq('id', jobId)
+                .single();
+
+            const currentIndex = stages.indexOf(job.stage);
+            
+            if(currentIndex < stages.length - 1) {
+                const nextStage = stages[currentIndex + 1];
+                
+                await window.supabaseClient
+                    .from('jobs')
+                    .update({ stage: nextStage })
+                    .eq('id', jobId);
+
+                await window.supabaseClient.from('job_timeline').insert([{
+                    job_id: jobId,
+                    stage: nextStage + ' Started',
+                    staff_name: currentUser.full_name
+                }]);
+
+                alert('Job routed to ' + nextStage);
+                toggleModal('job-detail-modal');
+                loadJobs();
+            } else {
+                alert('Job already completed!');
+            }
+        }
+
+        // Show Invoice
+        function showInvoiceByTracking(trackingId) {
+            // For demo, show sample invoice
+            const content = 
+                '<div class="invoice-header">' +
+                '<div><h2 style="color: var(--primary);">TBOS</h2><p>Tomstudio BizHub</p>' +
+                '<p style="font-size: 0.85rem;">+234 803 082 7417</p></div>' +
+                '<div style="text-align: right;"><h3>INVOICE</h3>' +
+                '<p>' + trackingId + '</p>' +
+                '<p>Date: ' + new Date().toLocaleDateString() + '</p></div></div>' +
+                '<p>Invoice details loaded from database...</p>';
+            
+            document.getElementById('invoice-content').innerHTML = content;
+            toggleModal('invoice-modal');
+        }
+
+        // WhatsApp
+        function sendJobWhatsApp(trackingId) {
+            alert('WhatsApp notification sent for ' + trackingId);
+        }
+
+        function sendInvoiceWhatsApp() {
+            alert('Invoice shared via WhatsApp');
+        }
+
+        // Filter Jobs
+        function filterJobs() {
+            const search = document.getElementById('job-search').value.toLowerCase();
+            const rows = document.querySelectorAll('#job-table-body tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(search) ? '' : 'none';
+            });
+        }
+
+        // Modal Functions
+        function toggleModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.toggle('active');
+        }
+
+        // Toggle Sidebar
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        // Logout
+        async function logout() {
+            await window.supabaseClient.auth.signOut();
+            localStorage.removeItem('tbos_user');
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledge Center | TBOS v3.0</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="brand">
+            <i class="fas fa-cube"></i> TBOS v3.0
+        </div>
+        <div class="nav-scroll">
+            <div class="nav-section">Core Operations</div>
+            <div class="nav-item">
+                <a href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a>
+            </div>
+            <div class="nav-item">
+                <a href="jobs.html"><i class="fas fa-briefcase"></i> Jobs & Routing</a>
+                <span class="nav-badge" id="job-badge">0</span>
+            </div>
+            <div class="nav-item">
+                <a href="staff.html"><i class="fas fa-users"></i> Staff & ID Cards</a>
+            </div>
+            <div class="nav-item">
+                <a href="inventory.html"><i class="fas fa-boxes"></i> Inventory</a>
+                <span class="nav-badge" id="inventory-badge">0</span>
+            </div>
+            <div class="nav-item">
+                <a href="clients.html"><i class="fas fa-user-friends"></i> Client Portal</a>
+            </div>
+            
+            <div class="nav-section">Knowledge</div>
+            <div class="nav-item active">
+                <a href="knowledge.html"><i class="fas fa-book"></i> Knowledge Center</a>
+            </div>
+            <div class="nav-item">
+                <a href="reports.html"><i class="fas fa-chart-line"></i> Reports & Analytics</a>
+            </div>
+            
+            <div style="margin-top: auto;"></div>
+            <div class="nav-item" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </div>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="top-bar">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <i class="fas fa-bars menu-toggle" onclick="toggleSidebar()"></i>
+                <h3 id="page-title">Knowledge Center</h3>
+            </div>
+            <div class="user-profile">
+                <div style="text-align: right;">
+                    <div style="font-weight: 600; font-size: 0.9rem;" id="user-name">User</div>
+                    <div id="user-hub-badge" class="hub-badge">Hub</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="content-scroll">
+            <div class="knowledge-grid">
+                <div class="knowledge-card" onclick="openKnowledge('help')">
+                    <i class="fas fa-question-circle knowledge-icon"></i>
+                    <div class="knowledge-title">Help Center</div>
+                    <div class="knowledge-desc">User guides and troubleshooting for TBOS v3.0</div>
+                </div>
+                <div class="knowledge-card" onclick="openKnowledge('sop')">
+                    <i class="fas fa-clipboard-list knowledge-icon"></i>
+                    <div class="knowledge-title">Job SOP Guides</div>
+                    <div class="knowledge-desc">Standard Operating Procedures for all hubs</div>
+                </div>
+                <div class="knowledge-card" onclick="openKnowledge('courses')">
+                    <i class="fas fa-graduation-cap knowledge-icon"></i>
+                    <div class="knowledge-title">Course Catalogue</div>
+                    <div class="knowledge-desc">Tomstudio Tech Academy courses and fees</div>
+                </div>
+                <div class="knowledge-card" onclick="openKnowledge('prices')">
+                    <i class="fas fa-file-invoice-dollar knowledge-icon"></i>
+                    <div class="knowledge-title">Price List</div>
+                    <div class="knowledge-desc">Updated pricing for all services</div>
+                </div>
+                <div class="knowledge-card" onclick="openKnowledge('about')">
+                    <i class="fas fa-info-circle knowledge-icon"></i>
+                    <div class="knowledge-title">About TBOS</div>
+                    <div class="knowledge-desc">Information about Tomstudio BizHub and TBOS</div>
+                </div>
+                <div class="knowledge-card" onclick="openKnowledge('files')">
+                    <i class="fas fa-folder-open knowledge-icon"></i>
+                    <div class="knowledge-title">Hub Files</div>
+                    <div class="knowledge-desc">Download documents and resources</div>
+                </div>
+                <div class="knowledge-card" onclick="openKnowledge('video')">
+                    <i class="fas fa-video knowledge-icon"></i>
+                    <div class="knowledge-title">Video Tutorials</div>
+                    <div class="knowledge-desc">Watch step-by-step video guides</div>
+                </div>
+                <div class="knowledge-card" onclick="openKnowledge('faq')">
+                    <i class="fas fa-comments knowledge-icon"></i>
+                    <div class="knowledge-title">FAQ</div>
+                    <div class="knowledge-desc">Frequently asked questions</div>
+                </div>
+            </div>
+
+            <div class="panel" style="margin-top: 30px;">
+                <div class="panel-header">
+                    <div class="panel-title"><i class="fas fa-search"></i> Search Knowledge Base</div>
+                </div>
+                <div class="form-grid" style="max-width: 600px;">
+                    <div class="input-group form-full">
+                        <input type="text" id="knowledge-search" placeholder="Search for guides, SOPs, tutorials...">
+                    </div>
+                    <div class="input-group" style="display: flex; align-items: flex-end;">
+                        <button class="btn-primary" onclick="searchKnowledge()">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            TBOS v3.0 | Tomstudio BizHub Operations System<br>
+            Built by Tomstudio Tech Academy | Contact: +234 803 082 7417
+        </footer>
+    </main>
+
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/data.js"></script>
+    <script src="assets/js/auth.js"></script>
+    <script src="assets/js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+        });
+
+        function openKnowledge(type) {
+            const content = {
+                'help': {
+                    title: 'Help Center',
+                    content: '<h3>Getting Started with TBOS v3.0</h3>' +
+                        '<p>Welcome to the TBOS Help Center. Here you will find guides on:</p>' +
+                        '<ul>' +
+                        '<li>Logging in and navigation</li>' +
+                        '<li>Creating and managing jobs</li>' +
+                        '<li>Job routing workflow</li>' +
+                        '<li>Generating invoices</li>' +
+                        '<li>Staff management</li>' +
+                        '<li>Inventory tracking</li>' +
+                        '</ul>' +
+                        '<p style="margin-top: 20px;">For additional support, contact: +234 803 082 7417</p>'
+                },
+                'sop': {
+                    title: 'Job SOP Guides',
+                    content: '<h3>Standard Operating Procedures</h3>' +
+                        '<h4>Graphics Design Hub</h4>' +
+                        '<ol>' +
+                        '<li>Receive job brief from client</li>' +
+                        '<li>Create initial design concepts</li>' +
+                        '<li>Submit for client review</li>' +
+                        '<li>Make revisions based on feedback</li>' +
+                        '<li>Finalize and export files</li>' +
+                        '<li>Route to next department if needed</li>' +
+                        '</ol>' +
+                        '<h4>Printing Hub</h4>' +
+                        '<ol>' +
+                        '<li>Receive approved design files</li>' +
+                        '<li>Check file specifications</li>' +
+                        '<li>Set up print job</li>' +
+                        '<li>Print and quality check</li>' +
+                        '<li>Package for delivery</li>' +
+                        '</ol>'
+                },
+                'courses': {
+                    title: 'Course Catalogue',
+                    content: '<h3>Tomstudio Tech Academy Courses</h3>' +
+                        '<table class="data-table">' +
+                        '<thead><tr><th>Course</th><th>Duration</th><th>Fee (₦)</th></tr></thead>' +
+                        '<tbody>' +
+                        '<tr><td>Graphics Design</td><td>3 Months</td><td>50,000</td></tr>' +
+                        '<tr><td>Photography</td><td>3 Months</td><td>75,000</td></tr>' +
+                        '<tr><td>Video Editing</td><td>2 Months</td><td>60,000</td></tr>' +
+                        '<tr><td>Web Development</td><td>6 Months</td><td>100,000</td></tr>' +
+                        '</tbody></table>'
+                },
+                'prices': {
+                    title: 'Price List',
+                    content: '<h3>Service Price List</h3>' +
+                        '<table class="data-table">' +
+                        '<thead><tr><th>Service</th><th>Starting Price (₦)</th></tr></thead>' +
+                        '<tbody>' +
+                        '<tr><td>Logo Design</td><td>15,000</td></tr>' +
+                        '<tr><td>Business Cards (100)</td><td>5,000</td></tr>' +
+                        '<tr><td>Flyers (100)</td><td>10,000</td></tr>' +
+                        '<tr><td>Event Photography</td><td>50,000</td></tr>' +
+                        '<tr><td>Product Photography</td><td>30,000</td></tr>' +
+                        '<tr><td>Web Design</td><td>100,000</td></tr>' +
+                        '</tbody></table>'
+                },
+                'about': {
+                    title: 'About TBOS',
+                    content: '<h3>About Tomstudio BizHub Operations System</h3>' +
+                        '<p>TBOS v3.0 is a comprehensive operations platform designed to manage daily activities of Tomstudio BizHub and similar businesses.</p>' +
+                        '<h4>Key Features:</h4>' +
+                        '<ul>' +
+                        '<li>Staff Management & ID Cards</li>' +
+                        '<li>Job Management & Routing</li>' +
+                        '<li>Automatic Invoicing</li>' +
+                        '<li>Payment Tracking</li>' +
+                        '<li>Inventory Management</li>' +
+                        '<li>WhatsApp Notifications</li>' +
+                        '<li>AI Price Estimation</li>' +
+                        '<li>Performance Analytics</li>' +
+                        '</ul>' +
+                        '<p style="margin-top: 20px;"><strong>Version:</strong> 3.0<br>' +
+                        '<strong>Built by:</strong> Tomstudio Tech Academy<br>' +
+                        '<strong>Contact:</strong> +234 803 082 7417</p>'
+                },
+                'files': {
+                    title: 'Hub Files',
+                    content: '<h3>Downloadable Resources</h3>' +
+                        '<ul>' +
+                        '<li><a href="#" style="color: var(--primary);"><i class="fas fa-file-pdf"></i> Graphics Design Templates</a></li>' +
+                        '<li><a href="#" style="color: var(--primary);"><i class="fas fa-file-pdf"></i> Printing Specifications Guide</a></li>' +
+                        '<li><a href="#" style="color: var(--primary);"><i class="fas fa-file-pdf"></i> Photography Checklist</a></li>' +
+                        '<li><a href="#" style="color: var(--primary);"><i class="fas fa-file-excel"></i> Price List Excel</a></li>' +
+                        '<li><a href="#" style="color: var(--primary);"><i class="fas fa-file-word"></i> Invoice Template</a></li>' +
+                        '</ul>'
+                },
+                'video': {
+                    title: 'Video Tutorials',
+                    content: '<h3>Video Tutorials</h3>' +
+                        '<p>Video tutorials are coming soon. Check back later for:</p>' +
+                        '<ul>' +
+                        '<li>How to log a new job</li>' +
+                        '<li>Job routing workflow</li>' +
+                        '<li>Generating invoices</li>' +
+                        '<li>Staff registration</li>' +
+                        '<li>Inventory management</li>' +
+                        '</ul>'
+                },
+                'faq': {
+                    title: 'FAQ',
+                    content: '<h3>Frequently Asked Questions</h3>' +
+                        '<h4>Q: How do I reset my password?</h4>' +
+                        '<p>A: Contact the admin to reset your password.</p>' +
+                        '<h4>Q: Can I edit a job after creation?</h4>' +
+                        '<p>A: Yes, but only before it moves to the next stage.</p>' +
+                        '<h4>Q: How do I generate an invoice?</h4>' +
+                        '<p>A: Invoices are automatically generated when a job is created.</p>' +
+                        '<h4>Q: How do I contact support?</h4>' +
+                        '<p>A: Call +234 803 082 7417 or email support@tbos.com</p>'
+                }
+            };
+
+            const data = content[type];
+            if(data) {
+                alert(data.title + '\n\n' + data.content.replace(/<[^>]*>/g, ''));
+            }
+        }
+
+        function searchKnowledge() {
+            const query = document.getElementById('knowledge-search').value.toLowerCase();
+            if(query) {
+                alert('Search results for: ' + query + '\n\n(Full search functionality to be implemented with Supabase)');
+            } else {
+                alert('Please enter a search term');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory | TBOS v3.0</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="brand">
+            <i class="fas fa-cube"></i> TBOS v3.0
+        </div>
+        <div class="nav-scroll">
+            <div class="nav-section">Core Operations</div>
+            <div class="nav-item">
+                <a href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a>
+            </div>
+            <div class="nav-item">
+                <a href="jobs.html"><i class="fas fa-briefcase"></i> Jobs & Routing</a>
+                <span class="nav-badge" id="job-badge">0</span>
+            </div>
+            <div class="nav-item">
+                <a href="staff.html"><i class="fas fa-users"></i> Staff & ID Cards</a>
+            </div>
+            <div class="nav-item active">
+                <a href="inventory.html"><i class="fas fa-boxes"></i> Inventory</a>
+                <span class="nav-badge" id="inventory-badge">0</span>
+            </div>
+            <div class="nav-item">
+                <a href="clients.html"><i class="fas fa-user-friends"></i> Client Portal</a>
+            </div>
+            
+            <div class="nav-section">Knowledge</div>
+            <div class="nav-item">
+                <a href="knowledge.html"><i class="fas fa-book"></i> Knowledge Center</a>
+            </div>
+            <div class="nav-item">
+                <a href="reports.html"><i class="fas fa-chart-line"></i> Reports & Analytics</a>
+            </div>
+            
+            <div class="nav-section admin-only hidden">Administration</div>
+            <div class="nav-item admin-only hidden">
+                <a href="admin.html"><i class="fas fa-cog"></i> Admin Panel</a>
+            </div>
+            
+            <div style="margin-top: auto;"></div>
+            <div class="nav-item" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </div>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="top-bar">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <i class="fas fa-bars menu-toggle" onclick="toggleSidebar()"></i>
+                <h3 id="page-title">Inventory Management</h3>
+            </div>
+            <div class="user-profile">
+                <div class="notification-btn" onclick="toggleNotifications()">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge" id="notif-count">0</span>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-weight: 600; font-size: 0.9rem;" id="user-name">User</div>
+                    <div id="user-hub-badge" class="hub-badge">Hub</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="notification-panel" id="notification-panel">
+            <div class="modal-header">
+                <strong>Notifications</strong>
+                <button class="modal-close" onclick="toggleNotifications()">&times;</button>
+            </div>
+            <div id="notification-list"></div>
+        </div>
+
+        <div class="content-scroll">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="inv-total">0</div>
+                    <div class="stat-label">Total Items</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value text-warning" id="inv-low">0</div>
+                    <div class="stat-label">Low Stock Alerts</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value text-danger" id="inv-out">0</div>
+                    <div class="stat-label">Out of Stock</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value text-success" id="inv-ok">0</div>
+                    <div class="stat-label">In Stock</div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title"><i class="fas fa-boxes"></i> Inventory Items</div>
+                    <button class="btn-primary" style="width: auto;" onclick="toggleModal('inventory-modal')">
+                        <i class="fas fa-plus"></i> Add Item
+                    </button>
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                    <input type="text" id="inv-search" placeholder="Search materials..." 
+                           style="width: 300px;" oninput="filterInventory()">
+                    <select id="inv-filter-category" onchange="filterInventory()" style="width: 200px;">
+                        <option value="">All Categories</option>
+                        <option value="Printing Materials">Printing Materials</option>
+                        <option value="Photography Equipment">Photography Equipment</option>
+                        <option value="Office Supplies">Office Supplies</option>
+                        <option value="Tech Equipment">Tech Equipment</option>
+                    </select>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Material Name</th>
+                                <th>Category</th>
+                                <th>Stock Quantity</th>
+                                <th>Alert Level</th>
+                                <th>Usage/Job</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventory-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            TBOS v3.0 | Tomstudio BizHub Operations System<br>
+            Built by Tomstudio Tech Academy | Contact: +234 803 082 7417
+        </footer>
+    </main>
+
+    <!-- Add Inventory Modal -->
+    <div id="inventory-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <strong><i class="fas fa-box"></i> Add Inventory Item</strong>
+                <button class="modal-close" onclick="toggleModal('inventory-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="inventory-form" class="form-grid">
+                    <div class="input-group form-full">
+                        <label>Material Name *</label>
+                        <input type="text" id="inv-name" required placeholder="e.g., Flex Banner Roll">
+                    </div>
+                    <div class="input-group">
+                        <label>Category</label>
+                        <select id="inv-category">
+                            <option>Printing Materials</option>
+                            <option>Photography Equipment</option>
+                            <option>Office Supplies</option>
+                            <option>Tech Equipment</option>
+                            <option>Graphics Materials</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Stock Quantity *</label>
+                        <input type="number" id="inv-stock" required placeholder="0">
+                    </div>
+                    <div class="input-group">
+                        <label>Alert Level *</label>
+                        <input type="number" id="inv-alert" required placeholder="Low stock threshold">
+                    </div>
+                    <div class="input-group">
+                        <label>Usage Per Job</label>
+                        <input type="number" id="inv-usage" placeholder="Average usage per job">
+                    </div>
+                    <div class="input-group form-full">
+                        <label>Notes</label>
+                        <textarea id="inv-notes" rows="3" placeholder="Additional notes..."></textarea>
+                    </div>
+                    <div class="form-actions form-full">
+                        <button type="submit" class="btn-primary" style="flex: 1;">
+                            <i class="fas fa-save"></i> Add Item
+                        </button>
+                        <button type="button" class="btn-outline" onclick="toggleModal('inventory-modal')">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/data.js"></script>
+    <script src="assets/js/auth.js"></script>
+    <script src="assets/js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            loadInventory();
+        });
+
+        function loadInventory() {
+            const tbody = document.getElementById('inventory-table-body');
+            let html = '';
+            
+            db.inventory.forEach(function(item) {
+                const statusClass = item.status === 'OK' ? 'status-paid' : 
+                                   item.status === 'LOW' ? 'status-partial' : 'status-unpaid';
+                
+                html += '<tr>' +
+                    '<td>' + item.name + '</td>' +
+                    '<td>' + item.category + '</td>' +
+                    '<td>' + item.stock + '</td>' +
+                    '<td>' + item.alertLevel + '</td>' +
+                    '<td>' + (item.usage || 'N/A') + '</td>' +
+                    '<td><span class="status-badge ' + statusClass + '">' + item.status + '</span></td>' +
+                    '<td>' +
+                    '<button class="btn-sm btn-info" onclick="editInventory(\'' + item.name + '\')">' +
+                    '<i class="fas fa-edit"></i></button> ' +
+                    '<button class="btn-sm btn-warning" onclick="updateStock(\'' + item.name + '\')">' +
+                    '<i class="fas fa-plus"></i></button> ' +
+                    '<button class="btn-sm btn-danger" onclick="deleteInventory(\'' + item.name + '\')">' +
+                    '<i class="fas fa-trash"></i></button>' +
+                    '</td></tr>';
+            });
+            
+            tbody.innerHTML = html;
+            
+            // Update stats
+            document.getElementById('inv-total').innerText = db.inventory.length;
+            document.getElementById('inv-low').innerText = db.inventory.filter(i => i.status === 'LOW').length;
+            document.getElementById('inv-out').innerText = db.inventory.filter(i => i.status === 'OUT').length;
+            document.getElementById('inv-ok').innerText = db.inventory.filter(i => i.status === 'OK').length;
+            
+            // Update badge
+            document.getElementById('inventory-badge').innerText = 
+                db.inventory.filter(i => i.status === 'LOW' || i.status === 'OUT').length;
+        }
+
+        function filterInventory() {
+            const search = document.getElementById('inv-search').value.toLowerCase();
+            const categoryFilter = document.getElementById('inv-filter-category').value;
+            
+            const tbody = document.getElementById('inventory-table-body');
+            let html = '';
+            
+            db.inventory.forEach(function(item) {
+                const matchSearch = item.name.toLowerCase().includes(search) ||
+                                   item.category.toLowerCase().includes(search);
+                const matchCategory = !categoryFilter || item.category === categoryFilter;
+                
+                if(matchSearch && matchCategory) {
+                    const statusClass = item.status === 'OK' ? 'status-paid' : 
+                                       item.status === 'LOW' ? 'status-partial' : 'status-unpaid';
+                    
+                    html += '<tr>' +
+                        '<td>' + item.name + '</td>' +
+                        '<td>' + item.category + '</td>' +
+                        '<td>' + item.stock + '</td>' +
+                        '<td>' + item.alertLevel + '</td>' +
+                        '<td>' + (item.usage || 'N/A') + '</td>' +
+                        '<td><span class="status-badge ' + statusClass + '">' + item.status + '</span></td>' +
+                        '<td>' +
+                        '<button class="btn-sm btn-info" onclick="editInventory(\'' + item.name + '\')">' +
+                        '<i class="fas fa-edit"></i></button></td></tr>';
+                }
+            });
+            
+            tbody.innerHTML = html;
+        }
+
+        document.getElementById('inventory-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const newItem = {
+                name: document.getElementById('inv-name').value,
+                category: document.getElementById('inv-category').value,
+                stock: parseInt(document.getElementById('inv-stock').value),
+                alertLevel: parseInt(document.getElementById('inv-alert').value),
+                usage: document.getElementById('inv-usage').value || 'N/A',
+                status: 'OK'
+            };
+            
+            // Calculate status
+            if(newItem.stock === 0) {
+                newItem.status = 'OUT';
+            } else if(newItem.stock <= newItem.alertLevel) {
+                newItem.status = 'LOW';
+            }
+            
+            // Supabase: Insert into inventory table
+            /*
+            const { data, error } = await supabase
+                .from('inventory')
+                .insert([newItem]);
+            */
+            
+            db.inventory.push(newItem);
+            
+            alert('Item added successfully!');
+            toggleModal('inventory-modal');
+            document.getElementById('inventory-form').reset();
+            loadInventory();
+        });
+
+        function updateStock(name) {
+            const item = db.inventory.find(i => i.name === name);
+            if(item) {
+                const addition = prompt('Enter quantity to add:', '0');
+                if(addition && !isNaN(addition)) {
+                    item.stock += parseInt(addition);
+                    item.status = item.stock === 0 ? 'OUT' : 
+                                 item.stock <= item.alertLevel ? 'LOW' : 'OK';
+                    loadInventory();
+                    alert('Stock updated!');
+                }
+            }
+        }
+
+        function deleteInventory(name) {
+            if(confirm('Are you sure you want to delete ' + name + '?')) {
+                const index = db.inventory.findIndex(i => i.name === name);
+                if(index > -1) {
+                    db.inventory.splice(index, 1);
+                    loadInventory();
+                    alert('Item deleted!');
+                }
+            }
+        }
+
+        function editInventory(name) {
+            const item = db.inventory.find(i => i.name === name);
+            if(item) {
+                alert('Edit functionality for: ' + name + '\n\nCurrent Stock: ' + item.stock);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Portal | TBOS v3.0</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="brand">
+            <i class="fas fa-cube"></i> TBOS v3.0
+        </div>
+        <div class="nav-scroll">
+            <div class="nav-section">Core Operations</div>
+            <div class="nav-item">
+                <a href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a>
+            </div>
+            <div class="nav-item">
+                <a href="jobs.html"><i class="fas fa-briefcase"></i> Jobs & Routing</a>
+                <span class="nav-badge" id="job-badge">0</span>
+            </div>
+            <div class="nav-item">
+                <a href="staff.html"><i class="fas fa-users"></i> Staff & ID Cards</a>
+            </div>
+            <div class="nav-item">
+                <a href="inventory.html"><i class="fas fa-boxes"></i> Inventory</a>
+                <span class="nav-badge" id="inventory-badge">0</span>
+            </div>
+            <div class="nav-item active">
+                <a href="clients.html"><i class="fas fa-user-friends"></i> Client Portal</a>
+            </div>
+            
+            <div class="nav-section">Knowledge</div>
+            <div class="nav-item">
+                <a href="knowledge.html"><i class="fas fa-book"></i> Knowledge Center</a>
+            </div>
+            <div class="nav-item">
+                <a href="reports.html"><i class="fas fa-chart-line"></i> Reports & Analytics</a>
+            </div>
+            
+            <div style="margin-top: auto;"></div>
+            <div class="nav-item" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </div>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="top-bar">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <i class="fas fa-bars menu-toggle" onclick="toggleSidebar()"></i>
+                <h3 id="page-title">Client Portal</h3>
+            </div>
+            <div class="user-profile">
+                <div style="text-align: right;">
+                    <div style="font-weight: 600; font-size: 0.9rem;" id="user-name">User</div>
+                    <div id="user-hub-badge" class="hub-badge">Hub</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="content-scroll">
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title"><i class="fas fa-search"></i> Check Job Status</div>
+                </div>
+                <p style="color: var(--text-muted); margin-bottom: 20px;">
+                    Clients can check their job status using their Tracking ID or Phone Number
+                </p>
+                
+                <div class="form-grid" style="max-width: 600px;">
+                    <div class="input-group">
+                        <label>Tracking ID or Phone Number</label>
+                        <input type="text" id="client-search" placeholder="TBOS-240001 or +234...">
+                    </div>
+                    <div class="input-group" style="display: flex; align-items: flex-end;">
+                        <button class="btn-primary" onclick="searchClientJob()">
+                            <i class="fas fa-search"></i> Check Status
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="client-job-result" class="hidden" style="margin-top: 30px;"></div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title"><i class="fas fa-comment-dots"></i> Client Feedback</div>
+                </div>
+                <form id="feedback-form" class="form-grid" style="max-width: 600px;">
+                    <div class="input-group form-full">
+                        <label>Tracking ID</label>
+                        <input type="text" id="feedback-tracking" placeholder="TBOS-240001">
+                    </div>
+                    <div class="input-group form-full">
+                        <label>Feedback / Rating</label>
+                        <textarea id="feedback-message" rows="4" placeholder="Share your experience..."></textarea>
+                    </div>
+                    <div class="input-group">
+                        <label>Rating</label>
+                        <select id="feedback-rating">
+                            <option value="5">⭐⭐⭐⭐⭐ Excellent</option>
+                            <option value="4">⭐⭐⭐⭐ Very Good</option>
+                            <option value="3">⭐⭐⭐ Good</option>
+                            <option value="2">⭐⭐ Fair</option>
+                            <option value="1">⭐ Poor</option>
+                        </select>
+                    </div>
+                    <div class="input-group" style="display: flex; align-items: flex-end;">
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-paper-plane"></i> Submit Feedback
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title"><i class="fas fa-upload"></i> Upload Files</div>
+                </div>
+                <p style="color: var(--text-muted); margin-bottom: 20px;">
+                    Clients can upload additional files for their jobs
+                </p>
+                
+                <form id="upload-form" class="form-grid" style="max-width: 600px;">
+                    <div class="input-group form-full">
+                        <label>Tracking ID</label>
+                        <input type="text" id="upload-tracking" placeholder="TBOS-240001">
+                    </div>
+                    <div class="input-group form-full">
+                        <label>Select Files</label>
+                        <input type="file" id="upload-files" multiple accept=".pdf,.doc,.docx,.jpg,.png,.zip">
+                        <small style="color: var(--text-muted);">PDF, DOC, Images supported. Max 10MB per file.</small>
+                    </div>
+                    <div class="input-group form-full">
+                        <label>Description</label>
+                        <textarea id="upload-desc" rows="3" placeholder="Describe the files..."></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-upload"></i> Upload Files
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <footer>
+            TBOS v3.0 | Tomstudio BizHub Operations System<br>
+            Built by Tomstudio Tech Academy | Contact: +234 803 082 7417
+        </footer>
+    </main>
+
+    <!-- Invoice Modal for Clients -->
+    <div id="invoice-modal" class="modal">
+        <div class="modal-content" style="max-width: 650px;">
+            <div class="modal-header">
+                <strong><i class="fas fa-file-invoice"></i> Invoice</strong>
+                <button class="modal-close" onclick="toggleModal('invoice-modal')">&times;</button>
+            </div>
+            <div class="modal-body" style="background: #f5f5f5;">
+                <div class="invoice-preview" id="invoice-content"></div>
+                <div class="form-actions" style="justify-content: center; margin-top: 20px;">
+                    <button class="btn-primary" onclick="alert('Downloading PDF...')">
+                        <i class="fas fa-download"></i> Download PDF
+                    </button>
+                    <button class="btn-whatsapp" onclick="sendInvoiceWhatsApp()">
+                        <i class="fab fa-whatsapp"></i> Share via WhatsApp
+                    </button>
+                    <button class="btn-outline" onclick="window.print()">
+                        <i class="fas fa-print"></i> Print
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/data.js"></script>
+    <script src="assets/js/auth.js"></script>
+    <script src="assets/js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+        });
+
+        function searchClientJob() {
+            const search = document.getElementById('client-search').value.trim();
+            const resultDiv = document.getElementById('client-job-result');
+            
+            if(!search) {
+                alert('Please enter a Tracking ID or Phone Number');
+                return;
+            }
+            
+            let job = null;
+            for(let i = 0; i < db.jobs.length; i++) {
+                if(db.jobs[i].trackingId === search || db.jobs[i].phone.includes(search)) {
+                    job = db.jobs[i];
+                    break;
+                }
+            }
+            
+            if(job) {
+                resultDiv.classList.remove('hidden');
+                const statusClass = job.status === 'PAID' ? 'status-paid' : 
+                                   job.status === 'PARTIAL' ? 'status-partial' : 'status-unpaid';
+                
+                resultDiv.innerHTML = 
+                    '<div class="panel" style="border-left: 4px solid var(--primary);">' +
+                    '<h4 style="margin-bottom: 20px; color: var(--primary);">Job Status: ' + job.trackingId + '</h4>' +
+                    '<div class="form-grid">' +
+                    '<div><strong>Client:</strong> ' + job.client + '</div>' +
+                    '<div><strong>Phone:</strong> ' + job.phone + '</div>' +
+                    '<div><strong>Hub:</strong> ' + job.hub + '</div>' +
+                    '<div><strong>Current Stage:</strong> ' + job.stage + '</div>' +
+                    '<div><strong>Status:</strong> <span class="status-badge ' + statusClass + '">' + job.status + '</span></div>' +
+                    '<div><strong>Amount:</strong> ₦' + job.amount.toLocaleString() + '</div>' +
+                    '<div><strong>Paid:</strong> ₦' + job.paid.toLocaleString() + '</div>' +
+                    '<div><strong>Balance:</strong> ₦' + job.balance.toLocaleString() + '</div>' +
+                    '<div><strong>Delivery Date:</strong> ' + job.deliveryDate + '</div>' +
+                    '</div>' +
+                    '<h5 style="margin: 20px 0 10px;">Job Timeline</h5>' +
+                    '<div class="timeline">' +
+                    job.timeline.map(function(t) {
+                        return '<div class="timeline-item">' +
+                            '<div class="timeline-title">' + t.stage + '</div>' +
+                            '<div class="timeline-time">' + t.time + '</div>' +
+                            '<div class="timeline-desc">By: ' + t.staff + '</div>' +
+                            '</div>';
+                    }).join('') +
+                    '</div>' +
+                    '<div class="form-actions" style="margin-top: 20px;">' +
+                    '<button class="btn-success" onclick="showInvoiceByTracking(\'' + job.trackingId + '\')">' +
+                    '<i class="fas fa-file-invoice"></i> View Invoice</button> ' +
+                    '<button class="btn-whatsapp" onclick="sendJobWhatsApp(\'' + job.trackingId + '\')">' +
+                    '<i class="fab fa-whatsapp"></i> Share Status</button>' +
+                    (job.balance > 0 ? 
+                    '<button class="btn-primary" onclick="alert(\'Opening Paystack...\')">' +
+                    '<i class="fas fa-credit-card"></i> Pay Now</button>' : '') +
+                    '</div>' +
+                    '</div>';
+            } else {
+                resultDiv.classList.remove('hidden');
+                resultDiv.innerHTML = 
+                    '<div class="panel" style="border-left: 4px solid var(--danger);">' +
+                    '<p style="color: var(--danger); text-align: center; padding: 40px;">' +
+                    '<i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 20px;"></i><br>' +
+                    'Job not found. Please check your Tracking ID or Phone Number and try again.' +
+                    '</p>' +
+                    '</div>';
+            }
+        }
+
+        document.getElementById('feedback-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Thank you for your feedback! We appreciate your input.');
+            this.reset();
+        });
+
+        document.getElementById('upload-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Files uploaded successfully! Our team will review them shortly.');
+            this.reset();
+        });
+    </script>
+</body>
+</html>
