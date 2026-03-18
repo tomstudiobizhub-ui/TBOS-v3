@@ -510,9 +510,10 @@
     </main>
 
     <script>
-        // GOOGLE SHEETS DATABASE - SheetDB APIs
-        const API_USERS = 'https://sheetdb.io/api/v1/gjd4fyhfyalnm';
-        const API_DATA = 'https://sheetdb.io/api/v1/mhbv4ydfvjquv';
+        // ⚠️ GOOGLE SHEETS DATABASE - SheetDB APIs
+        // Make sure these URLs match your SheetDB configuration
+        const API_USERS = 'https://sheetdb.io/api/v1/gjd4fyhfyalnm';  // users tab
+        const API_DATA = 'https://sheetdb.io/api/v1/mhbv4ydfvjquv';   // data tab (jobs, inventory, etc)
 
         let currentUser = null;
 
@@ -601,14 +602,21 @@
             document.getElementById('job-amount').value = estimated;
         }
 
-        // Load Jobs
+        // Load Jobs from DATA tab (NOT users tab)
         async function loadJobs() {
             try {
+                console.log('📡 Fetching jobs from API_DATA...');
                 const response = await fetch(API_DATA);
                 const data = await response.json();
                 
-                const tbody = document.getElementById('job-table-body');
+                console.log('✅ Raw data received:', data);
+                
+                // Filter ONLY jobs (type = 'job')
                 const jobs = data.filter(item => item.type === 'job');
+                
+                console.log('✅ Jobs filtered:', jobs.length);
+                
+                const tbody = document.getElementById('job-table-body');
                 
                 if (jobs.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--text-muted);">No jobs found. Create your first job!</td></tr>';
@@ -643,12 +651,12 @@
                 document.getElementById('job-badge').textContent = pendingCount;
                 
             } catch (error) {
-                console.error('Load jobs error:', error);
-                document.getElementById('job-table-body').innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--danger);">Error loading jobs</td></tr>';
+                console.error('❌ Load jobs error:', error);
+                document.getElementById('job-table-body').innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--danger);">Error loading jobs: ' + error.message + '</td></tr>';
             }
         }
 
-        // Create Job
+        // Create Job - Save to DATA tab (NOT users tab)
         document.getElementById('job-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -661,8 +669,9 @@
                 const paid = parseFloat(document.getElementById('job-paid').value);
                 const trackingId = 'TBOS-24' + String(Date.now()).slice(-4);
 
+                // ⚠️ Job data structure MUST match 'data' tab columns in Google Sheet
                 const newJob = {
-                    type: 'job',
+                    type: 'job',  // ⚠️ THIS IS CRITICAL - tells system this is a job, not user
                     id: String(Date.now()),
                     tracking_id: trackingId,
                     client_name: document.getElementById('job-client').value,
@@ -671,6 +680,7 @@
                     description: document.getElementById('job-desc').value,
                     amount: amount,
                     paid: paid,
+                    balance: amount - paid,
                     status: paid >= amount ? 'PAID' : (paid > 0 ? 'PARTIALLY PAID' : 'UNPAID'),
                     stage: 'Pending',
                     delivery_date: document.getElementById('job-date').value,
@@ -678,22 +688,31 @@
                     created_date: new Date().toISOString().split('T')[0]
                 };
 
-                // Add to Google Sheets via SheetDB
-                await fetch(API_DATA, {
+                console.log('📡 Sending job to API_DATA:', newJob);
+
+                // ⚠️ MUST use API_DATA (not API_USERS)
+                const response = await fetch(API_DATA, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify([newJob])
+                    body: JSON.stringify([newJob])  // SheetDB expects array
                 });
+
+                const result = await response.json();
+                console.log('✅ Job created:', result);
+
+                if (!response.ok) {
+                    throw new Error('Failed to create job: ' + JSON.stringify(result));
+                }
 
                 alert('Job created successfully! Tracking ID: ' + trackingId);
                 this.reset();
                 loadJobs();
 
             } catch (error) {
-                console.error('Create job error:', error);
-                alert('Error creating job: ' + error.message);
+                console.error('❌ Create job error:', error);
+                alert('Error creating job: ' + error.message + '\n\nCheck console (F12) for details.');
             }
 
             btnSubmit.disabled = false;
