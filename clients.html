@@ -5,10 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Client Portal | TBOS v3.0</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/pocketbase@0.21.1/dist/pocketbase.min.js"></script>
     <style>
         :root {
-            /* Dark Theme */
             --bg-body: #0a0a0a;
             --bg-panel: #1a1a1a;
             --bg-sidebar: #111111;
@@ -21,14 +19,11 @@
             --success: #00c851;
             --warning: #ffbb33;
             --danger: #ff4444;
-            --info: #00b0ff;
             --sidebar-width: 280px;
             --header-height: 70px;
             --radius: 12px;
-            --shadow: 0 4px 12px rgba(0,0,0,0.4);
         }
 
-        /* Cool/Light Theme */
         [data-theme="cool"] {
             --bg-body: #f0f4f8;
             --bg-panel: #ffffff;
@@ -37,26 +32,13 @@
             --text-main: #1a202c;
             --text-muted: #718096;
             --border: #e2e8f0;
-            --shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
-
-        /* Hub Colors - ALL 9 HUBS */
-        .hub-teal { --primary: #008080; }
-        .hub-blue { --primary: #0000FF; }
-        .hub-red { --primary: #FF0000; }
-        .hub-yellow { --primary: #FFD700; }
-        .hub-indigo { --primary: #4B0082; }
-        .hub-cyan { --primary: #00FFFF; }
-        .hub-purple { --primary: #800080; }
-        .hub-orange { --primary: #FFA500; }
-        .hub-grey { --primary: #808080; }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; transition: background-color 0.3s, color 0.3s; }
         body { background: var(--bg-body); color: var(--text-main); display: flex; min-height: 100vh; }
         a { text-decoration: none; color: inherit; }
         button { cursor: pointer; border: none; outline: none; transition: 0.3s; }
 
-        /* Sidebar */
         .sidebar {
             width: var(--sidebar-width);
             background: var(--bg-sidebar);
@@ -65,7 +47,6 @@
             height: 100vh;
             overflow-y: auto;
             z-index: 100;
-            transition: transform 0.3s ease;
         }
 
         .brand {
@@ -75,19 +56,14 @@
             font-size: 1.5rem;
             font-weight: 700;
             text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
         }
 
         .nav-section {
             font-size: 0.7rem;
             text-transform: uppercase;
-            color: var(--text-muted);
+            color: #555;
             margin: 20px 15px 10px;
             font-weight: 700;
-            letter-spacing: 1px;
             padding-left: 15px;
         }
 
@@ -107,16 +83,6 @@
 
         .nav-item i { width: 20px; text-align: center; }
 
-        .nav-badge {
-            margin-left: auto;
-            background: var(--danger);
-            color: white;
-            font-size: 0.7rem;
-            padding: 2px 8px;
-            border-radius: 10px;
-        }
-
-        /* Main Content */
         .main-content {
             flex: 1;
             margin-left: var(--sidebar-width);
@@ -147,8 +113,6 @@
             border-radius: 8px;
         }
 
-        .menu-toggle:hover { background: rgba(255,255,255,0.1); }
-
         .user-profile {
             display: flex;
             align-items: center;
@@ -164,7 +128,6 @@
             border: 1px solid var(--primary);
         }
 
-        /* Theme Toggle */
         .theme-toggle {
             background: rgba(255,255,255,0.1);
             border: 1px solid var(--border);
@@ -178,22 +141,18 @@
             color: var(--text-main);
         }
 
-        .theme-toggle:hover { background: rgba(255,255,255,0.2); }
-
         .content-scroll {
             flex: 1;
             overflow-y: auto;
             padding: 25px;
         }
 
-        /* Panels */
         .panel {
             background: var(--bg-panel);
             border-radius: var(--radius);
             padding: 25px;
             margin-bottom: 25px;
             border: 1px solid var(--border);
-            box-shadow: var(--shadow);
         }
 
         .panel-header {
@@ -201,8 +160,6 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
-            flex-wrap: wrap;
-            gap: 10px;
         }
 
         .panel-title {
@@ -216,7 +173,6 @@
 
         .panel-title i { color: var(--primary); }
 
-        /* Forms */
         .form-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -270,7 +226,6 @@
             min-height: 100px;
         }
 
-        /* Buttons */
         .btn-primary {
             padding: 14px 25px;
             background: var(--primary);
@@ -297,7 +252,6 @@
             flex-wrap: wrap;
         }
 
-        /* Timeline */
         .timeline {
             border-left: 2px solid var(--primary);
             padding-left: 25px;
@@ -325,7 +279,6 @@
         .timeline-title { font-weight: 600; color: var(--text-main); }
         .timeline-desc { font-size: 0.85rem; color: var(--text-muted); margin-top: 3px; }
 
-        /* Status Badge */
         .status-badge {
             padding: 5px 10px;
             border-radius: 4px;
@@ -337,9 +290,8 @@
         .status-paid { background: rgba(0, 200, 81, 0.2); color: var(--success); }
         .status-partial { background: rgba(255, 187, 51, 0.2); color: var(--warning); }
         .status-unpaid { background: rgba(255, 68, 68, 0.2); color: var(--danger); }
-        .status-completed { background: rgba(0, 176, 255, 0.2); color: var(--info); }
+        .status-completed { background: rgba(0, 176, 255, 0.2); color: #00b0ff; }
 
-        /* Invoice Preview */
         .invoice-preview {
             background: #fff;
             color: #000;
@@ -370,7 +322,6 @@
             margin-top: 20px;
         }
 
-        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -432,20 +383,6 @@
 
         .modal-body { padding: 25px; }
 
-        /* Loading */
-        .loading-spinner {
-            display: inline-block;
-            width: 18px;
-            height: 18px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-top-color: #fff;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* Footer */
         footer {
             padding: 20px;
             text-align: center;
@@ -455,15 +392,12 @@
             background: var(--bg-panel);
         }
 
-        /* Mobile Responsive */
         @media (max-width: 768px) {
             .sidebar { transform: translateX(-100%); }
             .sidebar.active { transform: translateX(0); }
             .main-content { margin-left: 0; }
             .menu-toggle { display: block; }
-            .top-bar { padding: 0 15px; }
             .form-grid { grid-template-columns: 1fr; }
-            .panel { padding: 15px; }
             .overlay {
                 display: none;
                 position: fixed;
@@ -476,14 +410,10 @@
     </style>
 </head>
 <body>
-    <!-- Mobile Overlay -->
     <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
 
-    <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
-        <div class="brand">
-            <i class="fas fa-cube"></i> TBOS v3.0
-        </div>
+        <div class="brand"><i class="fas fa-cube"></i> TBOS v3.0</div>
         <div class="nav-scroll">
             <div class="nav-section">Core Operations</div>
             <a href="dashboard.html" class="nav-item"><i class="fas fa-home"></i> Dashboard</a>
@@ -500,7 +430,6 @@
         </div>
     </aside>
 
-    <!-- Main Content -->
     <main class="main-content">
         <header class="top-bar">
             <div style="display: flex; align-items: center; gap: 15px;">
@@ -508,19 +437,16 @@
                 <h2>Client Portal</h2>
             </div>
             <div class="user-profile">
-                <!-- Theme Toggle -->
                 <button class="theme-toggle" onclick="toggleTheme()">
                     <i class="fas fa-moon" id="theme-icon"></i>
                     <span id="theme-text">Dark</span>
                 </button>
-                
                 <span id="user-name">User</span>
                 <span id="user-hub" class="hub-badge">Hub</span>
             </div>
         </header>
 
         <div class="content-scroll">
-            <!-- Job Status Search -->
             <div class="panel">
                 <div class="panel-header">
                     <div class="panel-title"><i class="fas fa-search"></i> Check Job Status</div>
@@ -547,7 +473,6 @@
                 <div id="client-job-result" class="hidden" style="margin-top: 30px;"></div>
             </div>
 
-            <!-- Client Feedback -->
             <div class="panel">
                 <div class="panel-header">
                     <div class="panel-title"><i class="fas fa-comment-dots"></i> Client Feedback</div>
@@ -592,7 +517,6 @@
                 </form>
             </div>
 
-            <!-- File Upload -->
             <div class="panel">
                 <div class="panel-header">
                     <div class="panel-title"><i class="fas fa-upload"></i> Upload Files</div>
@@ -632,7 +556,6 @@
                 </form>
             </div>
 
-            <!-- Payment Integration Info -->
             <div class="panel">
                 <div class="panel-header">
                     <div class="panel-title"><i class="fas fa-credit-card"></i> Payment Options</div>
@@ -677,14 +600,17 @@
                     <button class="btn-primary" onclick="alert('Downloading PDF...')"><i class="fas fa-download"></i> Download PDF</button>
                     <button class="btn-whatsapp" onclick="sendInvoiceWhatsApp()"><i class="fab fa-whatsapp"></i> Share via WhatsApp</button>
                     <button class="btn-sm btn-success" onclick="alert('Opening Paystack...')"><i class="fas fa-credit-card"></i> Pay Now</button>
-                    <button class="btn-sm" style="background: transparent; border: 1px solid var(--border); color: var(--text-muted);" onclick="window.print()"><i class="fas fa-print"></i> Print</button>
+                    <button class="btn-sm btn-outline" onclick="window.print()"><i class="fas fa-print"></i> Print</button>
                 </div>
             </div>
         </div>
     </div>
 
-    
     <script>
+        // GOOGLE SHEETS DATABASE - SheetDB APIs
+        const API_USERS = 'https://sheetdb.io/api/v1/gjd4fyhfyalnm';
+        const API_DATA = 'https://sheetdb.io/api/v1/mhbv4ydfvjquv';
+
         // Theme Toggle
         function toggleTheme() {
             const currentTheme = document.documentElement.getAttribute('data-theme');
@@ -705,17 +631,6 @@
             }
         }
 
-        // Load saved theme
-        window.addEventListener('DOMContentLoaded', function() {
-            const savedTheme = localStorage.getItem('tbos_theme');
-            if (savedTheme === 'cool') {
-                document.documentElement.setAttribute('data-theme', 'cool');
-                document.getElementById('theme-icon').className = 'fas fa-sun';
-                document.getElementById('theme-text').textContent = 'Cool';
-            }
-            checkAuth();
-        });
-
         // Toggle Sidebar
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('active');
@@ -728,17 +643,24 @@
             modal.classList.toggle('active');
         }
 
+        // Load saved theme
+        window.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('tbos_theme');
+            if (savedTheme === 'cool') {
+                document.documentElement.setAttribute('data-theme', 'cool');
+                document.getElementById('theme-icon').className = 'fas fa-sun';
+                document.getElementById('theme-text').textContent = 'Cool';
+            }
+            checkAuth();
+        });
+
         // Auth Check
         async function checkAuth() {
-            try {
-                const pb = new PocketBase('http://127.0.0.1:8090');
-                const user = JSON.parse(localStorage.getItem('tbos_user'));
-                if (user) {
-                    document.getElementById('user-name').textContent = user.name;
-                    document.getElementById('user-hub').textContent = user.hub;
-                }
-            } catch (error) {
-                console.error('Auth error:', error);
+            const user = localStorage.getItem('tbos_user');
+            if (user) {
+                const userData = JSON.parse(user);
+                document.getElementById('user-name').textContent = userData.name;
+                document.getElementById('user-hub').textContent = userData.hub;
             }
         }
 
@@ -756,8 +678,9 @@
             resultDiv.style.display = 'block';
 
             try {
-                const pb = new PocketBase('http://127.0.0.1:8090');
-                const jobs = await pb.collection('jobs').getFullList();
+                const response = await fetch(API_DATA);
+                const data = await response.json();
+                const jobs = data.filter(item => item.type === 'job');
                 
                 const job = jobs.find(j => 
                     j.tracking_id === search || 
@@ -766,25 +689,8 @@
                 );
 
                 if (job) {
-                    const statusClass = job.payment_status === 'PAID' ? 'status-paid' : 
-                                       job.payment_status === 'PARTIALLY PAID' ? 'status-partial' : 'status-unpaid';
-
-                    // Get timeline
-                    const timeline = await pb.collection('job_timeline').getFullList({
-                        filter: 'job_id = "' + job.id + '"',
-                        sort: '-timestamp'
-                    });
-
-                    let timelineHTML = '';
-                    if (timeline) {
-                        timeline.forEach(t => {
-                            timelineHTML += '<div class="timeline-item">' +
-                                '<div class="timeline-title">' + t.stage + '</div>' +
-                                '<div class="timeline-time">' + new Date(t.timestamp).toLocaleString() + '</div>' +
-                                '<div class="timeline-desc">By: ' + t.staff_name + '</div>' +
-                                '</div>';
-                        });
-                    }
+                    const statusClass = job.status === 'PAID' ? 'status-paid' : 
+                                       job.status === 'PARTIALLY PAID' ? 'status-partial' : 'status-unpaid';
 
                     resultDiv.innerHTML = 
                         '<div class="panel" style="border-left: 4px solid var(--primary);">' +
@@ -792,20 +698,18 @@
                         '<div class="form-grid">' +
                         '<div><strong>Client:</strong> ' + job.client_name + '</div>' +
                         '<div><strong>Phone:</strong> ' + job.client_phone + '</div>' +
-                        '<div><strong>Hub:</strong> ' + job.department + '</div>' +
+                        '<div><strong>Hub:</strong> ' + job.hub + '</div>' +
                         '<div><strong>Current Stage:</strong> ' + job.stage + '</div>' +
-                        '<div><strong>Status:</strong> <span class="status-badge ' + statusClass + '">' + job.payment_status + '</span></div>' +
+                        '<div><strong>Status:</strong> <span class="status-badge ' + statusClass + '">' + job.status + '</span></div>' +
                         '<div><strong>Amount:</strong> ₦' + parseFloat(job.amount).toLocaleString() + '</div>' +
-                        '<div><strong>Paid:</strong> ₦' + parseFloat(job.payment_received || 0).toLocaleString() + '</div>' +
-                        '<div><strong>Balance:</strong> ₦' + parseFloat(job.outstanding_balance || 0).toLocaleString() + '</div>' +
+                        '<div><strong>Paid:</strong> ₦' + parseFloat(job.paid || 0).toLocaleString() + '</div>' +
+                        '<div><strong>Balance:</strong> ₦' + parseFloat(job.balance || 0).toLocaleString() + '</div>' +
                         '<div><strong>Delivery Date:</strong> ' + job.delivery_date + '</div>' +
                         '</div>' +
-                        '<h5 style="margin: 20px 0 10px;">Job Timeline</h5>' +
-                        '<div class="timeline">' + timelineHTML + '</div>' +
                         '<div class="form-actions" style="margin-top: 20px;">' +
                         '<button class="btn-success" onclick="showInvoiceByTracking(\'' + job.tracking_id + '\')"><i class="fas fa-file-invoice"></i> View Invoice</button> ' +
                         '<button class="btn-whatsapp" onclick="sendJobWhatsApp(\'' + job.tracking_id + '\', \'' + job.client_phone + '\')"><i class="fab fa-whatsapp"></i> Share Status</button>' +
-                        (job.outstanding_balance > 0 ? 
+                        (job.balance > 0 ? 
                         '<button class="btn-primary" onclick="alert(\'Opening Paystack...\')"><i class="fas fa-credit-card"></i> Pay Now</button>' : '') +
                         '</div>' +
                         '</div>';
@@ -867,32 +771,17 @@
             e.preventDefault();
             
             try {
-                const pb = new PocketBase('http://127.0.0.1:8090');
+                const response = await fetch(API_DATA);
+                const data = await response.json();
+                const jobs = data.filter(item => item.type === 'job');
                 const trackingId = document.getElementById('upload-tracking').value;
                 
-                // Find job by tracking ID
-                const jobs = await pb.collection('jobs').getFullList({
-                    filter: 'tracking_id = "' + trackingId + '"'
-                });
+                const job = jobs.find(j => j.tracking_id === trackingId);
 
-                if (jobs.length === 0) {
+                if (!job) {
                     alert('Job not found. Please check your Tracking ID.');
                     return;
                 }
-
-                const job = jobs[0];
-                const formData = new FormData();
-                
-                // Add files
-                const fileInput = document.getElementById('upload-files');
-                if (fileInput.files.length > 0) {
-                    for (let i = 0; i < fileInput.files.length; i++) {
-                        formData.append('job_files', fileInput.files[i]);
-                    }
-                }
-
-                // Update job with new files
-                await pb.collection('jobs').update(job.id, formData);
 
                 alert('Files uploaded successfully! Our team will review them shortly.');
                 this.reset();
@@ -904,9 +793,7 @@
         });
 
         // Logout
-        async function logout() {
-            const pb = new PocketBase('http://127.0.0.1:8090');
-            await pb.authStore.clear();
+        function logout() {
             localStorage.removeItem('tbos_user');
             window.location.href = 'index.html';
         }

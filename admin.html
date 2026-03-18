@@ -5,10 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel | TBOS v3.0</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/pocketbase@0.21.1/dist/pocketbase.min.js"></script>
     <style>
         :root {
-            /* Dark Theme */
             --bg-body: #0a0a0a;
             --bg-panel: #1a1a1a;
             --bg-sidebar: #111111;
@@ -21,14 +19,11 @@
             --success: #00c851;
             --warning: #ffbb33;
             --danger: #ff4444;
-            --info: #00b0ff;
             --sidebar-width: 280px;
             --header-height: 70px;
             --radius: 12px;
-            --shadow: 0 4px 12px rgba(0,0,0,0.4);
         }
 
-        /* Cool/Light Theme */
         [data-theme="cool"] {
             --bg-body: #f0f4f8;
             --bg-panel: #ffffff;
@@ -37,26 +32,13 @@
             --text-main: #1a202c;
             --text-muted: #718096;
             --border: #e2e8f0;
-            --shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
-
-        /* Hub Colors - ALL 9 HUBS */
-        .hub-teal { --primary: #008080; }
-        .hub-blue { --primary: #0000FF; }
-        .hub-red { --primary: #FF0000; }
-        .hub-yellow { --primary: #FFD700; }
-        .hub-indigo { --primary: #4B0082; }
-        .hub-cyan { --primary: #00FFFF; }
-        .hub-purple { --primary: #800080; }
-        .hub-orange { --primary: #FFA500; }
-        .hub-grey { --primary: #808080; }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; transition: background-color 0.3s, color 0.3s; }
         body { background: var(--bg-body); color: var(--text-main); display: flex; min-height: 100vh; }
         a { text-decoration: none; color: inherit; }
         button { cursor: pointer; border: none; outline: none; transition: 0.3s; }
 
-        /* Sidebar */
         .sidebar {
             width: var(--sidebar-width);
             background: var(--bg-sidebar);
@@ -65,7 +47,6 @@
             height: 100vh;
             overflow-y: auto;
             z-index: 100;
-            transition: transform 0.3s ease;
         }
 
         .brand {
@@ -75,19 +56,14 @@
             font-size: 1.5rem;
             font-weight: 700;
             text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
         }
 
         .nav-section {
             font-size: 0.7rem;
             text-transform: uppercase;
-            color: var(--text-muted);
+            color: #555;
             margin: 20px 15px 10px;
             font-weight: 700;
-            letter-spacing: 1px;
             padding-left: 15px;
         }
 
@@ -107,16 +83,6 @@
 
         .nav-item i { width: 20px; text-align: center; }
 
-        .nav-badge {
-            margin-left: auto;
-            background: var(--danger);
-            color: white;
-            font-size: 0.7rem;
-            padding: 2px 8px;
-            border-radius: 10px;
-        }
-
-        /* Main Content */
         .main-content {
             flex: 1;
             margin-left: var(--sidebar-width);
@@ -147,8 +113,6 @@
             border-radius: 8px;
         }
 
-        .menu-toggle:hover { background: rgba(255,255,255,0.1); }
-
         .user-profile {
             display: flex;
             align-items: center;
@@ -164,7 +128,6 @@
             border: 1px solid var(--primary);
         }
 
-        /* Theme Toggle */
         .theme-toggle {
             background: rgba(255,255,255,0.1);
             border: 1px solid var(--border);
@@ -178,41 +141,18 @@
             color: var(--text-main);
         }
 
-        .theme-toggle:hover { background: rgba(255,255,255,0.2); }
-
-        .notification-btn {
-            position: relative;
-            color: var(--text-muted);
-            font-size: 1.2rem;
-            cursor: pointer;
-            padding: 10px;
-        }
-
-        .notification-badge {
-            position: absolute;
-            top: 0;
-            right: 0;
-            background: var(--danger);
-            color: white;
-            font-size: 0.65rem;
-            padding: 2px 6px;
-            border-radius: 10px;
-        }
-
         .content-scroll {
             flex: 1;
             overflow-y: auto;
             padding: 25px;
         }
 
-        /* Panels */
         .panel {
             background: var(--bg-panel);
             border-radius: var(--radius);
             padding: 25px;
             margin-bottom: 25px;
             border: 1px solid var(--border);
-            box-shadow: var(--shadow);
         }
 
         .panel-header {
@@ -235,7 +175,6 @@
 
         .panel-title i { color: var(--primary); }
 
-        /* Stats Grid */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -249,13 +188,11 @@
             border-radius: var(--radius);
             border: 1px solid var(--border);
             border-left: 4px solid var(--primary);
-            box-shadow: var(--shadow);
         }
 
         .stat-value { font-size: 2rem; font-weight: 700; margin-bottom: 5px; color: var(--primary); }
         .stat-label { color: var(--text-muted); font-size: 0.9rem; }
 
-        /* Forms */
         .form-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -309,7 +246,6 @@
             min-height: 100px;
         }
 
-        /* Buttons */
         .btn-primary {
             padding: 14px 25px;
             background: var(--primary);
@@ -326,12 +262,6 @@
             transform: translateY(-2px);
         }
 
-        .btn-primary:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
         .btn-sm {
             padding: 8px 15px;
             font-size: 0.8rem;
@@ -341,7 +271,6 @@
         .btn-success { background: var(--success); color: white; }
         .btn-warning { background: var(--warning); color: #000; }
         .btn-danger { background: var(--danger); color: white; }
-        .btn-info { background: var(--info); color: white; }
         .btn-outline {
             background: transparent;
             border: 1px solid var(--border);
@@ -360,48 +289,6 @@
             flex-wrap: wrap;
         }
 
-        /* Tables */
-        .table-responsive { overflow-x: auto; }
-
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .data-table th {
-            text-align: left;
-            padding: 15px;
-            color: var(--text-muted);
-            border-bottom: 2px solid var(--border);
-            font-size: 0.8rem;
-            text-transform: uppercase;
-        }
-
-        .data-table td {
-            padding: 15px;
-            border-bottom: 1px solid var(--border);
-            font-size: 0.9rem;
-        }
-
-        .data-table tr:hover {
-            background: rgba(255,255,255,0.02);
-        }
-
-        .status-badge {
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            display: inline-block;
-        }
-
-        .status-paid { background: rgba(0, 200, 81, 0.2); color: var(--success); }
-        .status-partial { background: rgba(255, 187, 51, 0.2); color: var(--warning); }
-        .status-unpaid { background: rgba(255, 68, 68, 0.2); color: var(--danger); }
-        .status-completed { background: rgba(0, 176, 255, 0.2); color: var(--info); }
-        .status-pending { background: rgba(255, 187, 51, 0.2); color: var(--warning); }
-
-        /* Announcement Cards */
         .announcement-list {
             display: flex;
             flex-direction: column;
@@ -415,7 +302,7 @@
             border-left: 4px solid var(--primary);
         }
 
-        .announcement-card.info { border-left-color: var(--info); }
+        .announcement-card.info { border-left-color: #00b0ff; }
         .announcement-card.warning { border-left-color: var(--warning); }
         .announcement-card.alert { border-left-color: var(--danger); }
         .announcement-card.success { border-left-color: var(--success); }
@@ -442,7 +329,6 @@
             line-height: 1.6;
         }
 
-        /* Approval Cards */
         .approval-card {
             background: var(--bg-input);
             padding: 20px;
@@ -475,28 +361,6 @@
             gap: 10px;
         }
 
-        /* Upload Area */
-        .upload-area {
-            border: 2px dashed var(--border);
-            border-radius: var(--radius);
-            padding: 40px;
-            text-align: center;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        .upload-area:hover {
-            border-color: var(--primary);
-            background: rgba(0,128,128,0.05);
-        }
-
-        .upload-area i {
-            font-size: 3rem;
-            color: var(--text-muted);
-            margin-bottom: 15px;
-        }
-
-        /* Loading */
         .loading-spinner {
             display: inline-block;
             width: 18px;
@@ -509,7 +373,6 @@
 
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Footer */
         footer {
             padding: 20px;
             text-align: center;
@@ -519,15 +382,12 @@
             background: var(--bg-panel);
         }
 
-        /* Mobile Responsive */
         @media (max-width: 768px) {
             .sidebar { transform: translateX(-100%); }
             .sidebar.active { transform: translateX(0); }
             .main-content { margin-left: 0; }
             .menu-toggle { display: block; }
-            .top-bar { padding: 0 15px; }
             .stats-grid { grid-template-columns: 1fr 1fr; }
-            .panel { padding: 15px; }
             .form-grid { grid-template-columns: 1fr; }
             .approval-card { flex-direction: column; align-items: flex-start; }
             .overlay {
@@ -542,14 +402,10 @@
     </style>
 </head>
 <body>
-    <!-- Mobile Overlay -->
     <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
 
-    <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
-        <div class="brand">
-            <i class="fas fa-cube"></i> TBOS v3.0
-        </div>
+        <div class="brand"><i class="fas fa-cube"></i> TBOS v3.0</div>
         <div class="nav-scroll">
             <div class="nav-section">Core Operations</div>
             <a href="dashboard.html" class="nav-item"><i class="fas fa-home"></i> Dashboard</a>
@@ -571,7 +427,6 @@
         </div>
     </aside>
 
-    <!-- Main Content -->
     <main class="main-content">
         <header class="top-bar">
             <div style="display: flex; align-items: center; gap: 15px;">
@@ -579,23 +434,16 @@
                 <h2>Admin Panel</h2>
             </div>
             <div class="user-profile">
-                <!-- Theme Toggle -->
                 <button class="theme-toggle" onclick="toggleTheme()">
                     <i class="fas fa-moon" id="theme-icon"></i>
                     <span id="theme-text">Dark</span>
                 </button>
-                
-                <div class="notification-btn">
-                    <i class="fas fa-bell"></i>
-                    <span class="notification-badge" id="notif-count">0</span>
-                </div>
                 <span id="user-name">User</span>
                 <span id="user-hub" class="hub-badge">Hub</span>
             </div>
         </header>
 
         <div class="content-scroll">
-            <!-- Admin Controls -->
             <div class="panel">
                 <div class="panel-header">
                     <div class="panel-title"><i class="fas fa-cog"></i> Admin Controls</div>
@@ -607,22 +455,15 @@
                     <button class="btn-primary" onclick="document.getElementById('announcements').scrollIntoView({behavior: 'smooth'})">
                         <i class="fas fa-bullhorn"></i> Broadcast Announcement
                     </button>
-                    <button class="btn-primary" onclick="toggleUploadModal()">
+                    <button class="btn-primary" onclick="alert('Upload functionality coming soon')">
                         <i class="fas fa-upload"></i> Upload Files
                     </button>
-                    <button class="btn-primary" onclick="exportReports()">
+                    <button class="btn-primary" onclick="alert('Export functionality coming soon')">
                         <i class="fas fa-download"></i> Export Reports (PDF)
-                    </button>
-                    <button class="btn-primary" onclick="alert('Opening system settings...')">
-                        <i class="fas fa-sliders-h"></i> System Settings
-                    </button>
-                    <button class="btn-primary" onclick="alert('Managing payment gateways...')">
-                        <i class="fas fa-credit-card"></i> Payment Gateways
                     </button>
                 </div>
             </div>
 
-            <!-- Stats Overview -->
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-value" id="stat-total-users">0</div>
@@ -642,7 +483,6 @@
                 </div>
             </div>
 
-            <!-- Pending Staff Approvals -->
             <div class="panel" id="approvals">
                 <div class="panel-header">
                     <div class="panel-title"><i class="fas fa-user-check"></i> Pending Staff Approvals</div>
@@ -658,7 +498,6 @@
                 </div>
             </div>
 
-            <!-- Announcements -->
             <div class="panel" id="announcements">
                 <div class="panel-header">
                     <div class="panel-title"><i class="fas fa-bullhorn"></i> Create Announcement</div>
@@ -709,7 +548,6 @@
                 </form>
             </div>
 
-            <!-- All Announcements -->
             <div class="panel">
                 <div class="panel-header">
                     <div class="panel-title"><i class="fas fa-history"></i> All Announcements</div>
@@ -743,64 +581,13 @@
         </footer>
     </main>
 
-    <!-- Upload Files Modal -->
-    <div class="modal" id="upload-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; padding: 20px;">
-        <div class="modal-content" style="background: var(--bg-panel); border-radius: var(--radius); border: 1px solid var(--border); width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto;">
-            <div class="modal-header" style="padding: 20px 25px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
-                <h3><i class="fas fa-upload"></i> Upload Files</h3>
-                <button class="modal-close" onclick="toggleUploadModal()" style="background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer;">&times;</button>
-            </div>
-            <div class="modal-body" style="padding: 25px;">
-                <form id="upload-form">
-                    <div class="form-group">
-                        <label>Select Hub</label>
-                        <div class="input-wrapper">
-                            <i class="fas fa-building"></i>
-                            <select id="upload-hub">
-                                <option value="all">All Hubs</option>
-                                <option value="Online Shop">Online Shop</option>
-                                <option value="Graphics Design">Graphics Design</option>
-                                <option value="Printing">Printing</option>
-                                <option value="Photography">Photography</option>
-                                <option value="CBT Center">CBT Center</option>
-                                <option value="Tech Lab">Tech Lab</option>
-                                <option value="Tech Academy">Tech Academy</option>
-                                <option value="Gadgets">Gadgets</option>
-                                <option value="Other Services">Other Services</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>File *</label>
-                        <div class="upload-area" onclick="document.getElementById('upload-file').click()">
-                            <i class="fas fa-cloud-upload-alt"></i>
-                            <p>Click to select file or drag and drop</p>
-                            <p style="color: var(--text-muted); font-size: 0.85rem;">PDF, DOC, Images supported. Max 10MB per file.</p>
-                            <input type="file" id="upload-file" multiple accept=".pdf,.doc,.docx,.jpg,.png" style="display: none;" onchange="showUploadFileName()">
-                        </div>
-                        <p id="selected-upload-file" style="margin-top: 10px; color: var(--primary);"></p>
-                    </div>
-                    <div class="form-group">
-                        <label>Description</label>
-                        <div class="input-wrapper">
-                            <i class="fas fa-align-left"></i>
-                            <textarea id="upload-desc" rows="3" placeholder="File description..."></textarea>
-                        </div>
-                    </div>
-                    <div class="form-actions">
-                        <button type="submit" class="btn-primary" style="flex: 1;">
-                            <i class="fas fa-upload"></i> Upload
-                        </button>
-                        <button type="button" class="btn-sm btn-outline" onclick="toggleUploadModal()">
-                            Cancel
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-    
     <script>
+        // GOOGLE SHEETS DATABASE - SheetDB APIs
+        const API_USERS = 'https://sheetdb.io/api/v1/gjd4fyhfyalnm';
+        const API_DATA = 'https://sheetdb.io/api/v1/mhbv4ydfvjquv';
+
+        let currentUser = null;
+
         // Theme Toggle
         function toggleTheme() {
             const currentTheme = document.documentElement.getAttribute('data-theme');
@@ -821,93 +608,51 @@
             }
         }
 
-        // Load saved theme
-        window.addEventListener('DOMContentLoaded', function() {
-            const savedTheme = localStorage.getItem('tbos_theme');
-            if (savedTheme === 'cool') {
-                document.documentElement.setAttribute('data-theme', 'cool');
-                document.getElementById('theme-icon').className = 'fas fa-sun';
-                document.getElementById('theme-text').textContent = 'Cool';
-            }
-            checkAuth();
-        });
-
         // Toggle Sidebar
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('active');
             document.getElementById('overlay').classList.toggle('active');
         }
 
-        // Toggle Upload Modal
-        function toggleUploadModal() {
-            const modal = document.getElementById('upload-modal');
-            modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
-        }
-
-        // Show Upload File Name
-        function showUploadFileName() {
-            const file = document.getElementById('upload-file').files[0];
-            if (file) {
-                document.getElementById('selected-upload-file').textContent = 'Selected: ' + file.name + ' (' + (file.size / 1024 / 1024).toFixed(2) + ' MB)';
+        // Load saved theme
+        window.addEventListener('DOMContentLoaded', async function() {
+            const savedTheme = localStorage.getItem('tbos_theme');
+            if (savedTheme === 'cool') {
+                document.documentElement.setAttribute('data-theme', 'cool');
+                document.getElementById('theme-icon').className = 'fas fa-sun';
+                document.getElementById('theme-text').textContent = 'Cool';
             }
-        }
+            
+            await checkAuth();
+        });
 
         // Auth Check
-        let currentUser = null;
         async function checkAuth() {
-            try {
-                const pb = new PocketBase('http://127.0.0.1:8090');
-                if (!pb.authStore.isValid) {
-                    window.location.href = 'index.html';
-                    return;
-                }
-
-                const user = JSON.parse(localStorage.getItem('tbos_user'));
-                if (user) {
-                    currentUser = user;
-                    document.getElementById('user-name').textContent = user.name;
-                    document.getElementById('user-hub').textContent = user.hub;
-                    
-                    if (user.role !== 'Administrator') {
-                        alert('Access Denied. Admin privileges required.');
-                        window.location.href = 'dashboard.html';
-                        return;
-                    }
-                    
-                    applyHubTheme(user.hub);
-                    loadAdminData();
-                }
-            } catch (error) {
-                console.error('Auth error:', error);
+            const user = localStorage.getItem('tbos_user');
+            if (!user) {
                 window.location.href = 'index.html';
+                return;
             }
-        }
 
-        // Apply Hub Theme
-        function applyHubTheme(hub) {
-            const hubThemes = {
-                'Online Shop': 'hub-teal',
-                'Graphics Design': 'hub-blue',
-                'Printing': 'hub-red',
-                'Photography': 'hub-yellow',
-                'CBT Center': 'hub-indigo',
-                'Tech Lab': 'hub-cyan',
-                'Tech Academy': 'hub-purple',
-                'Gadgets': 'hub-orange',
-                'Other Services': 'hub-grey'
-            };
+            currentUser = JSON.parse(user);
+            document.getElementById('user-name').textContent = currentUser.name;
+            document.getElementById('user-hub').textContent = currentUser.hub;
             
-            const theme = hubThemes[hub] || 'hub-grey';
-            document.body.className = theme;
+            if (currentUser.role !== 'Administrator') {
+                alert('Access Denied. Admin privileges required.');
+                window.location.href = 'dashboard.html';
+                return;
+            }
+            
+            await loadAdminData();
         }
 
         // Load Admin Data
         async function loadAdminData() {
             try {
-                const pb = new PocketBase('http://127.0.0.1:8090');
-                
                 // Load users
-                const users = await pb.collection('users').getFullList();
+                const usersResponse = await fetch(API_USERS);
+                const users = await usersResponse.json();
                 document.getElementById('stat-total-users').textContent = users.length;
                 
                 // Load pending approvals
@@ -939,9 +684,12 @@
                 }
                 
                 // Load jobs stats
-                const jobs = await pb.collection('jobs').getFullList();
+                const dataResponse = await fetch(API_DATA);
+                const data = await dataResponse.json();
+                const jobs = data.filter(item => item.type === 'job');
+                
                 document.getElementById('stat-total-jobs').textContent = jobs.length;
-                document.getElementById('stat-revenue').textContent = '₦' + jobs.reduce((sum, j) => sum + (j.paid || 0), 0).toLocaleString();
+                document.getElementById('stat-revenue').textContent = '₦' + jobs.reduce((sum, j) => sum + (parseInt(j.amount) || 0), 0).toLocaleString();
                 
             } catch (error) {
                 console.error('Load admin data error:', error);
@@ -951,9 +699,16 @@
         // Approve Staff
         async function approveStaff(staffId) {
             try {
-                const pb = new PocketBase('http://127.0.0.1:8090');
-                await pb.collection('users').update(staffId, {
-                    status: 'Active'
+                // Update in Google Sheets
+                await fetch(API_USERS, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify([{
+                        id: staffId,
+                        status: 'Active'
+                    }])
                 });
                 alert('Staff approved successfully!');
                 loadAdminData();
@@ -966,9 +721,15 @@
         async function rejectStaff(staffId) {
             if (confirm('Are you sure you want to reject this staff member?')) {
                 try {
-                    const pb = new PocketBase('http://127.0.0.1:8090');
-                    await pb.collection('users').update(staffId, {
-                        status: 'Rejected'
+                    await fetch(API_USERS, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify([{
+                            id: staffId,
+                            status: 'Rejected'
+                        }])
                     });
                     alert('Staff rejected.');
                     loadAdminData();
@@ -982,14 +743,20 @@
         async function approveAllStaff() {
             if (confirm('Approve all pending staff members?')) {
                 try {
-                    const pb = new PocketBase('http://127.0.0.1:8090');
-                    const users = await pb.collection('users').getFullList({
-                        filter: 'status = "Pending Approval"'
-                    });
+                    const usersResponse = await fetch(API_USERS);
+                    const users = await usersResponse.json();
+                    const pendingStaff = users.filter(u => u.status === 'Pending Approval');
                     
-                    for (const user of users) {
-                        await pb.collection('users').update(user.id, {
-                            status: 'Active'
+                    for (const user of pendingStaff) {
+                        await fetch(API_USERS, {
+                            method: 'PATCH',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify([{
+                                id: user.id,
+                                status: 'Active'
+                            }])
                         });
                     }
                     alert('All staff approved successfully!');
@@ -1009,13 +776,22 @@
             const hub = document.getElementById('announce-hub').value;
             
             try {
-                const pb = new PocketBase('http://127.0.0.1:8090');
-                await pb.collection('announcements').create({
+                const newAnnouncement = {
+                    type: 'announcement',
+                    id: String(Date.now()),
+                    title: 'New Announcement',
                     message: message,
-                    type: type,
                     target_hub: hub,
                     created_by: currentUser.id,
-                    created_at: new Date().toISOString()
+                    created_date: new Date().toISOString().split('T')[0]
+                };
+                
+                await fetch(API_DATA, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify([newAnnouncement])
                 });
                 
                 alert('Announcement posted successfully!');
@@ -1023,7 +799,7 @@
                 
                 // Add to display
                 const list = document.getElementById('all-announcements');
-                const newAnnouncement = `
+                const newAnnouncementHTML = `
                     <div class="announcement-card ${type}">
                         <div class="announcement-header">
                             <span class="announcement-title">New Announcement</span>
@@ -1032,7 +808,7 @@
                         <p class="announcement-message">${message}</p>
                     </div>
                 `;
-                list.innerHTML = newAnnouncement + list.innerHTML;
+                list.innerHTML = newAnnouncementHTML + list.innerHTML;
                 
             } catch (error) {
                 alert('Error posting announcement: ' + error.message);
@@ -1046,24 +822,8 @@
             }
         }
 
-        // Upload Form
-        document.getElementById('upload-form').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            alert('File upload functionality\n\n(Full upload to be implemented with PocketBase Storage)');
-            toggleUploadModal();
-            this.reset();
-            document.getElementById('selected-upload-file').textContent = '';
-        });
-
-        // Export Reports
-        function exportReports() {
-            alert('Exporting reports as PDF...\n\n(Full export to be implemented with server-side processing)');
-        }
-
         // Logout
-        async function logout() {
-            const pb = new PocketBase('http://127.0.0.1:8090');
-            await pb.authStore.clear();
+        function logout() {
             localStorage.removeItem('tbos_user');
             window.location.href = 'index.html';
         }

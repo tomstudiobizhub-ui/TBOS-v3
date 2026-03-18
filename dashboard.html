@@ -24,7 +24,17 @@
             --radius: 12px;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
+        [data-theme="cool"] {
+            --bg-body: #f0f4f8;
+            --bg-panel: #ffffff;
+            --bg-sidebar: #ffffff;
+            --bg-input: #f5f7fa;
+            --text-main: #1a202c;
+            --text-muted: #718096;
+            --border: #e2e8f0;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; transition: background-color 0.3s, color 0.3s; }
         body { background: var(--bg-body); color: var(--text-main); display: flex; min-height: 100vh; }
         a { text-decoration: none; color: inherit; }
         button { cursor: pointer; border: none; outline: none; transition: 0.3s; }
@@ -73,6 +83,15 @@
 
         .nav-item i { width: 20px; text-align: center; }
 
+        .nav-badge {
+            margin-left: auto;
+            background: var(--danger);
+            color: white;
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
         .main-content {
             flex: 1;
             margin-left: var(--sidebar-width);
@@ -94,6 +113,15 @@
             z-index: 50;
         }
 
+        .menu-toggle {
+            display: none;
+            color: var(--text-main);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
         .user-profile {
             display: flex;
             align-items: center;
@@ -107,6 +135,38 @@
             border-radius: 20px;
             font-size: 0.85rem;
             border: 1px solid var(--primary);
+        }
+
+        .theme-toggle {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 8px 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: var(--text-main);
+        }
+
+        .notification-btn {
+            position: relative;
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 10px;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: var(--danger);
+            color: white;
+            font-size: 0.65rem;
+            padding: 2px 6px;
+            border-radius: 10px;
         }
 
         .content-scroll {
@@ -198,25 +258,34 @@
             .sidebar { transform: translateX(-100%); }
             .sidebar.active { transform: translateX(0); }
             .main-content { margin-left: 0; }
+            .menu-toggle { display: block; }
             .stats-grid { grid-template-columns: 1fr 1fr; }
+            .overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 99;
+            }
+            .overlay.active { display: block; }
         }
     </style>
 </head>
 <body>
-    <!-- Loading Screen -->
+    <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
     <div id="loading-screen" class="loading">
         <i class="fas fa-spinner fa-spin" style="margin-right: 10px;"></i>
         Loading Dashboard...
     </div>
 
-    <!-- Main Content (Hidden until auth verified) -->
     <div id="main-content" style="display: none; width: 100%;">
         <aside class="sidebar" id="sidebar">
             <div class="brand"><i class="fas fa-cube"></i> TBOS v3.0</div>
             <div class="nav-scroll">
                 <div class="nav-section">Core Operations</div>
                 <a href="dashboard.html" class="nav-item active"><i class="fas fa-home"></i> Dashboard</a>
-                <a href="jobs.html" class="nav-item"><i class="fas fa-briefcase"></i> Jobs & Routing</a>
+                <a href="jobs.html" class="nav-item"><i class="fas fa-briefcase"></i> Jobs & Routing <span class="nav-badge" id="job-badge">0</span></a>
                 <a href="staff.html" class="nav-item"><i class="fas fa-users"></i> Staff & ID Cards</a>
                 <a href="inventory.html" class="nav-item"><i class="fas fa-boxes"></i> Inventory</a>
                 <a href="clients.html" class="nav-item"><i class="fas fa-user-friends"></i> Client Portal</a>
@@ -231,8 +300,19 @@
 
         <main class="main-content">
             <header class="top-bar">
-                <h2>Dashboard</h2>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <i class="fas fa-bars menu-toggle" onclick="toggleSidebar()"></i>
+                    <h2>Dashboard</h2>
+                </div>
                 <div class="user-profile">
+                    <button class="theme-toggle" onclick="toggleTheme()">
+                        <i class="fas fa-moon" id="theme-icon"></i>
+                        <span id="theme-text">Dark</span>
+                    </button>
+                    <div class="notification-btn">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge" id="notif-count">0</span>
+                    </div>
                     <span id="user-name">User</span>
                     <span id="user-hub" class="hub-badge">Hub</span>
                     <button onclick="logout()" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Logout</button>
@@ -304,8 +384,46 @@
         const API_USERS = 'https://sheetdb.io/api/v1/gjd4fyhfyalnm';
         const API_DATA = 'https://sheetdb.io/api/v1/mhbv4ydfvjquv';
 
-        // Check Login on Page Load
+        // Theme Toggle
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'cool' ? 'dark' : 'cool';
+            const icon = document.getElementById('theme-icon');
+            const text = document.getElementById('theme-text');
+            
+            if (newTheme === 'cool') {
+                document.documentElement.setAttribute('data-theme', 'cool');
+                icon.className = 'fas fa-sun';
+                text.textContent = 'Cool';
+                localStorage.setItem('tbos_theme', 'cool');
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                text.textContent = 'Dark';
+                localStorage.setItem('tbos_theme', 'dark');
+            }
+        }
+
+        // Toggle Sidebar
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('overlay').classList.toggle('active');
+        }
+
+        // Load saved theme
         window.addEventListener('DOMContentLoaded', async function() {
+            const savedTheme = localStorage.getItem('tbos_theme');
+            if (savedTheme === 'cool') {
+                document.documentElement.setAttribute('data-theme', 'cool');
+                document.getElementById('theme-icon').className = 'fas fa-sun';
+                document.getElementById('theme-text').textContent = 'Cool';
+            }
+            
+            await checkAuth();
+        });
+
+        // Check Login on Page Load
+        async function checkAuth() {
             console.log('🔍 Checking login status...');
             
             const user = localStorage.getItem('tbos_user');
@@ -329,7 +447,7 @@
             // Show content, hide loading
             document.getElementById('loading-screen').style.display = 'none';
             document.getElementById('main-content').style.display = 'block';
-        });
+        }
 
         // Load Dashboard Data from Google Sheets
         async function loadDashboard() {
@@ -360,6 +478,7 @@
                 document.getElementById('stat-pending').textContent = pendingJobs.length;
                 document.getElementById('stat-revenue').textContent = '₦' + totalRevenue.toLocaleString();
                 document.getElementById('stat-delayed').textContent = delayedJobs.length;
+                document.getElementById('job-badge').textContent = pendingJobs.length;
 
                 // Load leaderboard from users
                 console.log('📡 Fetching users for leaderboard...');

@@ -5,10 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inventory | TBOS v3.0</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/pocketbase@0.21.1/dist/pocketbase.min.js"></script>
     <style>
         :root {
-            /* Dark Theme */
             --bg-body: #0a0a0a;
             --bg-panel: #1a1a1a;
             --bg-sidebar: #111111;
@@ -21,14 +19,11 @@
             --success: #00c851;
             --warning: #ffbb33;
             --danger: #ff4444;
-            --info: #00b0ff;
             --sidebar-width: 280px;
             --header-height: 70px;
             --radius: 12px;
-            --shadow: 0 4px 12px rgba(0,0,0,0.4);
         }
 
-        /* Cool/Light Theme */
         [data-theme="cool"] {
             --bg-body: #f0f4f8;
             --bg-panel: #ffffff;
@@ -37,26 +32,13 @@
             --text-main: #1a202c;
             --text-muted: #718096;
             --border: #e2e8f0;
-            --shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
-
-        /* Hub Colors - ALL 9 HUBS */
-        .hub-teal { --primary: #008080; }
-        .hub-blue { --primary: #0000FF; }
-        .hub-red { --primary: #FF0000; }
-        .hub-yellow { --primary: #FFD700; }
-        .hub-indigo { --primary: #4B0082; }
-        .hub-cyan { --primary: #00FFFF; }
-        .hub-purple { --primary: #800080; }
-        .hub-orange { --primary: #FFA500; }
-        .hub-grey { --primary: #808080; }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; transition: background-color 0.3s, color 0.3s; }
         body { background: var(--bg-body); color: var(--text-main); display: flex; min-height: 100vh; }
         a { text-decoration: none; color: inherit; }
         button { cursor: pointer; border: none; outline: none; transition: 0.3s; }
 
-        /* Sidebar */
         .sidebar {
             width: var(--sidebar-width);
             background: var(--bg-sidebar);
@@ -65,7 +47,6 @@
             height: 100vh;
             overflow-y: auto;
             z-index: 100;
-            transition: transform 0.3s ease;
         }
 
         .brand {
@@ -75,19 +56,14 @@
             font-size: 1.5rem;
             font-weight: 700;
             text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
         }
 
         .nav-section {
             font-size: 0.7rem;
             text-transform: uppercase;
-            color: var(--text-muted);
+            color: #555;
             margin: 20px 15px 10px;
             font-weight: 700;
-            letter-spacing: 1px;
             padding-left: 15px;
         }
 
@@ -116,7 +92,6 @@
             border-radius: 10px;
         }
 
-        /* Main Content */
         .main-content {
             flex: 1;
             margin-left: var(--sidebar-width);
@@ -147,8 +122,6 @@
             border-radius: 8px;
         }
 
-        .menu-toggle:hover { background: rgba(255,255,255,0.1); }
-
         .user-profile {
             display: flex;
             align-items: center;
@@ -164,7 +137,6 @@
             border: 1px solid var(--primary);
         }
 
-        /* Theme Toggle */
         .theme-toggle {
             background: rgba(255,255,255,0.1);
             border: 1px solid var(--border);
@@ -177,8 +149,6 @@
             font-size: 0.85rem;
             color: var(--text-main);
         }
-
-        .theme-toggle:hover { background: rgba(255,255,255,0.2); }
 
         .notification-btn {
             position: relative;
@@ -205,14 +175,12 @@
             padding: 25px;
         }
 
-        /* Panels */
         .panel {
             background: var(--bg-panel);
             border-radius: var(--radius);
             padding: 25px;
             margin-bottom: 25px;
             border: 1px solid var(--border);
-            box-shadow: var(--shadow);
         }
 
         .panel-header {
@@ -220,8 +188,6 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
-            flex-wrap: wrap;
-            gap: 10px;
         }
 
         .panel-title {
@@ -235,7 +201,6 @@
 
         .panel-title i { color: var(--primary); }
 
-        /* Stats Grid */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -249,13 +214,11 @@
             border-radius: var(--radius);
             border: 1px solid var(--border);
             border-left: 4px solid var(--primary);
-            box-shadow: var(--shadow);
         }
 
         .stat-value { font-size: 2rem; font-weight: 700; margin-bottom: 5px; color: var(--primary); }
         .stat-label { color: var(--text-muted); font-size: 0.9rem; }
 
-        /* Forms */
         .form-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -309,7 +272,6 @@
             min-height: 80px;
         }
 
-        /* Buttons */
         .btn-primary {
             padding: 14px 25px;
             background: var(--primary);
@@ -341,7 +303,7 @@
         .btn-success { background: var(--success); color: white; }
         .btn-warning { background: var(--warning); color: #000; }
         .btn-danger { background: var(--danger); color: white; }
-        .btn-info { background: var(--info); color: white; }
+        .btn-info { background: #00b0ff; color: white; }
         .btn-outline {
             background: transparent;
             border: 1px solid var(--border);
@@ -360,7 +322,6 @@
             flex-wrap: wrap;
         }
 
-        /* Tables */
         .table-responsive { overflow-x: auto; }
 
         .data-table {
@@ -461,7 +422,6 @@
 
         .modal-body { padding: 25px; }
 
-        /* Loading */
         .loading-spinner {
             display: inline-block;
             width: 18px;
@@ -474,7 +434,6 @@
 
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Footer */
         footer {
             padding: 20px;
             text-align: center;
@@ -484,15 +443,12 @@
             background: var(--bg-panel);
         }
 
-        /* Mobile Responsive */
         @media (max-width: 768px) {
             .sidebar { transform: translateX(-100%); }
             .sidebar.active { transform: translateX(0); }
             .main-content { margin-left: 0; }
             .menu-toggle { display: block; }
-            .top-bar { padding: 0 15px; }
             .stats-grid { grid-template-columns: 1fr 1fr; }
-            .panel { padding: 15px; }
             .form-grid { grid-template-columns: 1fr; }
             .overlay {
                 display: none;
@@ -506,14 +462,10 @@
     </style>
 </head>
 <body>
-    <!-- Mobile Overlay -->
     <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
 
-    <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
-        <div class="brand">
-            <i class="fas fa-cube"></i> TBOS v3.0
-        </div>
+        <div class="brand"><i class="fas fa-cube"></i> TBOS v3.0</div>
         <div class="nav-scroll">
             <div class="nav-section">Core Operations</div>
             <a href="dashboard.html" class="nav-item"><i class="fas fa-home"></i> Dashboard</a>
@@ -533,7 +485,6 @@
         </div>
     </aside>
 
-    <!-- Main Content -->
     <main class="main-content">
         <header class="top-bar">
             <div style="display: flex; align-items: center; gap: 15px;">
@@ -541,12 +492,10 @@
                 <h2>Inventory Management</h2>
             </div>
             <div class="user-profile">
-                <!-- Theme Toggle -->
                 <button class="theme-toggle" onclick="toggleTheme()">
                     <i class="fas fa-moon" id="theme-icon"></i>
                     <span id="theme-text">Dark</span>
                 </button>
-                
                 <div class="notification-btn">
                     <i class="fas fa-bell"></i>
                     <span class="notification-badge" id="notif-count">0</span>
@@ -557,7 +506,6 @@
         </header>
 
         <div class="content-scroll">
-            <!-- Stats Grid -->
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-value" id="inv-total">0</div>
@@ -577,7 +525,6 @@
                 </div>
             </div>
 
-            <!-- Inventory Panel -->
             <div class="panel">
                 <div class="panel-header">
                     <div class="panel-title"><i class="fas fa-boxes"></i> Inventory Items</div>
@@ -701,8 +648,13 @@
         </div>
     </div>
 
-    
     <script>
+        // GOOGLE SHEETS DATABASE - SheetDB APIs
+        const API_USERS = 'https://sheetdb.io/api/v1/gjd4fyhfyalnm';
+        const API_DATA = 'https://sheetdb.io/api/v1/mhbv4ydfvjquv';
+
+        let currentUser = null;
+
         // Theme Toggle
         function toggleTheme() {
             const currentTheme = document.documentElement.getAttribute('data-theme');
@@ -723,17 +675,6 @@
             }
         }
 
-        // Load saved theme
-        window.addEventListener('DOMContentLoaded', function() {
-            const savedTheme = localStorage.getItem('tbos_theme');
-            if (savedTheme === 'cool') {
-                document.documentElement.setAttribute('data-theme', 'cool');
-                document.getElementById('theme-icon').className = 'fas fa-sun';
-                document.getElementById('theme-text').textContent = 'Cool';
-            }
-            checkAuth();
-        });
-
         // Toggle Sidebar
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('active');
@@ -746,65 +687,48 @@
             modal.classList.toggle('active');
         }
 
-        // Auth Check
-        let currentUser = null;
-        async function checkAuth() {
-            try {
-                const pb = new PocketBase('http://127.0.0.1:8090');
-                if (!pb.authStore.isValid) {
-                    window.location.href = 'index.html';
-                    return;
-                }
-
-                const user = JSON.parse(localStorage.getItem('tbos_user'));
-                if (user) {
-                    currentUser = user;
-                    document.getElementById('user-name').textContent = user.name;
-                    document.getElementById('user-hub').textContent = user.hub;
-                    
-                    if (user.role === 'Administrator') {
-                        document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'flex');
-                    }
-                    
-                    applyHubTheme(user.hub);
-                    loadInventory();
-                }
-            } catch (error) {
-                console.error('Auth error:', error);
-                window.location.href = 'index.html';
+        // Load saved theme
+        window.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('tbos_theme');
+            if (savedTheme === 'cool') {
+                document.documentElement.setAttribute('data-theme', 'cool');
+                document.getElementById('theme-icon').className = 'fas fa-sun';
+                document.getElementById('theme-text').textContent = 'Cool';
             }
-        }
+            checkAuth();
+        });
 
-        // Apply Hub Theme
-        function applyHubTheme(hub) {
-            const hubThemes = {
-                'Online Shop': 'hub-teal',
-                'Graphics Design': 'hub-blue',
-                'Printing': 'hub-red',
-                'Photography': 'hub-yellow',
-                'CBT Center': 'hub-indigo',
-                'Tech Lab': 'hub-cyan',
-                'Tech Academy': 'hub-purple',
-                'Gadgets': 'hub-orange',
-                'Other Services': 'hub-grey'
-            };
+        // Auth Check
+        async function checkAuth() {
+            const user = localStorage.getItem('tbos_user');
+            if (!user) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            currentUser = JSON.parse(user);
+            document.getElementById('user-name').textContent = currentUser.name;
+            document.getElementById('user-hub').textContent = currentUser.hub;
             
-            const theme = hubThemes[hub] || 'hub-grey';
-            document.body.className = theme;
+            if (currentUser.role === 'Administrator') {
+                document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'flex');
+            }
+            
+            loadInventory();
         }
 
         // Load Inventory
         async function loadInventory() {
             try {
-                const pb = new PocketBase('http://127.0.0.1:8090');
-                const inventory = await pb.collection('inventory').getFullList();
+                const response = await fetch(API_DATA);
+                const data = await response.json();
                 
                 const tbody = document.getElementById('inventory-table-body');
+                const inventory = data.filter(item => item.type === 'inventory');
                 
                 if (inventory.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--text-muted);">No inventory items. Add your first item!</td></tr>';
                     
-                    // Update stats
                     document.getElementById('inv-total').textContent = 0;
                     document.getElementById('inv-low').textContent = 0;
                     document.getElementById('inv-out').textContent = 0;
@@ -840,13 +764,11 @@
                 
                 tbody.innerHTML = html;
                 
-                // Update stats
                 document.getElementById('inv-total').textContent = total;
                 document.getElementById('inv-low').textContent = low;
                 document.getElementById('inv-out').textContent = out;
                 document.getElementById('inv-ok').textContent = ok;
                 
-                // Update badge
                 document.getElementById('notif-count').textContent = low + out;
                 
             } catch (error) {
@@ -864,8 +786,6 @@
             btnSubmit.innerHTML = '<div class="loading-spinner"></div> Adding...';
 
             try {
-                const pb = new PocketBase('http://127.0.0.1:8090');
-                
                 const stock = parseInt(document.getElementById('inv-stock').value);
                 const alertLevel = parseInt(document.getElementById('inv-alert').value);
                 
@@ -874,6 +794,8 @@
                 else if (stock <= alertLevel) status = 'LOW';
                 
                 const newItem = {
+                    type: 'inventory',
+                    id: String(Date.now()),
                     material_name: document.getElementById('inv-name').value,
                     category: document.getElementById('inv-category').value,
                     stock_quantity: stock,
@@ -882,7 +804,13 @@
                     status: status
                 };
 
-                await pb.collection('inventory').create(newItem);
+                await fetch(API_DATA, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify([newItem])
+                });
 
                 alert('Item added successfully!');
                 toggleModal('inventory-modal');
@@ -914,7 +842,7 @@
 
         // Edit Inventory
         async function editInventory(itemId) {
-            alert('Edit inventory functionality\n\nItem ID: ' + itemId + '\n\n(Full edit to be implemented with PocketBase)');
+            alert('Edit inventory functionality\n\nItem ID: ' + itemId + '\n\n(Full edit to be implemented with SheetDB PATCH)');
         }
 
         // Update Stock
@@ -922,17 +850,30 @@
             const addition = prompt('Enter quantity to add to ' + itemName + ':', '0');
             if (addition && !isNaN(addition)) {
                 try {
-                    const pb = new PocketBase('http://127.0.0.1:8090');
-                    const item = await pb.collection('inventory').getOne(itemId);
+                    const response = await fetch(API_DATA);
+                    const data = await response.json();
+                    const item = data.find(i => i.id === itemId && i.type === 'inventory');
+                    
+                    if (!item) {
+                        alert('Item not found');
+                        return;
+                    }
                     
                     const newStock = parseInt(item.stock_quantity) + parseInt(addition);
                     let newStatus = 'OK';
                     if (newStock === 0) newStatus = 'OUT';
                     else if (newStock <= item.alert_level) newStatus = 'LOW';
                     
-                    await pb.collection('inventory').update(itemId, {
-                        stock_quantity: newStock,
-                        status: newStatus
+                    await fetch(API_DATA, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify([{
+                            id: itemId,
+                            stock_quantity: newStock,
+                            status: newStatus
+                        }])
                     });
                     
                     alert('Stock updated!');
@@ -948,8 +889,15 @@
         async function deleteInventory(itemId) {
             if (confirm('Are you sure you want to delete this item?')) {
                 try {
-                    const pb = new PocketBase('http://127.0.0.1:8090');
-                    await pb.collection('inventory').delete(itemId);
+                    await fetch(API_DATA, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify([{
+                            id: itemId
+                        }])
+                    });
                     alert('Item deleted!');
                     loadInventory();
                 } catch (error) {
@@ -959,9 +907,7 @@
         }
 
         // Logout
-        async function logout() {
-            const pb = new PocketBase('http://127.0.0.1:8090');
-            await pb.authStore.clear();
+        function logout() {
             localStorage.removeItem('tbos_user');
             window.location.href = 'index.html';
         }
