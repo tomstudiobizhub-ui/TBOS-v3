@@ -20,7 +20,16 @@
             --radius: 16px;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
+        [data-theme="cool"] {
+            --bg-body: #f0f4f8;
+            --bg-card: #ffffff;
+            --bg-input: #f5f7fa;
+            --text-main: #1a202c;
+            --text-muted: #718096;
+            --border: #e2e8f0;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; transition: background-color 0.3s, color 0.3s; }
 
         body {
             background: radial-gradient(circle at center, #1a1a2e 0%, #0a0a0a 100%);
@@ -32,6 +41,10 @@
             padding: 20px;
         }
 
+        [data-theme="cool"] body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
         .login-container {
             background: var(--bg-card);
             border-radius: var(--radius);
@@ -40,6 +53,28 @@
             width: 100%;
             max-width: 480px;
             overflow: hidden;
+            position: relative;
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 8px 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: var(--text-main);
+            z-index: 10;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255,255,255,0.2);
         }
 
         .login-header {
@@ -156,6 +191,12 @@
 </head>
 <body>
     <div class="login-container">
+        <!-- Theme Toggle -->
+        <button class="theme-toggle" onclick="toggleTheme()">
+            <i class="fas fa-moon" id="theme-icon"></i>
+            <span id="theme-text">Dark</span>
+        </button>
+
         <div class="login-header">
             <div class="logo"><i class="fas fa-cube"></i></div>
             <h1>TBOS v3.0</h1>
@@ -178,7 +219,8 @@
                     <label>Staff Email</label>
                     <div class="input-wrapper">
                         <i class="fas fa-user"></i>
-                        <input type="email" id="login-email" placeholder="staff@tbos.com" required value="admin@tbos.com">
+                        <!-- ✅ REMOVED: value="admin@tbos.com" -->
+                        <input type="email" id="login-email" placeholder="staff@tbos.com" required>
                     </div>
                 </div>
 
@@ -186,7 +228,8 @@
                     <label>Password</label>
                     <div class="input-wrapper">
                         <i class="fas fa-lock"></i>
-                        <input type="password" id="login-password" placeholder="••••••••" required value="@admin123#">
+                        <!-- ✅ REMOVED: value="@admin123#" -->
+                        <input type="password" id="login-password" placeholder="••••••••" required>
                     </div>
                 </div>
 
@@ -201,10 +244,8 @@
             </a>
 
             <div class="login-footer">
-                <strong>Demo Credentials:</strong><br>
-                Admin: admin@tbos.com | @admin123#<br>
-                <br>
-                <strong>Support:</strong> <a href="tel:+2348030827417">+234 803 082 7417</a><br>
+                <strong>Need Help?</strong><br>
+                Contact: <a href="tel:+2348030827417">+234 803 082 7417</a><br>
                 Built by Tomstudio Tech Academy<br>
                 TBOS v3.0 | Production System
             </div>
@@ -215,11 +256,49 @@
         // GOOGLE SHEETS DATABASE - SheetDB APIs
         const API_USERS = 'https://sheetdb.io/api/v1/gjd4fyhfyalnm';
 
-        // Check if already logged in
-        if (localStorage.getItem('tbos_user')) {
-            console.log('✅ Already logged in, redirecting to dashboard...');
-            window.location.href = 'dashboard.html';
+        // Theme Toggle
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'cool' ? 'dark' : 'cool';
+            const icon = document.getElementById('theme-icon');
+            const text = document.getElementById('theme-text');
+            
+            if (newTheme === 'cool') {
+                document.documentElement.setAttribute('data-theme', 'cool');
+                icon.className = 'fas fa-sun';
+                text.textContent = 'Cool';
+                localStorage.setItem('tbos_theme', 'cool');
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                text.textContent = 'Dark';
+                localStorage.setItem('tbos_theme', 'dark');
+            }
         }
+
+        // Load saved theme
+        window.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('tbos_theme');
+            if (savedTheme === 'cool') {
+                document.documentElement.setAttribute('data-theme', 'cool');
+                document.getElementById('theme-icon').className = 'fas fa-sun';
+                document.getElementById('theme-text').textContent = 'Cool';
+            }
+
+            // Check if already logged in
+            const savedUser = localStorage.getItem('tbos_user');
+            if (savedUser) {
+                const user = JSON.parse(savedUser);
+                console.log('✅ User already logged in:', user.name, user.role);
+                
+                // ✅ ROUTE BASED ON ROLE
+                if (user.role === 'Administrator') {
+                    window.location.href = 'admin.html';
+                } else {
+                    window.location.href = 'dashboard.html';
+                }
+            }
+        });
 
         // Login Form
         document.getElementById('login-form').addEventListener('submit', async function(e) {
@@ -275,10 +354,10 @@
                 successMessage.style.display = 'flex';
                 document.getElementById('success-text').textContent = 'Login successful! Redirecting...';
 
-                // Redirect based on role
+                // ✅ ROUTE BASED ON ROLE
                 setTimeout(() => {
-                    console.log('🚀 Redirecting to dashboard...');
-                    if(user.role === 'Administrator') {
+                    console.log('🚀 Redirecting user with role:', user.role);
+                    if (user.role === 'Administrator') {
                         window.location.href = 'admin.html';
                     } else {
                         window.location.href = 'dashboard.html';

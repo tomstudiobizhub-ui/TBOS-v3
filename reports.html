@@ -7,6 +7,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <!-- Chart.js for Analytics -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- html2pdf for PDF Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root {
             --bg-body: #0a0a0a;
@@ -244,6 +246,7 @@
         }
 
         .btn-primary:hover { background: var(--primary-hover); transform: translateY(-2px); }
+        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
         .btn-sm {
             padding: 8px 15px;
@@ -261,6 +264,168 @@
             border-color: var(--primary);
             color: var(--primary);
         }
+
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+
+        /* Daily Report Form */
+        .report-form {
+            background: var(--bg-input);
+            padding: 25px;
+            border-radius: var(--radius);
+            margin-bottom: 25px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .form-full { grid-column: 1 / -1; }
+
+        .form-group { margin-bottom: 15px; }
+
+        .form-group label {
+            display: block;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .input-wrapper { position: relative; }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 12px 12px 40px;
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-main);
+            font-size: 0.95rem;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0, 128, 128, 0.2);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        /* Report Preview for PDF */
+        .report-preview {
+            background: #ffffff;
+            color: #000000;
+            padding: 40px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .report-preview.active {
+            display: block;
+        }
+
+        .report-header {
+            text-align: center;
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .report-header h1 {
+            color: var(--primary);
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        .report-header p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .report-info {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+
+        .report-info div {
+            padding: 10px;
+        }
+
+        .report-info strong {
+            color: var(--primary);
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .report-section {
+            margin-bottom: 25px;
+        }
+
+        .report-section h3 {
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .report-section ul {
+            list-style: disc;
+            margin-left: 20px;
+            color: #333;
+            line-height: 1.8;
+        }
+
+        .report-footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #ddd;
+            text-align: center;
+            color: #666;
+            font-size: 0.85rem;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         footer {
             padding: 20px;
@@ -281,6 +446,7 @@
             .filter-bar { flex-direction: column; }
             .filter-bar select,
             .filter-bar input { width: 100%; }
+            .report-info { grid-template-columns: 1fr; }
             .overlay {
                 display: none;
                 position: fixed;
@@ -330,72 +496,149 @@
         </header>
 
         <div class="content-scroll">
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-value" id="report-daily">₦0</div>
-                    <div class="stat-label">Daily Revenue</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="report-weekly">₦0</div>
-                    <div class="stat-label">Weekly Revenue</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="report-monthly">₦0</div>
-                    <div class="stat-label">Monthly Revenue</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value text-warning" id="report-outstanding">₦0</div>
-                    <div class="stat-label">Outstanding Payments</div>
-                </div>
-            </div>
-
+            <!-- Daily Report Creation Section -->
             <div class="panel">
                 <div class="panel-header">
-                    <div class="panel-title"><i class="fas fa-filter"></i> Filter Reports</div>
-                    <div style="display: flex; gap: 10px;">
-                        <button class="btn-sm btn-outline" onclick="exportReport('excel')">
-                            <i class="fas fa-file-excel"></i> Excel
-                        </button>
-                        <button class="btn-sm btn-outline" onclick="exportReport('pdf')">
-                            <i class="fas fa-file-pdf"></i> PDF
-                        </button>
-                        <button class="btn-sm btn-outline" onclick="exportReport('csv')">
-                            <i class="fas fa-file-csv"></i> CSV
-                        </button>
-                    </div>
+                    <div class="panel-title"><i class="fas fa-file-alt"></i> Create Daily Report</div>
                 </div>
-                <div class="filter-bar">
-                    <select id="report-range">
-                        <option value="today">Today</option>
-                        <option value="week">This Week</option>
-                        <option value="month">This Month</option>
-                        <option value="year">This Year</option>
-                        <option value="custom">Custom Range</option>
-                    </select>
-                    <select id="report-hub">
-                        <option value="">All Hubs</option>
-                        <option value="Online Shop">Online Shop</option>
-                        <option value="Graphics Design">Graphics Design</option>
-                        <option value="Printing">Printing</option>
-                        <option value="Photography">Photography</option>
-                        <option value="CBT Center">CBT Center</option>
-                        <option value="Tech Lab">Tech Lab</option>
-                        <option value="Tech Academy">Tech Academy</option>
-                        <option value="Gadgets">Gadgets</option>
-                        <option value="Other Services">Other Services</option>
-                    </select>
-                    <select id="report-status">
-                        <option value="">All Status</option>
-                        <option value="PAID">Paid</option>
-                        <option value="PARTIALLY PAID">Partially Paid</option>
-                        <option value="UNPAID">Unpaid</option>
-                    </select>
-                    <button class="btn-primary" onclick="generateReport()">
-                        <i class="fas fa-sync"></i> Generate Report
-                    </button>
+                <div class="report-form">
+                    <form id="daily-report-form" class="form-grid">
+                        <div class="form-group">
+                            <label>Date *</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-calendar"></i>
+                                <input type="date" id="report-date" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Hub/Department *</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-building"></i>
+                                <select id="report-hub" required>
+                                    <option value="">Select Hub...</option>
+                                    <option value="Online Shop">Online Shop</option>
+                                    <option value="Graphics Design">Graphics Design</option>
+                                    <option value="Printing">Printing</option>
+                                    <option value="Photography">Photography</option>
+                                    <option value="CBT Center">CBT Center</option>
+                                    <option value="Tech Lab">Tech Lab</option>
+                                    <option value="Tech Academy">Tech Academy</option>
+                                    <option value="Gadgets">Gadgets</option>
+                                    <option value="Other Services">Other Services</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group form-full">
+                            <label>Tasks Completed Today *</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-check-circle"></i>
+                                <textarea id="report-tasks" rows="4" placeholder="List all tasks completed today..." required></textarea>
+                            </div>
+                        </div>
+                        <div class="form-group form-full">
+                            <label>Challenges/Issues Faced</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <textarea id="report-challenges" rows="3" placeholder="Any challenges or issues encountered..."></textarea>
+                            </div>
+                        </div>
+                        <div class="form-group form-full">
+                            <label>Plans for Tomorrow</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-calendar-day"></i>
+                                <textarea id="report-plans" rows="3" placeholder="Planned tasks for tomorrow..."></textarea>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Hours Worked</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-clock"></i>
+                                <input type="number" id="report-hours" placeholder="8" min="1" max="24">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Jobs Completed</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-briefcase"></i>
+                                <input type="number" id="report-jobs" placeholder="0" min="0">
+                            </div>
+                        </div>
+                        <div class="form-actions form-full">
+                            <button type="submit" class="btn-primary" id="btn-submit-report">
+                                <i class="fas fa-save"></i>
+                                <span>Submit Report</span>
+                            </button>
+                            <button type="button" class="btn-success" onclick="generatePDF()">
+                                <i class="fas fa-file-pdf"></i>
+                                <span>Generate PDF</span>
+                            </button>
+                            <button type="button" class="btn-outline" onclick="resetReportForm()">
+                                <i class="fas fa-undo"></i>
+                                <span>Reset</span>
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
 
+            <!-- Report Preview (Hidden until PDF generation) -->
+            <div id="report-preview" class="report-preview">
+                <div class="report-header">
+                    <h1><i class="fas fa-cube"></i> TBOS v3.0</h1>
+                    <p>Tomstudio BizHub Operations System</p>
+                    <p>Daily Staff Report</p>
+                </div>
+                
+                <div class="report-info">
+                    <div>
+                        <strong>Staff Name:</strong>
+                        <span id="preview-staff">-</span>
+                    </div>
+                    <div>
+                        <strong>Hub/Department:</strong>
+                        <span id="preview-hub">-</span>
+                    </div>
+                    <div>
+                        <strong>Date:</strong>
+                        <span id="preview-date">-</span>
+                    </div>
+                    <div>
+                        <strong>Hours Worked:</strong>
+                        <span id="preview-hours">-</span>
+                    </div>
+                    <div>
+                        <strong>Jobs Completed:</strong>
+                        <span id="preview-jobs">-</span>
+                    </div>
+                    <div>
+                        <strong>Report ID:</strong>
+                        <span id="preview-id">-</span>
+                    </div>
+                </div>
+
+                <div class="report-section">
+                    <h3><i class="fas fa-check-circle"></i> Tasks Completed Today</h3>
+                    <ul id="preview-tasks"></ul>
+                </div>
+
+                <div class="report-section">
+                    <h3><i class="fas fa-exclamation-triangle"></i> Challenges/Issues Faced</h3>
+                    <ul id="preview-challenges"></ul>
+                </div>
+
+                <div class="report-section">
+                    <h3><i class="fas fa-calendar-day"></i> Plans for Tomorrow</h3>
+                    <ul id="preview-plans"></ul>
+                </div>
+
+                <div class="report-footer">
+                    <p>This is an official TBOS v3.0 Daily Report</p>
+                    <p>Generated on: <span id="preview-generated"></span></p>
+                    <p>Tomstudio BizHub | +234 803 082 7417</p>
+                </div>
+            </div>
+
+            <!-- Analytics Overview -->
             <div class="panel">
                 <div class="panel-header">
                     <div class="panel-title"><i class="fas fa-chart-pie"></i> Analytics Overview</div>
@@ -420,6 +663,36 @@
                 </div>
             </div>
 
+            <!-- My Reports History -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title"><i class="fas fa-history"></i> My Reports History</div>
+                    <button class="btn-sm btn-outline" onclick="loadMyReports()">
+                        <i class="fas fa-sync"></i> Refresh
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Hub</th>
+                                <th>Tasks</th>
+                                <th>Hours</th>
+                                <th>Jobs</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="my-reports-body">
+                            <tr><td colspan="6" style="text-align: center; padding: 40px;">
+                                <i class="fas fa-spinner fa-spin" style="margin-right: 10px;"></i> Loading reports...
+                            </td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Charts -->
             <div class="charts-grid">
                 <div class="panel">
                     <div class="panel-header">
@@ -438,26 +711,9 @@
                         <canvas id="categoryChart"></canvas>
                     </div>
                 </div>
-
-                <div class="panel">
-                    <div class="panel-header">
-                        <div class="panel-title"><i class="fas fa-chart-bar"></i> Hub Performance</div>
-                    </div>
-                    <div class="chart-container">
-                        <canvas id="hubChart"></canvas>
-                    </div>
-                </div>
-
-                <div class="panel">
-                    <div class="panel-header">
-                        <div class="panel-title"><i class="fas fa-chart-area"></i> Jobs Status</div>
-                    </div>
-                    <div class="chart-container">
-                        <canvas id="statusChart"></canvas>
-                    </div>
-                </div>
             </div>
 
+            <!-- Staff Performance -->
             <div class="panel">
                 <div class="panel-header">
                     <div class="panel-title"><i class="fas fa-trophy"></i> Staff Performance Scorecard</div>
@@ -469,38 +725,13 @@
                                 <th>Rank</th>
                                 <th>Staff Name</th>
                                 <th>Hub</th>
-                                <th>Jobs Logged</th>
+                                <th>Reports Submitted</th>
                                 <th>Jobs Completed</th>
-                                <th>Revenue Generated</th>
                                 <th>Performance Score</th>
                             </tr>
                         </thead>
                         <tbody id="performance-body">
-                            <tr><td colspan="7" style="text-align: center; padding: 40px;">
-                                <i class="fas fa-spinner fa-spin" style="margin-right: 10px;"></i> Loading...
-                            </td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="panel">
-                <div class="panel-header">
-                    <div class="panel-title"><i class="fas fa-chart-area"></i> Hub Performance</div>
-                </div>
-                <div class="table-responsive">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Hub</th>
-                                <th>Total Jobs</th>
-                                <th>Revenue</th>
-                                <th>Completion Rate</th>
-                                <th>Avg. Delivery Time</th>
-                            </tr>
-                        </thead>
-                        <tbody id="hub-performance-body">
-                            <tr><td colspan="5" style="text-align: center; padding: 40px;">
+                            <tr><td colspan="6" style="text-align: center; padding: 40px;">
                                 <i class="fas fa-spinner fa-spin" style="margin-right: 10px;"></i> Loading...
                             </td></tr>
                         </tbody>
@@ -558,6 +789,10 @@
                 document.getElementById('theme-icon').className = 'fas fa-sun';
                 document.getElementById('theme-text').textContent = 'Cool';
             }
+            
+            // Set today's date as default
+            document.getElementById('report-date').valueAsDate = new Date();
+            
             checkAuth();
         });
 
@@ -573,91 +808,228 @@
             document.getElementById('user-name').textContent = currentUser.name;
             document.getElementById('user-hub').textContent = currentUser.hub;
             
+            // Pre-select user's hub
+            document.getElementById('report-hub').value = currentUser.hub;
+            
+            loadMyReports();
             generateReport();
         }
 
-        // Generate Report
+        // Submit Daily Report
+        document.getElementById('daily-report-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const btnSubmit = document.getElementById('btn-submit-report');
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = '<div class="loading-spinner"></div> Submitting...';
+
+            try {
+                const reportId = 'RPT-' + Date.now().toString().slice(-8);
+                
+                const newReport = {
+                    type: 'daily_report',
+                    id: reportId,
+                    staff_id: currentUser.id,
+                    staff_name: currentUser.name,
+                    staff_email: currentUser.email,
+                    hub: document.getElementById('report-hub').value,
+                    date: document.getElementById('report-date').value,
+                    tasks: document.getElementById('report-tasks').value,
+                    challenges: document.getElementById('report-challenges').value || 'None',
+                    plans: document.getElementById('report-plans').value || 'Continue ongoing tasks',
+                    hours_worked: parseInt(document.getElementById('report-hours').value) || 8,
+                    jobs_completed: parseInt(document.getElementById('report-jobs').value) || 0,
+                    submitted_at: new Date().toISOString()
+                };
+
+                console.log('📡 Submitting daily report:', newReport);
+
+                const response = await fetch(API_DATA, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify([newReport])
+                });
+
+                const result = await response.json();
+                console.log('✅ Report submitted:', result);
+
+                if (!response.ok) {
+                    throw new Error('Failed to submit report: ' + JSON.stringify(result));
+                }
+
+                alert('Daily report submitted successfully! Report ID: ' + reportId);
+                resetReportForm();
+                loadMyReports();
+
+            } catch (error) {
+                console.error('❌ Submit report error:', error);
+                alert('Error submitting report: ' + error.message);
+            }
+
+            btnSubmit.disabled = false;
+            btnSubmit.innerHTML = '<i class="fas fa-save"></i> Submit Report';
+        });
+
+        // Generate PDF
+        function generatePDF() {
+            const staffName = currentUser.name;
+            const hub = document.getElementById('report-hub').value;
+            const date = document.getElementById('report-date').value;
+            const tasks = document.getElementById('report-tasks').value;
+            const challenges = document.getElementById('report-challenges').value || 'None';
+            const plans = document.getElementById('report-plans').value || 'Continue ongoing tasks';
+            const hours = document.getElementById('report-hours').value || 8;
+            const jobs = document.getElementById('report-jobs').value || 0;
+            const reportId = 'RPT-' + Date.now().toString().slice(-8);
+
+            if (!tasks) {
+                alert('Please fill in at least the Tasks Completed field before generating PDF.');
+                return;
+            }
+
+            // Populate preview
+            document.getElementById('preview-staff').textContent = staffName;
+            document.getElementById('preview-hub').textContent = hub;
+            document.getElementById('preview-date').textContent = date;
+            document.getElementById('preview-hours').textContent = hours + ' hours';
+            document.getElementById('preview-jobs').textContent = jobs;
+            document.getElementById('preview-id').textContent = reportId;
+            document.getElementById('preview-generated').textContent = new Date().toLocaleString();
+
+            // Convert text to list items
+            document.getElementById('preview-tasks').innerHTML = tasks.split('\n').map(t => `<li>${t}</li>`).join('');
+            document.getElementById('preview-challenges').innerHTML = challenges.split('\n').map(t => `<li>${t}</li>`).join('');
+            document.getElementById('preview-plans').innerHTML = plans.split('\n').map(t => `<li>${t}</li>`).join('');
+
+            // Show preview
+            document.getElementById('report-preview').classList.add('active');
+
+            // Generate PDF
+            const element = document.getElementById('report-preview');
+            const opt = {
+                margin: 10,
+                filename: `TBOS_Daily_Report_${staffName.replace(/\s+/g, '_')}_${date}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            // Generate and download
+            html2pdf().set(opt).from(element).save().then(() => {
+                alert('PDF generated and downloaded successfully!');
+                document.getElementById('report-preview').classList.remove('active');
+            }).catch(err => {
+                console.error('PDF generation error:', err);
+                alert('Error generating PDF: ' + err.message);
+            });
+        }
+
+        // Reset Report Form
+        function resetReportForm() {
+            document.getElementById('daily-report-form').reset();
+            document.getElementById('report-date').valueAsDate = new Date();
+            document.getElementById('report-hub').value = currentUser.hub;
+            document.getElementById('report-preview').classList.remove('active');
+        }
+
+        // Load My Reports
+        async function loadMyReports() {
+            try {
+                const response = await fetch(API_DATA);
+                const data = await response.json();
+                
+                // Filter only daily reports for current user
+                const myReports = data.filter(item => 
+                    item.type === 'daily_report' && 
+                    item.staff_id === currentUser.id
+                ).sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                const tbody = document.getElementById('my-reports-body');
+                
+                if (myReports.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: var(--text-muted);">No reports submitted yet. Create your first daily report!</td></tr>';
+                    return;
+                }
+
+                let html = '';
+                myReports.forEach(report => {
+                    const taskCount = report.tasks ? report.tasks.split('\n').length : 0;
+                    html += '<tr>' +
+                        '<td>' + new Date(report.date).toLocaleDateString() + '</td>' +
+                        '<td>' + report.hub + '</td>' +
+                        '<td>' + taskCount + ' tasks</td>' +
+                        '<td>' + (report.hours_worked || 8) + ' hrs</td>' +
+                        '<td>' + (report.jobs_completed || 0) + '</td>' +
+                        '<td>' +
+                        '<button class="btn-sm btn-success" onclick="downloadReportPDF(\'' + report.id + '\')"><i class="fas fa-file-pdf"></i></button> ' +
+                        '<button class="btn-sm btn-info" onclick="viewReport(\'' + report.id + '\')"><i class="fas fa-eye"></i></button>' +
+                        '</td></tr>';
+                });
+                
+                tbody.innerHTML = html;
+                
+            } catch (error) {
+                console.error('Load reports error:', error);
+                document.getElementById('my-reports-body').innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: var(--danger);">Error loading reports</td></tr>';
+            }
+        }
+
+        // Download Report PDF
+        function downloadReportPDF(reportId) {
+            alert('Downloading report PDF: ' + reportId + '\n\n(Full PDF download to be implemented with server-side processing)');
+        }
+
+        // View Report
+        function viewReport(reportId) {
+            alert('Viewing report: ' + reportId + '\n\n(Full report view to be implemented)');
+        }
+
+        // Generate Analytics Report
         async function generateReport() {
             try {
-                const jobsResponse = await fetch(API_DATA);
-                const jobsData = await jobsResponse.json();
-                const jobs = jobsData.filter(item => item.type === 'job');
-                
-                const usersResponse = await fetch(API_USERS);
-                const users = await usersResponse.json();
-
-                // Filter jobs based on selection
-                const range = document.getElementById('report-range').value;
-                const hubFilter = document.getElementById('report-hub').value;
-                const statusFilter = document.getElementById('report-status').value;
-
-                let filteredJobs = jobs;
-                
-                if (hubFilter) {
-                    filteredJobs = filteredJobs.filter(j => j.hub === hubFilter);
-                }
-                
-                if (statusFilter) {
-                    filteredJobs = filteredJobs.filter(j => j.status === statusFilter);
-                }
-
-                // Calculate revenue
-                const totalRevenue = filteredJobs.reduce((sum, j) => sum + (parseInt(j.paid) || 0), 0);
-                const outstanding = filteredJobs.reduce((sum, j) => sum + (parseInt(j.balance) || 0), 0);
-                
-                document.getElementById('report-daily').textContent = '₦' + Math.round(totalRevenue / 30).toLocaleString();
-                document.getElementById('report-weekly').textContent = '₦' + Math.round(totalRevenue / 4).toLocaleString();
-                document.getElementById('report-monthly').textContent = '₦' + totalRevenue.toLocaleString();
-                document.getElementById('report-outstanding').textContent = '₦' + outstanding.toLocaleString();
+                const response = await fetch(API_DATA);
+                const data = await response.json();
+                const jobs = data.filter(item => item.type === 'job');
 
                 // Analytics
-                document.getElementById('analytics-jobs').textContent = filteredJobs.length;
-                document.getElementById('analytics-completed').textContent = filteredJobs.filter(j => j.status === 'Completed').length;
-                document.getElementById('analytics-active').textContent = filteredJobs.filter(j => j.stage !== 'Completed' && j.stage !== 'Pending').length;
-                document.getElementById('analytics-delayed').textContent = filteredJobs.filter(j => j.status === 'DELAYED').length;
+                document.getElementById('analytics-jobs').textContent = jobs.length;
+                document.getElementById('analytics-completed').textContent = jobs.filter(j => j.status === 'Completed').length;
+                document.getElementById('analytics-active').textContent = jobs.filter(j => j.stage !== 'Completed' && j.stage !== 'Pending').length;
+                document.getElementById('analytics-delayed').textContent = jobs.filter(j => j.status === 'DELAYED').length;
 
                 // Staff Performance
-                const sortedUsers = users.sort((a, b) => (parseInt(b.score) || 0) - (parseInt(a.score) || 0));
+                const usersResponse = await fetch(API_USERS);
+                const users = await usersResponse.json();
+                
+                // Count reports per user
+                const reports = data.filter(item => item.type === 'daily_report');
+                const reportCounts = {};
+                reports.forEach(r => {
+                    reportCounts[r.staff_name] = (reportCounts[r.staff_name] || 0) + 1;
+                });
+
+                const sortedUsers = users.sort((a, b) => {
+                    const reportsA = reportCounts[a.name] || 0;
+                    const reportsB = reportCounts[b.name] || 0;
+                    return reportsB - reportsA;
+                });
+                
                 const performanceBody = document.getElementById('performance-body');
                 performanceBody.innerHTML = sortedUsers.slice(0, 10).map((u, i) => `
                     <tr>
                         <td><span style="color: var(--primary); font-weight: 700;">#${i + 1}</span></td>
                         <td>${u.name || u.email}</td>
                         <td>${u.hub || 'N/A'}</td>
-                        <td>${u.jobs_logged || 0}</td>
+                        <td>${reportCounts[u.name] || 0}</td>
                         <td>${u.jobs_completed || 0}</td>
-                        <td>₦${(u.revenue_generated || 0).toLocaleString()}</td>
                         <td><span style="background: rgba(0, 128, 128, 0.2); color: var(--primary); padding: 4px 10px; border-radius: 4px;">${u.score || 0}</span></td>
                     </tr>
                 `).join('');
 
-                // Hub Performance
-                const hubData = {};
-                filteredJobs.forEach(j => {
-                    if (!hubData[j.hub]) {
-                        hubData[j.hub] = { jobs: 0, revenue: 0, completed: 0 };
-                    }
-                    hubData[j.hub].jobs++;
-                    hubData[j.hub].revenue += (parseInt(j.paid) || 0);
-                    if (j.status === 'Completed') hubData[j.hub].completed++;
-                });
-
-                const hubPerformanceBody = document.getElementById('hub-performance-body');
-                hubPerformanceBody.innerHTML = Object.entries(hubData).map(([hub, data]) => {
-                    const rate = Math.round((data.completed / data.jobs) * 100) || 0;
-                    return `
-                        <tr>
-                            <td>${hub}</td>
-                            <td>${data.jobs}</td>
-                            <td>₦${data.revenue.toLocaleString()}</td>
-                            <td>${rate}%</td>
-                            <td>3 days</td>
-                        </tr>
-                    `;
-                }).join('');
-
                 // Initialize Charts
-                initCharts(filteredJobs, hubData);
+                initCharts(jobs);
 
             } catch (error) {
                 console.error('Generate report error:', error);
@@ -665,7 +1037,7 @@
         }
 
         // Initialize Charts
-        function initCharts(jobs, hubData) {
+        function initCharts(jobs) {
             // Revenue Chart
             const revenueCtx = document.getElementById('revenueChart').getContext('2d');
             if (charts.revenue) charts.revenue.destroy();
@@ -721,63 +1093,6 @@
                     plugins: { legend: { position: 'bottom', labels: { color: getComputedStyle(document.documentElement).getPropertyValue('--text-main') } } }
                 }
             });
-
-            // Hub Chart
-            const hubCtx = document.getElementById('hubChart').getContext('2d');
-            if (charts.hub) charts.hub.destroy();
-            
-            charts.hub = new Chart(hubCtx, {
-                type: 'bar',
-                data: {
-                    labels: Object.keys(hubData),
-                    datasets: [{
-                        label: 'Jobs Completed',
-                        data: Object.values(hubData).map(h => h.completed),
-                        backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--primary')
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.1)' } },
-                        x: { grid: { color: 'rgba(255,255,255,0.1)' } }
-                    }
-                }
-            });
-
-            // Status Chart
-            const statusCtx = document.getElementById('statusChart').getContext('2d');
-            if (charts.status) charts.status.destroy();
-            
-            const statusCounts = {
-                'Completed': jobs.filter(j => j.status === 'Completed').length,
-                'In Progress': jobs.filter(j => j.stage !== 'Completed' && j.stage !== 'Pending').length,
-                'Pending': jobs.filter(j => j.stage === 'Pending').length,
-                'Delayed': jobs.filter(j => j.status === 'DELAYED').length
-            };
-
-            charts.status = new Chart(statusCtx, {
-                type: 'pie',
-                data: {
-                    labels: Object.keys(statusCounts),
-                    datasets: [{
-                        data: Object.values(statusCounts),
-                        backgroundColor: ['#00c851', '#008080', '#ffbb33', '#ff4444']
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom', labels: { color: getComputedStyle(document.documentElement).getPropertyValue('--text-main') } } }
-                }
-            });
-        }
-
-        // Export Report
-        function exportReport(format) {
-            alert('Exporting report as ' + format.toUpperCase() + '...\n\n(Full export functionality to be implemented with server-side processing)');
         }
 
         // Logout
