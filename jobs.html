@@ -7,6 +7,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
+            /* Dark Theme */
             --bg-body: #0a0a0a;
             --bg-panel: #1a1a1a;
             --bg-sidebar: #111111;
@@ -19,12 +20,37 @@
             --success: #00c851;
             --warning: #ffbb33;
             --danger: #ff4444;
+            --info: #00b0ff;
             --sidebar-width: 280px;
             --header-height: 70px;
             --radius: 12px;
+            --shadow: 0 4px 12px rgba(0,0,0,0.4);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
+        /* Cool/Light Theme */
+        [data-theme="cool"] {
+            --bg-body: #f0f4f8;
+            --bg-panel: #ffffff;
+            --bg-sidebar: #ffffff;
+            --bg-input: #f5f7fa;
+            --text-main: #1a202c;
+            --text-muted: #718096;
+            --border: #e2e8f0;
+            --shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        /* Hub Colors - ALL 9 HUBS */
+        .hub-teal { --primary: #008080; }
+        .hub-blue { --primary: #0000FF; }
+        .hub-red { --primary: #FF0000; }
+        .hub-yellow { --primary: #FFD700; }
+        .hub-indigo { --primary: #4B0082; }
+        .hub-cyan { --primary: #00FFFF; }
+        .hub-purple { --primary: #800080; }
+        .hub-orange { --primary: #FFA500; }
+        .hub-grey { --primary: #808080; }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; transition: background-color 0.3s, color 0.3s; }
         body { background: var(--bg-body); color: var(--text-main); display: flex; min-height: 100vh; }
         a { text-decoration: none; color: inherit; }
         button { cursor: pointer; border: none; outline: none; transition: 0.3s; }
@@ -38,6 +64,7 @@
             height: 100vh;
             overflow-y: auto;
             z-index: 100;
+            transition: transform 0.3s ease;
         }
 
         .brand {
@@ -47,12 +74,16 @@
             font-size: 1.5rem;
             font-weight: 700;
             text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
 
         .nav-section {
             font-size: 0.7rem;
             text-transform: uppercase;
-            color: #555;
+            color: var(--text-muted);
             margin: 20px 15px 10px;
             font-weight: 700;
             letter-spacing: 1px;
@@ -106,7 +137,16 @@
             z-index: 50;
         }
 
-        .menu-toggle { display: none; color: var(--text-main); font-size: 1.3rem; cursor: pointer; }
+        .menu-toggle {
+            display: none;
+            color: var(--text-main);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .menu-toggle:hover { background: rgba(255,255,255,0.1); }
 
         .user-profile {
             display: flex;
@@ -123,6 +163,41 @@
             border: 1px solid var(--primary);
         }
 
+        /* Theme Toggle */
+        .theme-toggle {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 8px 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: var(--text-main);
+        }
+
+        .theme-toggle:hover { background: rgba(255,255,255,0.2); }
+
+        .notification-btn {
+            position: relative;
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 10px;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: var(--danger);
+            color: white;
+            font-size: 0.65rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+
         .content-scroll {
             flex: 1;
             overflow-y: auto;
@@ -136,6 +211,7 @@
             padding: 25px;
             margin-bottom: 25px;
             border: 1px solid var(--border);
+            box-shadow: var(--shadow);
         }
 
         .panel-header {
@@ -243,8 +319,9 @@
         }
 
         .btn-success { background: var(--success); color: white; }
-        .btn-info { background: #00b0ff; color: white; }
+        .btn-info { background: var(--info); color: white; }
         .btn-whatsapp { background: #25D366; color: white; }
+        .btn-warning { background: var(--warning); color: #000; }
 
         .form-actions {
             display: flex;
@@ -291,6 +368,36 @@
         .status-paid { background: rgba(0, 200, 81, 0.2); color: var(--success); }
         .status-partial { background: rgba(255, 187, 51, 0.2); color: var(--warning); }
         .status-unpaid { background: rgba(255, 68, 68, 0.2); color: var(--danger); }
+        .status-completed { background: rgba(0, 176, 255, 0.2); color: var(--info); }
+        .status-delayed { background: rgba(255, 68, 68, 0.3); color: var(--danger); }
+
+        /* Timeline */
+        .timeline {
+            border-left: 2px solid var(--primary);
+            padding-left: 25px;
+            margin: 20px 0;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -31px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            background: var(--primary);
+            border-radius: 50%;
+            border: 2px solid var(--bg-panel);
+        }
+
+        .timeline-time { font-size: 0.75rem; color: var(--text-muted); }
+        .timeline-title { font-weight: 600; color: var(--text-main); }
+        .timeline-desc { font-size: 0.85rem; color: var(--text-muted); margin-top: 3px; }
 
         /* Modal */
         .modal {
@@ -311,7 +418,7 @@
             border-radius: var(--radius);
             border: 1px solid var(--border);
             width: 100%;
-            max-width: 650px;
+            max-width: 700px;
             max-height: 90vh;
             overflow-y: auto;
         }
@@ -322,6 +429,10 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            position: sticky;
+            top: 0;
+            background: var(--bg-panel);
+            z-index: 10;
         }
 
         .modal-header h3 {
@@ -335,9 +446,18 @@
             color: var(--text-muted);
             font-size: 1.5rem;
             cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
         }
 
-        .modal-close:hover { color: var(--danger); }
+        .modal-close:hover {
+            color: var(--danger);
+            background: rgba(255, 68, 68, 0.1);
+        }
 
         .modal-body { padding: 25px; }
 
@@ -389,34 +509,47 @@
 
         /* Mobile Responsive */
         @media (max-width: 768px) {
-            .sidebar { transform: translateX(-100%); transition: 0.3s; }
+            .sidebar { transform: translateX(-100%); }
             .sidebar.active { transform: translateX(0); }
             .main-content { margin-left: 0; }
             .menu-toggle { display: block; }
             .top-bar { padding: 0 15px; }
             .form-grid { grid-template-columns: 1fr; }
             .panel { padding: 15px; }
+            .overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 99;
+            }
+            .overlay.active { display: block; }
         }
     </style>
 </head>
 <body>
+    <!-- Mobile Overlay -->
+    <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
     <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
-        <div class="brand"><i class="fas fa-cube"></i> TBOS v3.0</div>
+        <div class="brand">
+            <i class="fas fa-cube"></i> TBOS v3.0
+        </div>
         <div class="nav-scroll">
             <div class="nav-section">Core Operations</div>
             <a href="dashboard.html" class="nav-item"><i class="fas fa-home"></i> Dashboard</a>
-            <a href="jobs.html" class="nav-item active"><i class="fas fa-briefcase"></i> Jobs & Routing</a>
+            <a href="jobs.html" class="nav-item active"><i class="fas fa-briefcase"></i> Jobs & Routing <span class="nav-badge" id="job-badge">0</span></a>
             <a href="staff.html" class="nav-item"><i class="fas fa-users"></i> Staff & ID Cards</a>
-            <a href="inventory.html" class="nav-item"><i class="fas fa-boxes"></i> Inventory</a>
+            <a href="inventory.html" class="nav-item"><i class="fas fa-boxes"></i> Inventory <span class="nav-badge" id="inventory-badge">0</span></a>
             <a href="clients.html" class="nav-item"><i class="fas fa-user-friends"></i> Client Portal</a>
             
             <div class="nav-section">Knowledge</div>
             <a href="knowledge.html" class="nav-item"><i class="fas fa-book"></i> Knowledge Center</a>
             <a href="reports.html" class="nav-item"><i class="fas fa-chart-line"></i> Reports</a>
             
-            <div class="nav-section">Administration</div>
-            <a href="admin.html" class="nav-item"><i class="fas fa-cog"></i> Admin Panel</a>
+            <div class="nav-section admin-only" style="display: none;">Administration</div>
+            <a href="admin.html" class="nav-item admin-only" style="display: none;"><i class="fas fa-cog"></i> Admin Panel</a>
             
             <a href="#" class="nav-item" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </div>
@@ -430,6 +563,16 @@
                 <h2>Jobs & Routing</h2>
             </div>
             <div class="user-profile">
+                <!-- Theme Toggle -->
+                <button class="theme-toggle" onclick="toggleTheme()">
+                    <i class="fas fa-moon" id="theme-icon"></i>
+                    <span id="theme-text">Dark</span>
+                </button>
+                
+                <div class="notification-btn">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge" id="notif-count">0</span>
+                </div>
                 <span id="user-name">User</span>
                 <span id="user-hub" class="hub-badge">Hub</span>
             </div>
@@ -457,18 +600,27 @@
                         </div>
                     </div>
                     <div class="form-group">
+                        <label>Client Email</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-envelope"></i>
+                            <input type="email" id="job-email" placeholder="client@email.com">
+                        </div>
+                    </div>
+                    <div class="form-group">
                         <label>Hub / Department *</label>
                         <div class="input-wrapper">
                             <i class="fas fa-building"></i>
                             <select id="job-hub" onchange="calculateAIPrice()" required>
                                 <option value="">Select Hub...</option>
+                                <option value="Online Shop">Online Shop</option>
                                 <option value="Graphics Design">Graphics Design</option>
                                 <option value="Printing">Printing</option>
                                 <option value="Photography">Photography</option>
-                                <option value="Tech Academy">Tech Academy</option>
-                                <option value="Online Shop">Online Shop</option>
                                 <option value="CBT Center">CBT Center</option>
                                 <option value="Tech Lab">Tech Lab</option>
+                                <option value="Tech Academy">Tech Academy</option>
+                                <option value="Gadgets">Gadgets</option>
+                                <option value="Other Services">Other Services</option>
                             </select>
                         </div>
                     </div>
@@ -507,10 +659,21 @@
                             <input type="date" id="job-date" required>
                         </div>
                     </div>
+                    <div class="form-group form-full">
+                        <label>Upload Files</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-upload"></i>
+                            <input type="file" id="job-files" multiple accept="image/*,.pdf,.doc,.docx">
+                            <small style="color: var(--text-muted); display: block; margin-top: 5px;">PDF, DOC, Images supported. Max 10MB per file.</small>
+                        </div>
+                    </div>
                     <div class="form-actions form-full">
-                        <button type="submit" class="btn-primary" id="btn-submit">
+                        <button type="submit" class="btn-primary" id="btn-submit" style="flex: 1;">
                             <i class="fas fa-save"></i>
                             <span>Create Job & Generate Invoice</span>
+                        </button>
+                        <button type="button" class="btn-sm btn-warning" onclick="document.getElementById('job-form').reset()">
+                            <i class="fas fa-undo"></i> Reset
                         </button>
                     </div>
                 </form>
@@ -520,7 +683,9 @@
             <div class="panel">
                 <div class="panel-header">
                     <div class="panel-title"><i class="fas fa-list"></i> Active Jobs & Routing</div>
-                    <input type="text" id="job-search" placeholder="Search..." style="width: 200px; padding: 10px; background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px; color: var(--text-main);" oninput="filterJobs()">
+                    <input type="text" id="job-search" placeholder="Search by ID, Client, Phone..." 
+                           style="width: 250px; padding: 10px; background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px; color: var(--text-main);" 
+                           oninput="filterJobs()">
                 </div>
                 <div class="table-responsive">
                     <table class="data-table">
@@ -536,7 +701,9 @@
                             </tr>
                         </thead>
                         <tbody id="job-table-body">
-                            <tr><td colspan="7" style="text-align: center; padding: 40px;">Loading jobs...</td></tr>
+                            <tr><td colspan="7" style="text-align: center; padding: 40px;">
+                                <i class="fas fa-spinner fa-spin" style="margin-right: 10px;"></i> Loading jobs...
+                            </td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -545,6 +712,7 @@
 
         <footer>
             TBOS v3.0 | Tomstudio BizHub Operations System<br>
+            Track • Record • Route • Report • Improve<br>
             Built by Tomstudio Tech Academy | Contact: +234 803 082 7417
         </footer>
     </main>
@@ -578,68 +746,99 @@
         </div>
     </div>
 
-    <!-- Supabase Library -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- PocketBase SDK -->
+    <script src="assets/js/pocketbase.min.js"></script>
     
-    <!-- Initialize Supabase ONCE -->
     <script>
-        if (!window.supabaseClient) {
-            window.supabaseClient = window.supabase.createClient(
-                'https://epvgarbconcrwasccjxu.supabase.co',
-                'sb_publishable_ZTwyZPfFc8uXFXpG_Wkarw_f5ygNfBg'
-            );
-            console.log('✅ Supabase Initialized');
+        // Theme Toggle
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'cool' ? 'dark' : 'cool';
+            const icon = document.getElementById('theme-icon');
+            const text = document.getElementById('theme-text');
+            
+            if (newTheme === 'cool') {
+                document.documentElement.setAttribute('data-theme', 'cool');
+                icon.className = 'fas fa-sun';
+                text.textContent = 'Cool';
+                localStorage.setItem('tbos_theme', 'cool');
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                text.textContent = 'Dark';
+                localStorage.setItem('tbos_theme', 'dark');
+            }
         }
-    </script>
 
-    <!-- Jobs Logic -->
-    <script>
-        let currentUser = null;
-        let currentInvoice = null;
+        // Load saved theme
+        window.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('tbos_theme');
+            if (savedTheme === 'cool') {
+                document.documentElement.setAttribute('data-theme', 'cool');
+                document.getElementById('theme-icon').className = 'fas fa-sun';
+                document.getElementById('theme-text').textContent = 'Cool';
+            }
+            checkAuth();
+        });
 
-        // AI Price Base Rates (₦)
-        const aiBaseRates = {
-            'Graphics Design': 5000,
-            'Printing': 10000,
-            'Photography': 25000,
-            'Tech Academy': 3000,
-            'Online Shop': 2000,
-            'CBT Center': 1500,
-            'Tech Lab': 5000
-        };
+        // Toggle Sidebar
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('overlay').classList.toggle('active');
+        }
+
+        // Toggle Modal
+        function toggleModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.toggle('active');
+        }
 
         // Auth Check
-        window.addEventListener('DOMContentLoaded', async function() {
+        let currentUser = null;
+        async function checkAuth() {
             try {
-                const { data } = await window.supabaseClient.auth.getSession();
-                if (!data.session) {
+                const pb = new PocketBase('http://127.0.0.1:8090');
+                if (!pb.authStore.isValid) {
                     window.location.href = 'index.html';
                     return;
                 }
 
-                const { data: profile } = await window.supabaseClient
-                    .from('profiles')
-                    .select('*')
-                    .eq('id', data.session.user.id)
-                    .single();
-
-                if (!profile) {
-                    await window.supabaseClient.auth.signOut();
-                    window.location.href = 'index.html';
-                    return;
+                const user = JSON.parse(localStorage.getItem('tbos_user'));
+                if (user) {
+                    currentUser = user;
+                    document.getElementById('user-name').textContent = user.name;
+                    document.getElementById('user-hub').textContent = user.hub;
+                    
+                    if (user.role === 'Administrator') {
+                        document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'flex');
+                    }
+                    
+                    applyHubTheme(user.hub);
+                    loadJobs();
                 }
-
-                currentUser = profile;
-                document.getElementById('user-name').textContent = profile.full_name;
-                document.getElementById('user-hub').textContent = profile.hub;
-                
-                loadJobs();
-
-            } catch(error) {
+            } catch (error) {
                 console.error('Auth error:', error);
                 window.location.href = 'index.html';
             }
-        });
+        }
+
+        // Apply Hub Theme
+        function applyHubTheme(hub) {
+            const hubThemes = {
+                'Online Shop': 'hub-teal',
+                'Graphics Design': 'hub-blue',
+                'Printing': 'hub-red',
+                'Photography': 'hub-yellow',
+                'CBT Center': 'hub-indigo',
+                'Tech Lab': 'hub-cyan',
+                'Tech Academy': 'hub-purple',
+                'Gadgets': 'hub-orange',
+                'Other Services': 'hub-grey'
+            };
+            
+            const theme = hubThemes[hub] || 'hub-grey';
+            document.body.className = theme;
+        }
 
         // AI Price Estimator
         function calculateAIPrice() {
@@ -650,6 +849,18 @@
                 document.getElementById('job-ai').value = '';
                 return;
             }
+            
+            const aiBaseRates = {
+                'Online Shop': 2000,
+                'Graphics Design': 5000,
+                'Printing': 10000,
+                'Photography': 25000,
+                'CBT Center': 1500,
+                'Tech Lab': 5000,
+                'Tech Academy': 3000,
+                'Gadgets': 10000,
+                'Other Services': 3000
+            };
             
             const base = aiBaseRates[hub] || 3000;
             const complexity = desc.length > 100 ? 1.5 : (desc.length > 50 ? 1.2 : 1.0);
@@ -664,43 +875,43 @@
 
         // Load Jobs
         async function loadJobs() {
-            const tbody = document.getElementById('job-table-body');
-            
-            const { data: jobs, error } = await window.supabaseClient
-                .from('jobs')
-                .select('*')
-                .order('created_at', { ascending: false });
-
-            if (error || !jobs) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--danger);">Error loading jobs</td></tr>';
-                return;
-            }
-
-            if (jobs.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px;">No jobs found. Create your first job!</td></tr>';
-                return;
-            }
-
-            let html = '';
-            jobs.forEach(function(job) {
-                const statusClass = job.status === 'PAID' ? 'status-paid' : 
-                                   job.status === 'PARTIAL' ? 'status-partial' : 'status-unpaid';
+            try {
+                const pb = new PocketBase('http://127.0.0.1:8090');
+                const jobs = await pb.collection('jobs').getFullList({ sort: '-created' });
                 
-                html += '<tr>' +
-                    '<td><strong style="color: var(--primary);">' + job.tracking_id + '</strong></td>' +
-                    '<td>' + job.client_name + '<br><small style="color: var(--text-muted);">' + job.client_phone + '</small></td>' +
-                    '<td>' + job.hub + '</td>' +
-                    '<td>' + job.stage + '</td>' +
-                    '<td>₦' + parseFloat(job.amount).toLocaleString() + '</td>' +
-                    '<td><span class="status-badge ' + statusClass + '">' + job.status + '</span></td>' +
-                    '<td>' +
-                    '<button class="btn-sm btn-info" onclick="viewJobDetail(\'' + job.id + '\')"><i class="fas fa-eye"></i></button> ' +
-                    '<button class="btn-sm btn-success" onclick="showInvoiceByTracking(\'' + job.tracking_id + '\')"><i class="fas fa-file-invoice"></i></button> ' +
-                    '<button class="btn-sm btn-whatsapp" onclick="sendJobWhatsApp(\'' + job.tracking_id + '\')"><i class="fab fa-whatsapp"></i></button>' +
-                    '</td></tr>';
-            });
-            
-            tbody.innerHTML = html;
+                const tbody = document.getElementById('job-table-body');
+                
+                if (jobs.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--text-muted);">No jobs found. Create your first job!</td></tr>';
+                    return;
+                }
+
+                let html = '';
+                jobs.forEach(function(job) {
+                    const statusClass = job.payment_status === 'PAID' ? 'status-paid' : 
+                                       job.payment_status === 'PARTIALLY PAID' ? 'status-partial' : 'status-unpaid';
+                    
+                    html += '<tr>' +
+                        '<td><strong style="color: var(--primary);">' + job.tracking_id + '</strong></td>' +
+                        '<td>' + job.client_name + '<br><small style="color: var(--text-muted);">' + job.client_phone + '</small></td>' +
+                        '<td>' + job.department + '</td>' +
+                        '<td>' + job.stage + '</td>' +
+                        '<td>₦' + parseFloat(job.amount).toLocaleString() + '</td>' +
+                        '<td><span class="status-badge ' + statusClass + '">' + job.payment_status + '</span></td>' +
+                        '<td>' +
+                        '<button class="btn-sm btn-info" onclick="viewJobDetail(\'' + job.id + '\')"><i class="fas fa-eye"></i></button> ' +
+                        '<button class="btn-sm btn-success" onclick="showInvoiceByTracking(\'' + job.tracking_id + '\')"><i class="fas fa-file-invoice"></i></button> ' +
+                        '<button class="btn-sm btn-whatsapp" onclick="sendJobWhatsApp(\'' + job.tracking_id + '\', \'' + job.client_phone + '\')"><i class="fab fa-whatsapp"></i></button>' +
+                        '</td></tr>';
+                });
+                
+                tbody.innerHTML = html;
+                document.getElementById('job-badge').textContent = jobs.filter(j => j.payment_status === 'UNPAID').length;
+                
+            } catch (error) {
+                console.error('Load jobs error:', error);
+                document.getElementById('job-table-body').innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--danger);">Error loading jobs</td></tr>';
+            }
         }
 
         // Create Job
@@ -712,47 +923,65 @@
             btnSubmit.innerHTML = '<div class="loading-spinner"></div> Creating...';
 
             try {
+                const pb = new PocketBase('http://127.0.0.1:8090');
                 const amount = parseFloat(document.getElementById('job-amount').value);
                 const paid = parseFloat(document.getElementById('job-paid').value);
                 const trackingId = 'TBOS-24' + String(Date.now()).slice(-4);
                 const invoiceId = 'INV-2026-' + String(Date.now()).slice(-4);
 
-                const newJob = {
-                    tracking_id: trackingId,
-                    invoice_id: invoiceId,
-                    client_name: document.getElementById('job-client').value,
-                    client_phone: document.getElementById('job-phone').value,
-                    hub: document.getElementById('job-hub').value,
-                    description: document.getElementById('job-desc').value,
-                    amount: amount,
-                    paid: paid,
-                    balance: amount - paid,
-                    status: paid >= amount ? 'PAID' : (paid > 0 ? 'PARTIAL' : 'UNPAID'),
-                    stage: 'Pending',
-                    delivery_date: document.getElementById('job-date').value,
-                    created_by: currentUser.id
-                };
+                const formData = new FormData();
+                formData.append('tracking_id', trackingId);
+                formData.append('invoice_id', invoiceId);
+                formData.append('client_name', document.getElementById('job-client').value);
+                formData.append('client_phone', document.getElementById('job-phone').value);
+                formData.append('client_email', document.getElementById('job-email').value || '');
+                formData.append('job_category', document.getElementById('job-hub').value);
+                formData.append('department', document.getElementById('job-hub').value);
+                formData.append('description', document.getElementById('job-desc').value);
+                formData.append('amount', amount);
+                formData.append('payment_received', paid);
+                formData.append('outstanding_balance', amount - paid);
+                formData.append('payment_status', paid >= amount ? 'PAID' : (paid > 0 ? 'PARTIALLY PAID' : 'UNPAID'));
+                formData.append('delivery_date', document.getElementById('job-date').value);
+                formData.append('status', 'Pending');
+                formData.append('stage', 'Client/staff');
+                formData.append('created_by', currentUser.id);
 
-                const { data, error } = await window.supabaseClient
-                    .from('jobs')
-                    .insert([newJob])
-                    .select();
+                // Add files
+                const fileInput = document.getElementById('job-files');
+                if (fileInput.files.length > 0) {
+                    for (let i = 0; i < fileInput.files.length; i++) {
+                        formData.append('job_files', fileInput.files[i]);
+                    }
+                }
 
-                if (error) throw error;
+                const record = await pb.collection('jobs').create(formData);
 
-                // Add to timeline
-                await window.supabaseClient.from('job_timeline').insert([{
-                    job_id: data[0].id,
+                // Create timeline entry
+                await pb.collection('job_timeline').create({
+                    job_id: record.id,
                     stage: 'Job Created',
-                    staff_name: currentUser.full_name,
+                    department: document.getElementById('job-hub').value,
+                    staff_name: currentUser.name,
+                    staff_id: currentUser.id,
+                    timestamp: new Date().toISOString(),
                     notes: 'Job logged via TBOS v3.0'
-                }]);
+                });
 
-                alert('Job created successfully!');
+                // Send WhatsApp notification
+                sendWhatsAppNotification(
+                    document.getElementById('job-client').value,
+                    document.getElementById('job-phone').value,
+                    trackingId,
+                    'Job Created - ' + document.getElementById('job-hub').value
+                );
+
+                alert('Job created successfully! Invoice generated.');
                 this.reset();
                 loadJobs();
 
             } catch (error) {
+                console.error('Create job error:', error);
                 alert('Error creating job: ' + error.message);
             }
 
@@ -762,85 +991,100 @@
 
         // View Job Detail
         async function viewJobDetail(jobId) {
-            const { data: job } = await window.supabaseClient
-                .from('jobs')
-                .select('*')
-                .eq('id', jobId)
-                .single();
-
-            if (!job) return;
-
-            const { data: timeline } = await window.supabaseClient
-                .from('job_timeline')
-                .select('*')
-                .eq('job_id', jobId)
-                .order('timestamp', { ascending: false });
-
-            let timelineHTML = '';
-            if (timeline) {
-                timeline.forEach(t => {
-                    timelineHTML += '<div style="padding: 10px 0; border-left: 2px solid var(--primary); padding-left: 15px; margin: 10px 0;">' +
-                        '<strong>' + t.stage + '</strong><br>' +
-                        '<small style="color: var(--text-muted);">' + t.staff_name + ' - ' + new Date(t.timestamp).toLocaleString() + '</small>' +
-                        '</div>';
+            try {
+                const pb = new PocketBase('http://127.0.0.1:8090');
+                const job = await pb.collection('jobs').getOne(jobId);
+                
+                const timeline = await pb.collection('job_timeline').getFullList({
+                    filter: 'job_id = "' + jobId + '"',
+                    sort: '-timestamp'
                 });
+
+                let timelineHTML = '';
+                if (timeline) {
+                    timeline.forEach(t => {
+                        timelineHTML += '<div class="timeline-item">' +
+                            '<div class="timeline-title">' + t.stage + '</div>' +
+                            '<div class="timeline-time">' + new Date(t.timestamp).toLocaleString() + '</div>' +
+                            '<div class="timeline-desc">By: ' + t.staff_name + ' - ' + t.department + '</div>' +
+                            (t.notes ? '<div class="timeline-desc">' + t.notes + '</div>' : '') +
+                            '</div>';
+                    });
+                }
+
+                const statusClass = job.payment_status === 'PAID' ? 'status-paid' : 
+                                   job.payment_status === 'PARTIALLY PAID' ? 'status-partial' : 'status-unpaid';
+
+                document.getElementById('job-detail-content').innerHTML = 
+                    '<div class="form-grid">' +
+                    '<div><strong>Tracking ID:</strong> ' + job.tracking_id + '</div>' +
+                    '<div><strong>Invoice ID:</strong> ' + job.invoice_id + '</div>' +
+                    '<div><strong>Client:</strong> ' + job.client_name + '</div>' +
+                    '<div><strong>Phone:</strong> ' + job.client_phone + '</div>' +
+                    '<div><strong>Email:</strong> ' + (job.client_email || 'N/A') + '</div>' +
+                    '<div><strong>Hub:</strong> ' + job.department + '</div>' +
+                    '<div><strong>Stage:</strong> ' + job.stage + '</div>' +
+                    '<div><strong>Status:</strong> <span class="status-badge ' + statusClass + '">' + job.payment_status + '</span></div>' +
+                    '<div><strong>Amount:</strong> ₦' + parseFloat(job.amount).toLocaleString() + '</div>' +
+                    '<div><strong>Paid:</strong> ₦' + parseFloat(job.payment_received || 0).toLocaleString() + '</div>' +
+                    '<div><strong>Balance:</strong> ₦' + parseFloat(job.outstanding_balance || 0).toLocaleString() + '</div>' +
+                    '<div><strong>Delivery:</strong> ' + job.delivery_date + '</div>' +
+                    '</div>' +
+                    '<h4 style="margin: 20px 0 10px;">Job Timeline</h4>' +
+                    '<div class="timeline">' + timelineHTML + '</div>' +
+                    '<div class="form-actions">' +
+                    '<button class="btn-primary" onclick="routeJob(\'' + job.id + '\')"><i class="fas fa-share"></i> Route to Next Stage</button> ' +
+                    '<button class="btn-success" onclick="showInvoiceByTracking(\'' + job.tracking_id + '\')"><i class="fas fa-file-invoice"></i> View Invoice</button> ' +
+                    '<button class="btn-whatsapp" onclick="sendJobWhatsApp(\'' + job.tracking_id + '\', \'' + job.client_phone + '\')"><i class="fab fa-whatsapp"></i> WhatsApp</button>' +
+                    '</div>';
+
+                toggleModal('job-detail-modal');
+                
+            } catch (error) {
+                console.error('View job error:', error);
+                alert('Error loading job details');
             }
-
-            document.getElementById('job-detail-content').innerHTML = 
-                '<div class="form-grid">' +
-                '<div><strong>Tracking ID:</strong> ' + job.tracking_id + '</div>' +
-                '<div><strong>Invoice ID:</strong> ' + job.invoice_id + '</div>' +
-                '<div><strong>Client:</strong> ' + job.client_name + '</div>' +
-                '<div><strong>Phone:</strong> ' + job.client_phone + '</div>' +
-                '<div><strong>Hub:</strong> ' + job.hub + '</div>' +
-                '<div><strong>Stage:</strong> ' + job.stage + '</div>' +
-                '<div><strong>Amount:</strong> ₦' + parseFloat(job.amount).toLocaleString() + '</div>' +
-                '<div><strong>Paid:</strong> ₦' + parseFloat(job.paid).toLocaleString() + '</div>' +
-                '<div><strong>Balance:</strong> ₦' + parseFloat(job.balance).toLocaleString() + '</div>' +
-                '<div><strong>Status:</strong> ' + job.status + '</div>' +
-                '<div><strong>Delivery:</strong> ' + job.delivery_date + '</div>' +
-                '</div>' +
-                '<h4 style="margin: 20px 0 10px;">Job Timeline</h4>' +
-                timelineHTML +
-                '<div class="form-actions">' +
-                '<button class="btn-primary" onclick="routeJob(\'' + job.id + '\')"><i class="fas fa-share"></i> Route</button> ' +
-                '<button class="btn-success" onclick="showInvoiceByTracking(\'' + job.tracking_id + '\')"><i class="fas fa-file-invoice"></i> Invoice</button>' +
-                '</div>';
-
-            toggleModal('job-detail-modal');
         }
 
         // Route Job
         async function routeJob(jobId) {
-            const stages = ['Pending', 'Graphics', 'Printing', 'Photography', 'Secretary Review', 'Delivery', 'Completed'];
-            
-            const { data: job } = await window.supabaseClient
-                .from('jobs')
-                .select('stage')
-                .eq('id', jobId)
-                .single();
-
-            const currentIndex = stages.indexOf(job.stage);
-            
-            if(currentIndex < stages.length - 1) {
-                const nextStage = stages[currentIndex + 1];
+            try {
+                const pb = new PocketBase('http://127.0.0.1:8090');
+                const job = await pb.collection('jobs').getOne(jobId);
                 
-                await window.supabaseClient
-                    .from('jobs')
-                    .update({ stage: nextStage })
-                    .eq('id', jobId);
+                const stages = ['Client/staff', 'Graphics', 'Printing', 'Photography', 'Secretary Review', 'Delivery', 'Completed'];
+                const currentIndex = stages.indexOf(job.stage);
+                
+                if(currentIndex < stages.length - 1) {
+                    const nextStage = stages[currentIndex + 1];
+                    
+                    await pb.collection('jobs').update(jobId, {
+                        stage: nextStage,
+                        status: nextStage === 'Completed' ? 'Completed' : 'In Progress'
+                    });
 
-                await window.supabaseClient.from('job_timeline').insert([{
-                    job_id: jobId,
-                    stage: nextStage + ' Started',
-                    staff_name: currentUser.full_name
-                }]);
+                    await pb.collection('job_timeline').create({
+                        job_id: jobId,
+                        stage: nextStage + ' Started',
+                        department: job.department,
+                        staff_name: currentUser.name,
+                        staff_id: currentUser.id,
+                        timestamp: new Date().toISOString()
+                    });
 
-                alert('Job routed to ' + nextStage);
-                toggleModal('job-detail-modal');
-                loadJobs();
-            } else {
-                alert('Job already completed!');
+                    // Send WhatsApp notification
+                    sendWhatsAppNotification(job.client_name, job.client_phone, job.tracking_id, 'Job moved to ' + nextStage);
+
+                    alert('Job routed to ' + nextStage);
+                    toggleModal('job-detail-modal');
+                    loadJobs();
+                } else {
+                    alert('Job already completed!');
+                }
+                
+            } catch (error) {
+                console.error('Route job error:', error);
+                alert('Error routing job');
             }
         }
 
@@ -860,9 +1104,21 @@
             toggleModal('invoice-modal');
         }
 
-        // WhatsApp
-        function sendJobWhatsApp(trackingId) {
-            alert('WhatsApp notification sent for ' + trackingId);
+        // WhatsApp Notifications
+        function sendWhatsAppNotification(clientName, phone, trackingId, message) {
+            const cleanPhone = phone.replace(/[^0-9]/g, '');
+            const whatsappMessage = 'Hello ' + clientName + ',\n\n' +
+                'TBOS Update - ' + trackingId + '\n' +
+                message + '\n\n' +
+                'Thank you for choosing Tomstudio BizHub!\n' +
+                'Contact: +234 803 082 7417';
+            
+            const whatsappURL = 'https://wa.me/234' + cleanPhone + '?text=' + encodeURIComponent(whatsappMessage);
+            window.open(whatsappURL, '_blank');
+        }
+
+        function sendJobWhatsApp(trackingId, phone) {
+            sendWhatsAppNotification('Client', phone, trackingId, 'Job Status Update');
         }
 
         function sendInvoiceWhatsApp() {
@@ -880,20 +1136,10 @@
             });
         }
 
-        // Modal Functions
-        function toggleModal(modalId) {
-            const modal = document.getElementById(modalId);
-            modal.classList.toggle('active');
-        }
-
-        // Toggle Sidebar
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('active');
-        }
-
         // Logout
         async function logout() {
-            await window.supabaseClient.auth.signOut();
+            const pb = new PocketBase('http://127.0.0.1:8090');
+            await pb.authStore.clear();
             localStorage.removeItem('tbos_user');
             window.location.href = 'index.html';
         }
