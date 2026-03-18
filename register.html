@@ -5,162 +5,398 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Staff Registration | TBOS v3.0</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/pocketbase@0.21.1/dist/pocketbase.min.js"></script>
     <style>
-        body { 
-            background: radial-gradient(circle at center, #1e1e1e 0%, #000 100%);
-            display: flex; justify-content: center; align-items: center; 
-            min-height: 100vh; padding: 20px;
+        :root {
+            --bg-body: #0a0a0a;
+            --bg-card: #1a1a1a;
+            --bg-input: #2a2a2a;
+            --text-main: #ffffff;
+            --text-muted: #a0a0a0;
+            --border: #333333;
+            --primary: #008080;
+            --success: #00c851;
+            --danger: #ff4444;
+            --radius: 16px;
         }
-        .register-card {
-            background: var(--bg-panel); padding: 40px; border-radius: 12px;
-            width: 100%; max-width: 500px; box-shadow: var(--shadow);
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
+
+        body {
+            background: radial-gradient(circle at center, #1a1a2e 0%, #0a0a0a 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--text-main);
+            padding: 20px;
+        }
+
+        .register-container {
+            background: var(--bg-card);
+            border-radius: var(--radius);
             border: 1px solid var(--border);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+            width: 100%;
+            max-width: 600px;
+            overflow: hidden;
         }
-        .register-card h1 { color: var(--primary); margin-bottom: 10px; text-align: center; }
-        .register-card .subtitle { color: var(--text-muted); margin-bottom: 30px; text-align: center; }
-        .input-group { margin-bottom: 20px; text-align: left; }
-        .input-group label { display: block; color: var(--text-muted); margin-bottom: 8px; font-size: 0.85rem; }
-        .input-group input, .input-group select {
-            width: 100%; padding: 12px; background: var(--bg-input);
-            border: 1px solid var(--border); border-radius: var(--radius); color: var(--text-main);
+
+        .register-header {
+            background: linear-gradient(135deg, var(--primary) 0%, #004d4d 100%);
+            padding: 30px;
+            text-align: center;
         }
+
+        .register-header h1 { font-size: 1.8rem; margin-bottom: 8px; color: #ffffff; }
+        .register-header p { color: rgba(255,255,255,0.8); font-size: 0.9rem; }
+
+        .register-body { padding: 30px; }
+
+        .error-message, .success-message {
+            padding: 14px 18px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            font-size: 0.9rem;
+            display: none;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .error-message { background: rgba(255, 68, 68, 0.15); border: 1px solid var(--danger); color: var(--danger); }
+        .success-message { background: rgba(0, 200, 81, 0.15); border: 1px solid var(--success); color: var(--success); }
+
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; color: var(--text-muted); margin-bottom: 8px; font-size: 0.9rem; font-weight: 500; }
+
+        .input-wrapper { position: relative; }
+        .input-wrapper i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 12px 12px 40px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-main);
+            font-size: 0.95rem;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0, 128, 128, 0.2);
+        }
+
+        /* Photo Upload */
+        .photo-upload { margin-bottom: 20px; text-align: center; }
+
+        .photo-preview {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: var(--bg-input);
+            border: 2px dashed var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .photo-preview:hover { border-color: var(--primary); transform: scale(1.05); }
+
+        .photo-preview img { width: 100%; height: 100%; object-fit: cover; display: none; }
+        .photo-preview i { font-size: 2.5rem; color: var(--text-muted); }
+        .photo-preview.has-image img { display: block; }
+        .photo-preview.has-image i { display: none; }
+
+        .photo-label { color: var(--text-muted); font-size: 0.85rem; }
+
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .form-full { grid-column: 1 / -1; }
+
         .btn-primary {
-            width: 100%; padding: 14px; background: var(--primary);
-            color: #fff; font-weight: 600; border-radius: var(--radius);
-            font-size: 1rem; cursor: pointer; border: none;
+            width: 100%;
+            padding: 15px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
         }
-        .btn-primary:hover { opacity: 0.9; }
-        .back-link { 
-            display: block; text-align: center; margin-top: 20px; 
-            color: var(--text-muted); text-decoration: none;
+
+        .btn-primary:hover { background: var(--primary-hover); transform: translateY(-2px); }
+        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        .btn-secondary {
+            width: 100%;
+            padding: 15px;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 15px;
         }
-        .back-link:hover { color: var(--primary); }
-        .error-msg { 
-            background: rgba(255, 68, 68, 0.2); border: 1px solid var(--danger);
-            color: var(--danger); padding: 12px; border-radius: var(--radius);
-            margin-bottom: 20px; display: none;
+
+        .btn-secondary:hover { border-color: var(--primary); color: var(--primary); }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
         }
-        .success-msg { 
-            background: rgba(0, 200, 81, 0.2); border: 1px solid var(--success);
-            color: var(--success); padding: 12px; border-radius: var(--radius);
-            margin-bottom: 20px; display: none;
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @media (max-width: 600px) {
+            .form-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
-    <div class="register-card">
-        <h1><i class="fas fa-user-plus"></i> TBOS v3.0</h1>
-        <p class="subtitle">Staff Registration</p>
-        
-        <div class="error-msg" id="error-msg"></div>
-        <div class="success-msg" id="success-msg"></div>
-        
-        <form id="register-form">
-            <div class="input-group">
-                <label>Full Name *</label>
-                <input type="text" id="reg-name" required placeholder="Enter full name">
+    <div class="register-container">
+        <div class="register-header">
+            <h1><i class="fas fa-user-plus"></i> TBOS v3.0</h1>
+            <p>Staff Registration</p>
+        </div>
+
+        <div class="register-body">
+            <div class="error-message" id="error-message">
+                <i class="fas fa-exclamation-circle"></i>
+                <span id="error-text">Registration failed</span>
             </div>
-            <div class="input-group">
-                <label>Email *</label>
-                <input type="email" id="reg-email" required placeholder="staff@tbos.com">
+
+            <div class="success-message" id="success-message">
+                <i class="fas fa-check-circle"></i>
+                <span id="success-text">Success!</span>
             </div>
-            <div class="input-group">
-                <label>Phone *</label>
-                <input type="tel" id="reg-phone" required placeholder="+234...">
-            </div>
-            <div class="input-group">
-                <label>Hub *</label>
-                <select id="reg-hub" required>
-                    <option value="">Select Hub...</option>
-                    <option value="Graphics Design">Graphics Design</option>
-                    <option value="Printing">Printing</option>
-                    <option value="Photography">Photography</option>
-                    <option value="Tech Academy">Tech Academy</option>
-                    <option value="Online Shop">Online Shop</option>
-                    <option value="IT">IT</option>
-                </select>
-            </div>
-            <div class="input-group">
-                <label>Role *</label>
-                <select id="reg-role" required>
-                    <option value="Staff">Staff</option>
-                    <option value="Manager">Manager</option>
-                    <option value="Intern">Intern</option>
-                </select>
-            </div>
-            <div class="input-group">
-                <label>Password *</label>
-                <input type="password" id="reg-password" required minlength="6" placeholder="Min 6 characters">
-            </div>
-            <div class="input-group">
-                <label>Confirm Password *</label>
-                <input type="password" id="reg-confirm" required minlength="6">
-            </div>
-            <button type="submit" class="btn-primary">
-                <i class="fas fa-user-plus"></i> Register (Pending Approval)
-            </button>
-        </form>
-        
-        <a href="index.html" class="back-link">
-            <i class="fas fa-arrow-left"></i> Back to Login
-        </a>
+
+            <form id="register-form" enctype="multipart/form-data">
+                <!-- Photo Upload -->
+                <div class="photo-upload">
+                    <div class="photo-preview" id="photo-preview" onclick="document.getElementById('reg-photo').click()">
+                        <i class="fas fa-camera"></i>
+                        <img id="photo-img" src="" alt="Profile Photo">
+                    </div>
+                    <p class="photo-label">Click to upload passport photo (Max 2MB)</p>
+                    <input type="file" id="reg-photo" accept="image/*" style="display: none;" onchange="previewPhoto(this)">
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group form-full">
+                        <label>Full Name *</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-user"></i>
+                            <input type="text" id="reg-name" required placeholder="Enter full name">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Email *</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-envelope"></i>
+                            <input type="email" id="reg-email" required placeholder="staff@tbos.com">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Phone *</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-phone"></i>
+                            <input type="tel" id="reg-phone" required placeholder="+234...">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Hub *</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-building"></i>
+                            <select id="reg-hub" required>
+                                <option value="">Select Hub...</option>
+                                <option value="Online Shop">Online Shop</option>
+                                <option value="Graphics Design">Graphics Design</option>
+                                <option value="Printing">Printing</option>
+                                <option value="Photography">Photography</option>
+                                <option value="CBT Center">CBT Center</option>
+                                <option value="Tech Lab">Tech Lab</option>
+                                <option value="Tech Academy">Tech Academy</option>
+                                <option value="Gadgets">Gadgets</option>
+                                <option value="Other Services">Other Services</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Role *</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-id-badge"></i>
+                            <select id="reg-role" required>
+                                <option value="Staff">Staff</option>
+                                <option value="Administrator">Administrator</option>
+                                <option value="Executive Director">Executive Director</option>
+                                <option value="Branch Manager">Branch Manager</option>
+                                <option value="Secretary">Secretary</option>
+                                <option value="Apprentice">Apprentice</option>
+                                <option value="Intern">Intern</option>
+                                <option value="IT">IT</option>
+                                <option value="HOD">HOD</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group form-full">
+                        <label>Address</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <input type="text" id="reg-address" placeholder="Full address">
+                        </div>
+                    </div>
+
+                    <div class="form-group form-full">
+                        <label>Location</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-map"></i>
+                            <input type="text" id="reg-location" placeholder="City, State">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Password *</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="reg-password" required minlength="6" placeholder="Min 6 characters">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Confirm Password *</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="reg-confirm" required minlength="6" placeholder="Confirm password">
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary" id="btn-submit">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Register (Pending Approval)</span>
+                </button>
+
+                <a href="index.html" class="btn-secondary" style="display: block; text-align: center; padding: 15px; margin-top: 15px; text-decoration: none;">
+                    <i class="fas fa-arrow-left"></i> Back to Login
+                </a>
+            </form>
+        </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- PocketBase SDK - LOCAL FILE -->
+    <script src="assets/js/pocketbase.min.js"></script>
+    
     <script>
-        const SUPABASE_URL = 'https://epvgarbconcrwasccjxu.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_ZTwyZPfFc8uXFXpG_Wkarw_f5ygNfBg';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // Initialize PocketBase
+        const pb = new PocketBase('http://127.0.0.1:8090');
 
+        // Photo Preview
+        function previewPhoto(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                
+                // Check file size (max 2MB)
+                if (file.size > 2097152) {
+                    alert('File size must be less than 2MB');
+                    input.value = '';
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('photo-img').src = e.target.result;
+                    document.getElementById('photo-preview').classList.add('has-image');
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Register Form
         document.getElementById('register-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const password = document.getElementById('reg-password').value;
             const confirm = document.getElementById('reg-confirm').value;
-            
-            if(password !== confirm) {
-                document.getElementById('error-msg').style.display = 'block';
-                document.getElementById('error-msg').textContent = 'Passwords do not match!';
+            const btnSubmit = document.getElementById('btn-submit');
+            const errorMessage = document.getElementById('error-message');
+            const errorText = document.getElementById('error-text');
+            const successMessage = document.getElementById('success-message');
+
+            // Validate passwords
+            if (password !== confirm) {
+                errorMessage.style.display = 'flex';
+                errorText.textContent = 'Passwords do not match!';
                 return;
             }
-            
-            const email = document.getElementById('reg-email').value;
-            const name = document.getElementById('reg-name').value;
-            const hub = document.getElementById('reg-hub').value;
-            const role = document.getElementById('reg-role').value;
-            const phone = document.getElementById('reg-phone').value;
-            
+
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = '<div class="loading-spinner"></div> Registering...';
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+
             try {
-                // Sign up with Supabase Auth
-                const { data, error } = await supabase.auth.signUp({
-                    email: email,
-                    password: password,
-                    options: {
-                        data: {
-                            full_name: name,
-                            hub: hub,
-                            role: role,
-                            phone: phone
-                        }
-                    }
-                });
+                // Create FormData for file upload
+                const formData = new FormData();
                 
-                if(error) throw error;
-                
-                document.getElementById('success-msg').style.display = 'block';
-                document.getElementById('success-msg').textContent = 
-                    'Registration successful! Please wait for admin approval.';
-                
-                document.getElementById('register-form').reset();
-                
+                // Add all form fields
+                formData.append('email', document.getElementById('reg-email').value);
+                formData.append('password', password);
+                formData.append('passwordConfirm', confirm);
+                formData.append('name', document.getElementById('reg-name').value);
+                formData.append('role', document.getElementById('reg-role').value);
+                formData.append('hub', document.getElementById('reg-hub').value);
+                formData.append('phone', document.getElementById('reg-phone').value);
+                formData.append('address', document.getElementById('reg-address').value);
+                formData.append('location', document.getElementById('reg-location').value);
+                formData.append('status', 'Pending Approval');
+                formData.append('score', 0);
+
+                // Add photo file (if selected)
+                const photoFile = document.getElementById('reg-photo').files[0];
+                if (photoFile) {
+                    formData.append('photo', photoFile);
+                }
+
+                // Create user in PocketBase
+                const record = await pb.collection('users').create(formData);
+
+                console.log('✅ Registration successful:', record);
+
+                successMessage.style.display = 'flex';
+                document.getElementById('success-text').textContent = 'Registration successful! Your account is pending admin approval.';
+
+                // Redirect after 3 seconds
                 setTimeout(() => {
                     window.location.href = 'index.html';
                 }, 3000);
-                
-            } catch(error) {
-                document.getElementById('error-msg').style.display = 'block';
-                document.getElementById('error-msg').textContent = 'Error: ' + error.message;
+
+            } catch (error) {
+                console.error('❌ Registration error:', error);
+                errorMessage.style.display = 'flex';
+                errorText.textContent = 'Registration failed: ' + error.message;
+                btnSubmit.disabled = false;
+                btnSubmit.innerHTML = '<i class="fas fa-user-plus"></i> Register (Pending Approval)';
             }
         });
     </script>
