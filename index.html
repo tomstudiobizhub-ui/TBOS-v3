@@ -198,34 +198,35 @@
         </div>
     </div>
 
-    <script>
-        // DEMO MODE - NO BACKEND NEEDED!
-        document.getElementById('login-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-            const errorMessage = document.getElementById('error-message');
-            const errorText = document.getElementById('error-text');
+   <script>
+    // DEMO MODE - NO BACKEND NEEDED
+    document.getElementById('login-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
 
-            // DEMO LOGIN - ACCEPTS ANY EMAIL/PASSWORD
-            // For production, connect to PocketBase later
-            localStorage.setItem('tbos_user', JSON.stringify({
-                id: 'demo-admin-001',
-                name: 'Admin User',
-                email: email,
-                role: 'Administrator',
-                hub: 'IT'
-            }));
+        // Set user in localStorage BEFORE redirect
+        localStorage.setItem('tbos_user', JSON.stringify({
+            id: 'demo-admin-001',
+            name: 'Admin User',
+            email: email,
+            role: 'Administrator',
+            hub: 'IT'
+        }));
 
-            // Redirect to dashboard
-            window.location.href = 'dashboard.html';
-        });
+        console.log('✅ User saved to localStorage');
+        console.log('✅ Redirecting to dashboard.html...');
 
-        // Check if already logged in
-        if (localStorage.getItem('tbos_user')) {
-            window.location.href = 'dashboard.html';
-        }
-    </script>
+        // Redirect to dashboard
+        window.location.href = 'dashboard.html';
+    });
+
+    // If already logged in, go to dashboard
+    if (localStorage.getItem('tbos_user')) {
+        console.log('✅ Already logged in, redirecting...');
+        window.location.href = 'dashboard.html';
+    }
+</script>
 </body>
 </html>
