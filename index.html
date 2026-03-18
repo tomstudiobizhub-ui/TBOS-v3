@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login | TBOS v3.0</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- POCKETBASE CDN - THIS IS ALL YOU NEED -->
     <script src="https://cdn.jsdelivr.net/npm/pocketbase@0.21.1/dist/pocketbase.min.js"></script>
     <style>
         :root {
-            /* Dark Theme (Default) */
             --bg-body: #0a0a0a;
             --bg-card: #1a1a1a;
             --bg-input: #2a2a2a;
@@ -20,36 +20,9 @@
             --success: #00c851;
             --danger: #ff4444;
             --radius: 16px;
-            --shadow: 0 20px 60px rgba(0,0,0,0.8);
         }
 
-        /* Cool/Light Theme */
-        [data-theme="cool"] {
-            --bg-body: #f0f4f8;
-            --bg-card: #ffffff;
-            --bg-input: #f5f7fa;
-            --text-main: #1a202c;
-            --text-muted: #718096;
-            --border: #e2e8f0;
-            --primary: #008080;
-            --primary-hover: #006666;
-            --success: #00c851;
-            --danger: #ff4444;
-            --shadow: 0 20px 60px rgba(0,0,0,0.15);
-        }
-
-        /* Hub Color Themes - ALL 9 HUBS */
-        .hub-teal { --primary: #008080; }
-        .hub-blue { --primary: #0000FF; }
-        .hub-red { --primary: #FF0000; }
-        .hub-yellow { --primary: #FFD700; }
-        .hub-indigo { --primary: #4B0082; }
-        .hub-cyan { --primary: #00FFFF; }
-        .hub-purple { --primary: #800080; }
-        .hub-orange { --primary: #FFA500; }
-        .hub-grey { --primary: #808080; }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; transition: background-color 0.3s, color 0.3s; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
 
         body {
             background: radial-gradient(circle at center, #1a1a2e 0%, #0a0a0a 100%);
@@ -61,41 +34,14 @@
             padding: 20px;
         }
 
-        [data-theme="cool"] body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-
         .login-container {
             background: var(--bg-card);
             border-radius: var(--radius);
             border: 1px solid var(--border);
-            box-shadow: var(--shadow);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
             width: 100%;
             max-width: 480px;
             overflow: hidden;
-            position: relative;
-        }
-
-        /* Theme Toggle */
-        .theme-toggle {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: rgba(255,255,255,0.1);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 8px 12px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.85rem;
-            color: var(--text-main);
-            z-index: 10;
-        }
-
-        .theme-toggle:hover {
-            background: rgba(255,255,255,0.2);
         }
 
         .login-header {
@@ -122,7 +68,10 @@
 
         .login-body { padding: 40px 30px; }
 
-        .error-message, .success-message {
+        .error-message {
+            background: rgba(255, 68, 68, 0.15);
+            border: 1px solid var(--danger);
+            color: var(--danger);
             padding: 14px 18px;
             border-radius: 10px;
             margin-bottom: 25px;
@@ -131,9 +80,6 @@
             align-items: center;
             gap: 10px;
         }
-
-        .error-message { background: rgba(255, 68, 68, 0.15); border: 1px solid var(--danger); color: var(--danger); }
-        .success-message { background: rgba(0, 200, 81, 0.15); border: 1px solid var(--success); color: var(--success); }
 
         .form-group { margin-bottom: 22px; }
         .form-group label { display: block; color: var(--text-muted); margin-bottom: 10px; font-size: 0.9rem; font-weight: 500; }
@@ -167,7 +113,6 @@
             align-items: center;
             justify-content: center;
             gap: 10px;
-            transition: all 0.3s;
         }
 
         .btn-primary:hover { background: var(--primary-hover); transform: translateY(-2px); }
@@ -182,13 +127,12 @@
             border-radius: 10px;
             cursor: pointer;
             margin-top: 15px;
-            transition: all 0.3s;
             text-decoration: none;
             display: block;
             text-align: center;
         }
 
-        .btn-secondary:hover { border-color: var(--primary); color: var(--primary); background: rgba(0,128,128,0.1); }
+        .btn-secondary:hover { border-color: var(--primary); color: var(--primary); }
 
         .login-footer {
             margin-top: 30px;
@@ -202,25 +146,10 @@
         .login-footer a { color: var(--primary); text-decoration: none; }
         .loading-spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #ffffff; border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-
-        @media (max-width: 480px) {
-            .login-header { padding: 30px 20px; }
-            .login-body { padding: 30px 20px; }
-            .login-header h1 { font-size: 1.5rem; }
-            .logo { width: 60px; height: 60px; }
-            .logo i { font-size: 1.8rem; }
-            .theme-toggle { top: 10px; right: 10px; padding: 6px 10px; font-size: 0.75rem; }
-        }
     </style>
 </head>
 <body>
     <div class="login-container">
-        <!-- Theme Toggle -->
-        <button class="theme-toggle" onclick="toggleTheme()">
-            <i class="fas fa-moon" id="theme-icon"></i>
-            <span id="theme-text">Dark</span>
-        </button>
-
         <div class="login-header">
             <div class="logo"><i class="fas fa-cube"></i></div>
             <h1>TBOS v3.0</h1>
@@ -231,11 +160,6 @@
             <div class="error-message" id="error-message">
                 <i class="fas fa-exclamation-circle"></i>
                 <span id="error-text">Login failed</span>
-            </div>
-
-            <div class="success-message" id="success-message">
-                <i class="fas fa-check-circle"></i>
-                <span id="success-text">Success!</span>
             </div>
 
             <form id="login-form">
@@ -266,60 +190,27 @@
             </a>
 
             <div class="login-footer">
-                <strong>Demo Credentials:</strong><br>
-                Admin: admin@tbos.com | @admin123#<br>
-                <br>
                 <strong>Support:</strong> <a href="tel:+2348030827417">+234 803 082 7417</a><br>
                 Built by Tomstudio Tech Academy<br>
                 TBOS v3.0 | Production System
             </div>
         </div>
     </div>
-    
+
     <script>
-        // Theme Toggle
-        function toggleTheme() {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            const newTheme = currentTheme === 'cool' ? 'dark' : 'cool';
-            const icon = document.getElementById('theme-icon');
-            const text = document.getElementById('theme-text');
+        // Check if PocketBase loaded
+        if (typeof PocketBase === 'undefined') {
+            console.error('❌ PocketBase SDK not loaded!');
+            document.getElementById('error-message').style.display = 'flex';
+            document.getElementById('error-text').textContent = 'System error: SDK not loaded. Check internet connection.';
+        } else {
+            console.log('✅ PocketBase SDK loaded');
+            const pb = new PocketBase('https://epvgarbconcrwasccjxu.supabase.co');
             
-            if (newTheme === 'cool') {
-                document.documentElement.setAttribute('data-theme', 'cool');
-                icon.className = 'fas fa-sun';
-                text.textContent = 'Cool';
-                localStorage.setItem('tbos_theme', 'cool');
-            } else {
-                document.documentElement.removeAttribute('data-theme');
-                icon.className = 'fas fa-moon';
-                text.textContent = 'Dark';
-                localStorage.setItem('tbos_theme', 'dark');
+            if (pb.authStore.isValid) {
+                window.location.href = 'dashboard.html';
             }
         }
-
-        // Load saved theme
-        window.addEventListener('DOMContentLoaded', function() {
-            const savedTheme = localStorage.getItem('tbos_theme');
-            if (savedTheme === 'cool') {
-                document.documentElement.setAttribute('data-theme', 'cool');
-                document.getElementById('theme-icon').className = 'fas fa-sun';
-                document.getElementById('theme-text').textContent = 'Cool';
-            }
-
-            // Check PocketBase SDK
-            if (typeof PocketBase === 'undefined') {
-                console.error('❌ PocketBase SDK not loaded!');
-                document.getElementById('error-message').style.display = 'flex';
-                document.getElementById('error-text').textContent = 'System error: SDK not loaded.';
-            } else {
-                console.log('✅ PocketBase SDK loaded');
-                const pb = new PocketBase('http://127.0.0.1:8090');
-                
-                if (pb.authStore.isValid) {
-                    window.location.href = 'dashboard.html';
-                }
-            }
-        });
 
         // Login Form
         document.getElementById('login-form').addEventListener('submit', async function(e) {
@@ -336,7 +227,7 @@
             errorMessage.style.display = 'none';
 
             try {
-                const pb = new PocketBase('http://127.0.0.1:8090');
+                const pb = new PocketBase('https://epvgarbconcrwasccjxu.supabase.co');
                 const authData = await pb.collection('users').authWithPassword(email, password);
                 
                 localStorage.setItem('tbos_user', JSON.stringify({
@@ -344,13 +235,7 @@
                     name: authData.record.name || authData.record.email.split('@')[0],
                     email: authData.record.email,
                     role: authData.record.role || 'Staff',
-                    hub: authData.record.hub || 'Other Services',
-                    photo: authData.record.photo || '',
-                    phone: authData.record.phone || '',
-                    address: authData.record.address || '',
-                    location: authData.record.location || '',
-                    status: authData.record.status || 'Pending Approval',
-                    score: authData.record.score || 0
+                    hub: authData.record.hub || 'Other Services'
                 }));
 
                 setTimeout(() => {
