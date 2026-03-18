@@ -6,6 +6,17 @@
     <title>Dashboard | TBOS v3.0</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/pocketbase@0.21.1/dist/pocketbase.min.js"></script>
+    <script>
+    // DEMO MODE - CHECK LOGIN
+    const user = JSON.parse(localStorage.getItem('tbos_user'));
+    if (!user) {
+        window.location.href = 'index.html';
+    }
+    
+    // Set user info
+    document.getElementById('user-name').textContent = user.name;
+    document.getElementById('user-hub').textContent = user.hub;
+</script>
     <style>
         :root {
             /* Dark Theme */
