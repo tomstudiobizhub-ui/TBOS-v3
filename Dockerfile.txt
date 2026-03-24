@@ -1,0 +1,25 @@
+# Dockerfile for TBOS v3 PocketBase
+FROM alpine:latest
+
+# Install wget and unzip to download PocketBase
+RUN apk add --no-cache wget unzip
+
+# Set working directory
+WORKDIR /app
+
+# Download PocketBase v0.21.1
+RUN wget https://github.com/pocketbase/pocketbase/releases/download/v0.21.1/pocketbase_0.21.1_linux_amd64.zip
+RUN unzip pocketbase_0.21.1_linux_amd64.zip
+RUN rm pocketbase_0.21.1_linux_amd64.zip
+
+# Copy pb_data directory (for database persistence)
+# COPY pb_data /app/pb_data
+
+# Copy HTML files (optional - for serving static files)
+COPY . /app/public
+
+# Expose port (Render will override this)
+EXPOSE 8090
+
+# Start PocketBase
+CMD ["./pocketbase", "serve", "--http=0.0.0.0:8090"]
