@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard | TBOS v3.0</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/pocketbase@0.21.1/dist/pocketbase.umd.min.js"></script>
     <style>
         :root {
             --bg-body: #0a0a0a;
@@ -19,6 +20,7 @@
             --success: #00c851;
             --warning: #ffbb33;
             --danger: #ff4444;
+            --info: #00b0ff;
             --sidebar-width: 280px;
             --header-height: 70px;
             --radius: 12px;
@@ -35,10 +37,11 @@
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; transition: background-color 0.3s, color 0.3s; }
-        body { background: var(--bg-body); color: var(--text-main); display: flex; min-height: 100vh; }
+        body { background: var(--bg-body); color: var(--text-main); display: flex; min-height: 100vh; overflow-x: hidden; width: 100%; }
         a { text-decoration: none; color: inherit; }
         button { cursor: pointer; border: none; outline: none; transition: 0.3s; }
 
+        /* Sidebar */
         .sidebar {
             width: var(--sidebar-width);
             background: var(--bg-sidebar);
@@ -47,6 +50,7 @@
             height: 100vh;
             overflow-y: auto;
             z-index: 100;
+            transition: transform 0.3s ease;
         }
 
         .brand {
@@ -74,6 +78,7 @@
             align-items: center;
             gap: 12px;
             transition: 0.3s;
+            cursor: pointer;
         }
 
         .nav-item:hover, .nav-item.active {
@@ -92,6 +97,7 @@
             border-radius: 10px;
         }
 
+        /* Main Content */
         .main-content {
             flex: 1;
             margin-left: var(--sidebar-width);
@@ -113,6 +119,7 @@
             z-index: 50;
         }
 
+        /* ✅ Hamburger Menu for Mobile */
         .menu-toggle {
             display: none;
             color: var(--text-main);
@@ -150,24 +157,7 @@
             color: var(--text-main);
         }
 
-        .notification-btn {
-            position: relative;
-            color: var(--text-muted);
-            font-size: 1.2rem;
-            cursor: pointer;
-            padding: 10px;
-        }
-
-        .notification-badge {
-            position: absolute;
-            top: 0;
-            right: 0;
-            background: var(--danger);
-            color: white;
-            font-size: 0.65rem;
-            padding: 2px 6px;
-            border-radius: 10px;
-        }
+        .theme-toggle:hover { background: rgba(255,255,255,0.2); }
 
         .content-scroll {
             flex: 1;
@@ -175,6 +165,7 @@
             padding: 25px;
         }
 
+        /* Panels */
         .panel {
             background: var(--bg-panel);
             border-radius: var(--radius);
@@ -201,6 +192,7 @@
 
         .panel-title i { color: var(--primary); }
 
+        /* Stats Grid */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -219,32 +211,25 @@
         .stat-value { font-size: 2.5rem; font-weight: 700; margin-bottom: 5px; color: var(--primary); }
         .stat-label { color: var(--text-muted); font-size: 0.9rem; }
 
+        /* Table */
         .table-responsive { overflow-x: auto; }
         .data-table { width: 100%; border-collapse: collapse; }
         .data-table th { text-align: left; padding: 15px; color: var(--text-muted); border-bottom: 2px solid var(--border); font-size: 0.8rem; text-transform: uppercase; }
         .data-table td { padding: 15px; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
         .data-table tr:hover { background: rgba(255,255,255,0.02); }
 
-        .btn-logout {
-            padding: 10px 20px;
-            background: transparent;
-            border: 1px solid var(--danger);
-            color: var(--danger);
-            border-radius: 8px;
-            cursor: pointer;
+        /* Overlay for mobile */
+        .overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 99;
         }
 
-        .btn-logout:hover { background: var(--danger); color: white; }
+        .overlay.active { display: block; }
 
-        .loading {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            font-size: 1.2rem;
-            color: var(--text-muted);
-        }
-
+        /* Footer */
         footer {
             padding: 20px;
             text-align: center;
@@ -254,135 +239,147 @@
             background: var(--bg-panel);
         }
 
+        /* Loading */
+        .loading-spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ✅ Mobile Responsive */
         @media (max-width: 768px) {
             .sidebar { transform: translateX(-100%); }
             .sidebar.active { transform: translateX(0); }
             .main-content { margin-left: 0; }
             .menu-toggle { display: block; }
+            .top-bar { padding: 0 15px; }
             .stats-grid { grid-template-columns: 1fr 1fr; }
-            .overlay {
-                display: none;
-                position: fixed;
-                inset: 0;
-                background: rgba(0,0,0,0.5);
-                z-index: 99;
-            }
-            .overlay.active { display: block; }
+            .panel { padding: 15px; }
+            .user-profile span { display: none; }
+            .hub-badge { display: none; }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .theme-toggle span { display: none; }
         }
     </style>
 </head>
 <body>
+    <!-- ✅ Mobile Overlay -->
     <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
 
-    <div id="loading-screen" class="loading">
-        <i class="fas fa-spinner fa-spin" style="margin-right: 10px;"></i>
-        Loading Dashboard...
-    </div>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="brand"><i class="fas fa-cube"></i> TBOS v3.0</div>
+        <div class="nav-scroll">
+            <div class="nav-section">Core Operations</div>
+            <a href="dashboard.html" class="nav-item active"><i class="fas fa-home"></i> Dashboard</a>
+            <a href="jobs.html" class="nav-item"><i class="fas fa-briefcase"></i> Jobs & Routing <span class="nav-badge" id="job-badge">0</span></a>
+            <a href="staff.html" class="nav-item"><i class="fas fa-users"></i> Staff & ID Cards</a>
+            <a href="inventory.html" class="nav-item"><i class="fas fa-boxes"></i> Inventory</a>
+            <a href="clients.html" class="nav-item"><i class="fas fa-user-friends"></i> Client Portal</a>
+            
+            <div class="nav-section">Knowledge</div>
+            <a href="knowledge.html" class="nav-item"><i class="fas fa-book"></i> Knowledge Center</a>
+            <a href="reports.html" class="nav-item"><i class="fas fa-chart-line"></i> Reports</a>
+            
+            <a href="#" class="nav-item" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </aside>
 
-    <div id="main-content" style="display: none; width: 100%;">
-        <aside class="sidebar" id="sidebar">
-            <div class="brand"><i class="fas fa-cube"></i> TBOS v3.0</div>
-            <div class="nav-scroll">
-                <div class="nav-section">Core Operations</div>
-                <a href="dashboard.html" class="nav-item active"><i class="fas fa-home"></i> Dashboard</a>
-                <a href="jobs.html" class="nav-item"><i class="fas fa-briefcase"></i> Jobs & Routing <span class="nav-badge" id="job-badge">0</span></a>
-                <a href="staff.html" class="nav-item"><i class="fas fa-users"></i> Staff & ID Cards</a>
-                <a href="inventory.html" class="nav-item"><i class="fas fa-boxes"></i> Inventory</a>
-                <a href="clients.html" class="nav-item"><i class="fas fa-user-friends"></i> Client Portal</a>
-                
-                <div class="nav-section">Knowledge</div>
-                <a href="knowledge.html" class="nav-item"><i class="fas fa-book"></i> Knowledge Center</a>
-                <a href="reports.html" class="nav-item"><i class="fas fa-chart-line"></i> Reports</a>
-                
-                <a href="#" class="nav-item" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="top-bar">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <!-- ✅ Hamburger Menu -->
+                <i class="fas fa-bars menu-toggle" onclick="toggleSidebar()"></i>
+                <h2>Dashboard</h2>
             </div>
-        </aside>
+            <div class="user-profile">
+                <button class="theme-toggle" onclick="toggleTheme()">
+                    <i class="fas fa-moon" id="theme-icon"></i>
+                    <span id="theme-text">Dark</span>
+                </button>
+                <span id="user-name">User</span>
+                <span id="user-hub" class="hub-badge">Hub</span>
+            </div>
+        </header>
 
-        <main class="main-content">
-            <header class="top-bar">
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    <i class="fas fa-bars menu-toggle" onclick="toggleSidebar()"></i>
-                    <h2>Dashboard</h2>
+        <div class="content-scroll">
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-jobs">0</div>
+                    <div class="stat-label">Today's Jobs</div>
                 </div>
-                <div class="user-profile">
-                    <button class="theme-toggle" onclick="toggleTheme()">
-                        <i class="fas fa-moon" id="theme-icon"></i>
-                        <span id="theme-text">Dark</span>
-                    </button>
-                    <div class="notification-btn">
-                        <i class="fas fa-bell"></i>
-                        <span class="notification-badge" id="notif-count">0</span>
-                    </div>
-                    <span id="user-name">User</span>
-                    <span id="user-hub" class="hub-badge">Hub</span>
-                    <button onclick="logout()" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-pending">0</div>
+                    <div class="stat-label">Pending Approval</div>
                 </div>
-            </header>
-
-            <div class="content-scroll">
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-value" id="stat-jobs">0</div>
-                        <div class="stat-label">Today's Jobs</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="stat-pending">0</div>
-                        <div class="stat-label">Pending Approval</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="stat-revenue">₦0</div>
-                        <div class="stat-label">Monthly Revenue</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="stat-delayed">0</div>
-                        <div class="stat-label">Delayed Jobs</div>
-                    </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-revenue">₦0</div>
+                    <div class="stat-label">Monthly Revenue</div>
                 </div>
-
-                <div class="panel">
-                    <div class="panel-header">
-                        <div class="panel-title"><i class="fas fa-bullhorn"></i> Announcements</div>
-                    </div>
-                    <div id="announcement-list">
-                        <p style="color: var(--text-muted);">Loading announcements...</p>
-                    </div>
-                </div>
-
-                <div class="panel">
-                    <div class="panel-header">
-                        <div class="panel-title"><i class="fas fa-trophy"></i> Top Performers This Month</div>
-                    </div>
-                    <div class="table-responsive">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Rank</th>
-                                    <th>Staff</th>
-                                    <th>Hub</th>
-                                    <th>Score</th>
-                                    <th>Jobs Completed</th>
-                                </tr>
-                            </thead>
-                            <tbody id="leaderboard-body">
-                                <tr><td colspan="5" style="text-align: center; padding: 40px;">Loading...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-delayed">0</div>
+                    <div class="stat-label">Delayed Jobs</div>
                 </div>
             </div>
 
-            <footer>
-                TBOS v3.0 | Tomstudio BizHub Operations System<br>
-                Track • Record • Route • Report • Improve<br>
-                Built by Tomstudio Tech Academy | Contact: +234 803 082 7417
-            </footer>
-        </main>
-    </div>
+            <!-- Announcements -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title"><i class="fas fa-bullhorn"></i> Announcements</div>
+                </div>
+                <div id="announcement-list">
+                    <p style="color: var(--text-muted);">Loading announcements...</p>
+                </div>
+            </div>
+
+            <!-- Top Performers -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title"><i class="fas fa-trophy"></i> Top Performers This Month</div>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Staff</th>
+                                <th>Hub</th>
+                                <th>Score</th>
+                                <th>Jobs Completed</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboard-body">
+                            <tr><td colspan="5" style="text-align: center; padding: 40px;">
+                                <i class="fas fa-spinner fa-spin" style="margin-right: 10px;"></i> Loading...
+                            </td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            TBOS v3.0 | Tomstudio BizHub Operations System<br>
+            Track • Record • Route • Report • Improve<br>
+            Built by Tomstudio Tech Academy | Contact: +234 818 550 4382
+        </footer>
+    </main>
 
     <script>
-        // GOOGLE SHEETS DATABASE - SheetDB APIs
-        const API_USERS = 'https://sheetdb.io/api/v1/gjd4fyhfyalnm';
-        const API_DATA = 'https://sheetdb.io/api/v1/mhbv4ydfvjquv';
+        // ✅ POCKETBASE
+        const pb = new PocketBase('http://127.0.0.1:8090');
+        let currentUser = null;
 
         // Theme Toggle
         function toggleTheme() {
@@ -411,7 +408,7 @@
         }
 
         // Load saved theme
-        window.addEventListener('DOMContentLoaded', async function() {
+        window.addEventListener('DOMContentLoaded', function() {
             const savedTheme = localStorage.getItem('tbos_theme');
             if (savedTheme === 'cool') {
                 document.documentElement.setAttribute('data-theme', 'cool');
@@ -419,59 +416,23 @@
                 document.getElementById('theme-text').textContent = 'Cool';
             }
             
-            await checkAuth();
+            loadDashboard();
         });
 
-        // Check Login on Page Load
-        async function checkAuth() {
-            console.log('🔍 Checking login status...');
-            
-            const user = localStorage.getItem('tbos_user');
-            
-            if (!user) {
-                console.log('❌ No user found, redirecting to login');
-                window.location.href = 'index.html';
-                return;
-            }
-
-            const userData = JSON.parse(user);
-            console.log('✅ User found:', userData.name, userData.role);
-
-            // Set user info
-            document.getElementById('user-name').textContent = userData.name;
-            document.getElementById('user-hub').textContent = userData.hub;
-
-            // Load dashboard data
-            await loadDashboard();
-
-            // Show content, hide loading
-            document.getElementById('loading-screen').style.display = 'none';
-            document.getElementById('main-content').style.display = 'block';
-        }
-
-        // Load Dashboard Data from Google Sheets
+        // ✅ Load Dashboard Data
         async function loadDashboard() {
             try {
-                console.log('📡 Fetching jobs data from SheetDB...');
-                const response = await fetch(API_DATA);
-                
-                if (!response.ok) {
-                    throw new Error('Failed to load data. Status: ' + response.status);
-                }
-                
-                const data = await response.json();
-                console.log('✅ Data fetched:', data.length, 'records');
-
-                // Filter jobs only (type = 'job')
-                const jobs = data.filter(item => item.type === 'job');
-                console.log('✅ Jobs found:', jobs.length);
+                // Load jobs from PocketBase
+                const jobs = await pb.collection('jobs').getFullList();
+                const users = await pb.collection('users').getFullList();
+                const announcements = await pb.collection('announcements').getFullList({ sort: '-created' });
 
                 // Calculate stats
                 const today = new Date().toISOString().split('T')[0];
-                const todayJobs = jobs.filter(j => j.created_date && j.created_date.includes(today));
-                const pendingJobs = jobs.filter(j => j.status === 'UNPAID' || j.status === 'Pending');
+                const todayJobs = jobs.filter(j => j.created && j.created.startsWith(today));
+                const pendingJobs = jobs.filter(j => j.payment_status === 'UNPAID' || j.payment_status === 'Pending');
                 const delayedJobs = jobs.filter(j => j.status === 'DELAYED');
-                const totalRevenue = jobs.reduce((sum, j) => sum + (parseInt(j.amount) || 0), 0);
+                const totalRevenue = jobs.reduce((sum, j) => sum + (parseFloat(j.paid) || 0), 0);
 
                 // Update stats
                 document.getElementById('stat-jobs').textContent = todayJobs.length || jobs.length;
@@ -480,14 +441,21 @@
                 document.getElementById('stat-delayed').textContent = delayedJobs.length;
                 document.getElementById('job-badge').textContent = pendingJobs.length;
 
-                // Load leaderboard from users
-                console.log('📡 Fetching users for leaderboard...');
-                const usersResponse = await fetch(API_USERS);
-                const users = await usersResponse.json();
-                
-                // Sort by score
-                const sortedUsers = users.sort((a, b) => (parseInt(b.score) || 0) - (parseInt(a.score) || 0));
-                
+                // Load announcements
+                const announcementList = document.getElementById('announcement-list');
+                if (announcements.length > 0) {
+                    announcementList.innerHTML = announcements.slice(0, 3).map(a => `
+                        <div style="padding: 15px; background: rgba(0, 128, 128, 0.1); border-left: 3px solid var(--primary); margin-bottom: 10px; border-radius: 4px;">
+                            <strong style="color: var(--primary);">${a.message || 'Announcement'}</strong>
+                            <p style="color: var(--text-muted); margin-top: 5px; font-size: 0.9rem;">${a.type || 'Info'}</p>
+                        </div>
+                    `).join('');
+                } else {
+                    announcementList.innerHTML = '<p style="color: var(--text-muted);">No new announcements.</p>';
+                }
+
+                // Load leaderboard
+                const sortedUsers = users.sort((a, b) => (parseFloat(b.score) || 0) - (parseFloat(a.score) || 0));
                 const leaderboardBody = document.getElementById('leaderboard-body');
                 leaderboardBody.innerHTML = sortedUsers.slice(0, 5).map((u, i) => `
                     <tr>
@@ -499,39 +467,21 @@
                     </tr>
                 `).join('');
 
-                // Load announcements
-                const announcements = data.filter(item => item.type === 'announcement');
-                const announcementList = document.getElementById('announcement-list');
-                
-                if (announcements.length > 0) {
-                    announcementList.innerHTML = announcements.map(a => `
-                        <div style="padding: 15px; background: rgba(0, 128, 128, 0.1); border-left: 3px solid var(--primary); margin-bottom: 10px; border-radius: 4px;">
-                            <strong style="color: var(--primary);">${a.title || 'Announcement'}</strong>
-                            <p style="color: var(--text-muted); margin-top: 5px;">${a.message || a.description || 'No message'}</p>
-                            <small style="color: var(--text-muted);">${a.created_date ? new Date(a.created_date).toLocaleDateString() : 'Recent'}</small>
-                        </div>
-                    `).join('');
-                } else {
-                    announcementList.innerHTML = '<p style="color: var(--text-muted);">No new announcements.</p>';
-                }
-
-                console.log('✅ Dashboard loaded successfully');
-
             } catch (error) {
-                console.error('❌ Dashboard load error:', error);
-                // Show demo data if API fails
+                console.error('Dashboard load error:', error);
+                // Show zeros if API fails
                 document.getElementById('stat-jobs').textContent = '0';
                 document.getElementById('stat-pending').textContent = '0';
                 document.getElementById('stat-revenue').textContent = '₦0';
                 document.getElementById('stat-delayed').textContent = '0';
+                document.getElementById('announcement-list').innerHTML = '<p style="color: var(--text-muted);">No announcements available.</p>';
                 document.getElementById('leaderboard-body').innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px; color: var(--text-muted);">No data available</td></tr>';
             }
         }
 
-        // Logout Function
+        // Logout
         function logout() {
-            console.log('🚪 Logging out...');
-            localStorage.removeItem('tbos_user');
+            pb.authStore.clear();
             window.location.href = 'index.html';
         }
     </script>
