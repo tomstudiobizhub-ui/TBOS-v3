@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Client Portal | TBOS v3.0</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script type="module" src="config.js"></script>
     <style>
         :root {
             --bg-body: #0a0a0a;
@@ -23,7 +25,6 @@
             --header-height: 70px;
             --radius: 12px;
         }
-
         [data-theme="cool"] {
             --bg-body: #f0f4f8;
             --bg-panel: #ffffff;
@@ -33,385 +34,133 @@
             --text-muted: #718096;
             --border: #e2e8f0;
         }
-
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; transition: background-color 0.3s, color 0.3s; }
-        body { background: var(--bg-body); color: var(--text-main); display: flex; min-height: 100vh; }
+        body { background: var(--bg-body); color: var(--text-main); display: flex; min-height: 100vh; overflow-x: hidden; width: 100%; }
         a { text-decoration: none; color: inherit; }
         button { cursor: pointer; border: none; outline: none; transition: 0.3s; }
-
-        .sidebar {
-            width: var(--sidebar-width);
-            background: var(--bg-sidebar);
-            border-right: 1px solid var(--border);
-            position: fixed;
-            height: 100vh;
-            overflow-y: auto;
-            z-index: 100;
-        }
-
-        .brand {
-            padding: 25px;
-            border-bottom: 1px solid var(--border);
-            color: var(--primary);
-            font-size: 1.5rem;
-            font-weight: 700;
-            text-align: center;
-        }
-
-        .nav-section {
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            color: #555;
-            margin: 20px 15px 10px;
-            font-weight: 700;
-            padding-left: 15px;
-        }
-
-        .nav-item {
-            padding: 15px 25px;
-            color: var(--text-muted);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            transition: 0.3s;
-        }
-
-        .nav-item:hover, .nav-item.active {
-            background: rgba(0, 128, 128, 0.1);
-            color: var(--primary);
-        }
-
+        .sidebar { width: var(--sidebar-width); background: var(--bg-sidebar); border-right: 1px solid var(--border); position: fixed; height: 100vh; overflow-y: auto; z-index: 100; transition: transform 0.3s ease; }
+        .brand { padding: 25px; border-bottom: 1px solid var(--border); color: var(--primary); font-size: 1.5rem; font-weight: 700; text-align: center; }
+        .nav-section { font-size: 0.7rem; text-transform: uppercase; color: #555; margin: 20px 15px 10px; font-weight: 700; padding-left: 15px; }
+        .nav-item { padding: 15px 25px; color: var(--text-muted); display: flex; align-items: center; gap: 12px; transition: 0.3s; cursor: pointer; }
+        .nav-item:hover, .nav-item.active { background: rgba(0, 128, 128, 0.1); color: var(--primary); }
         .nav-item i { width: 20px; text-align: center; }
-
-        .main-content {
-            flex: 1;
-            margin-left: var(--sidebar-width);
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
-        .top-bar {
-            height: var(--header-height);
-            background: var(--bg-panel);
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 25px;
-            position: sticky;
-            top: 0;
-            z-index: 50;
-        }
-
-        .menu-toggle {
-            display: none;
-            color: var(--text-main);
-            font-size: 1.5rem;
-            cursor: pointer;
-            padding: 10px;
-            border-radius: 8px;
-        }
-
-        .user-profile {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .hub-badge {
-            padding: 5px 15px;
-            background: rgba(0, 128, 128, 0.2);
-            color: var(--primary);
-            border-radius: 20px;
-            font-size: 0.85rem;
-            border: 1px solid var(--primary);
-        }
-
-        .theme-toggle {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 8px 12px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.85rem;
-            color: var(--text-main);
-        }
-
-        .content-scroll {
-            flex: 1;
-            overflow-y: auto;
-            padding: 25px;
-        }
-
-        .panel {
-            background: var(--bg-panel);
-            border-radius: var(--radius);
-            padding: 25px;
-            margin-bottom: 25px;
-            border: 1px solid var(--border);
-        }
-
-        .panel-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .panel-title {
-            font-size: 1.15rem;
-            font-weight: 600;
-            color: var(--text-main);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
+        .main-content { flex: 1; margin-left: var(--sidebar-width); display: flex; flex-direction: column; min-height: 100vh; }
+        .top-bar { height: var(--header-height); background: var(--bg-panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 25px; position: sticky; top: 0; z-index: 50; }
+        .menu-toggle { display: none; color: var(--text-main); font-size: 1.5rem; cursor: pointer; padding: 10px; border-radius: 8px; }
+        .user-profile { display: flex; align-items: center; gap: 15px; }
+        .hub-badge { padding: 5px 15px; background: rgba(0, 128, 128, 0.2); color: var(--primary); border-radius: 20px; font-size: 0.85rem; border: 1px solid var(--primary); }
+        .theme-toggle { background: rgba(255,255,255,0.1); border: 1px solid var(--border); border-radius: 20px; padding: 8px 12px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--text-main); }
+        .content-scroll { flex: 1; overflow-y: auto; padding: 25px; }
+        .panel { background: var(--bg-panel); border-radius: var(--radius); padding: 25px; margin-bottom: 25px; border: 1px solid var(--border); }
+        .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        .panel-title { font-size: 1.15rem; font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 10px; }
         .panel-title i { color: var(--primary); }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 15px;
-        }
-
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
         .form-full { grid-column: 1 / -1; }
-
         .form-group { margin-bottom: 15px; }
-
-        .form-group label {
-            display: block;
-            color: var(--text-muted);
-            margin-bottom: 8px;
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
-
+        .form-group label { display: block; color: var(--text-muted); margin-bottom: 8px; font-size: 0.9rem; font-weight: 500; }
         .input-wrapper { position: relative; }
-
-        .input-wrapper i {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-muted);
-        }
-
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 12px 12px 12px 40px;
-            background: var(--bg-input);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            color: var(--text-main);
-            font-size: 0.95rem;
-        }
-
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
-            border-color: var(--primary);
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(0, 128, 128, 0.2);
-        }
-
-        .form-group textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-
-        .btn-primary {
-            padding: 14px 25px;
-            background: var(--primary);
-            color: white;
-            border-radius: 8px;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-primary:hover {
-            background: var(--primary-hover);
-            transform: translateY(-2px);
-        }
-
-        .btn-whatsapp { background: #25D366; color: white; }
+        .input-wrapper i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 12px 12px 40px; background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px; color: var(--text-main); font-size: 0.95rem; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(0, 128, 128, 0.2); }
+        .btn-primary { padding: 14px 25px; background: var(--primary); color: white; border-radius: 8px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-primary:hover { background: var(--primary-hover); transform: translateY(-2px); }
+        .btn-sm { padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; margin: 2px; }
         .btn-success { background: var(--success); color: white; }
-
-        .form-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-            flex-wrap: wrap;
-        }
-
-        .timeline {
-            border-left: 2px solid var(--primary);
-            padding-left: 25px;
-            margin: 20px 0;
-        }
-
-        .timeline-item {
-            position: relative;
-            margin-bottom: 25px;
-        }
-
-        .timeline-item::before {
-            content: '';
-            position: absolute;
-            left: -31px;
-            top: 5px;
-            width: 12px;
-            height: 12px;
-            background: var(--primary);
-            border-radius: 50%;
-            border: 2px solid var(--bg-panel);
-        }
-
-        .timeline-time { font-size: 0.75rem; color: var(--text-muted); }
-        .timeline-title { font-weight: 600; color: var(--text-main); }
-        .timeline-desc { font-size: 0.85rem; color: var(--text-muted); margin-top: 3px; }
-
-        .status-badge {
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            display: inline-block;
-        }
-
+        .btn-info { background: var(--info); color: white; }
+        .btn-whatsapp { background: #25D366; color: white; }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-muted); }
+        .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+        .bank-card { background: linear-gradient(135deg, var(--primary) 0%, #004d4d 100%); color: white; padding: 30px; border-radius: var(--radius); margin: 20px 0; }
+        .bank-card h3 { margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .bank-details { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+        .bank-detail-item { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; }
+        .bank-detail-item label { font-size: 0.8rem; color: rgba(255,255,255,0.8); display: block; margin-bottom: 5px; }
+        .bank-detail-item .value { font-size: 1.1rem; font-weight: 600; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+        .copy-btn { background: rgba(255,255,255,0.2); border: none; color: white; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; }
+        .copy-btn:hover { background: rgba(255,255,255,0.3); }
+        .bank-instructions { margin-top: 20px; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 8px; }
+        .bank-instructions ol { margin-left: 20px; line-height: 2; }
+        .bank-instructions li { margin-bottom: 10px; }
+        .payment-notice { background: rgba(255, 187, 51, 0.2); border: 1px solid var(--warning); color: var(--warning); padding: 15px; border-radius: 8px; margin: 20px 0; display: flex; align-items: center; gap: 10px; }
+        .job-status-result { display: none; animation: fadeIn 0.3s ease; }
+        .job-status-result.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .job-info-card { background: var(--bg-input); padding: 25px; border-radius: var(--radius); margin-bottom: 25px; border-left: 5px solid var(--primary); }
+        .job-info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .job-info-item { background: var(--bg-panel); padding: 15px; border-radius: 10px; }
+        .job-info-item label { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase; }
+        .job-info-item strong { color: var(--text-main); font-size: 1rem; }
+        .status-badge { padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; display: inline-block; }
         .status-paid { background: rgba(0, 200, 81, 0.2); color: var(--success); }
         .status-partial { background: rgba(255, 187, 51, 0.2); color: var(--warning); }
         .status-unpaid { background: rgba(255, 68, 68, 0.2); color: var(--danger); }
-        .status-completed { background: rgba(0, 176, 255, 0.2); color: #00b0ff; }
-
-        .invoice-preview {
-            background: #fff;
-            color: #000;
-            padding: 30px;
-            border-radius: 8px;
-            margin: 20px 0;
-        }
-
-        .invoice-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 25px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid var(--primary);
-        }
-
-        .invoice-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid #eee;
-        }
-
-        .invoice-total {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: var(--primary);
-            margin-top: 20px;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.85);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
+        .routing-timeline { margin: 25px 0; padding: 25px; background: var(--bg-input); border-radius: 15px; }
+        .routing-timeline h4 { color: var(--primary); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .routing-stages { display: flex; flex-wrap: wrap; gap: 10px; }
+        .stage-item { flex: 1; min-width: 100px; text-align: center; padding: 15px 10px; background: var(--bg-panel); border-radius: 12px; border: 2px solid var(--border); transition: all 0.3s; }
+        .stage-item.active { border-color: var(--primary); background: rgba(0, 128, 128, 0.2); }
+        .stage-item.completed { border-color: var(--success); background: rgba(0, 200, 81, 0.2); }
+        .stage-item .icon { font-size: 1.5rem; margin-bottom: 8px; color: var(--primary); }
+        .stage-item.completed .icon { color: var(--success); }
+        .stage-item .label { font-size: 0.75rem; color: var(--text-muted); }
+        .feedback-form { margin-top: 25px; }
+        .feedback-form textarea { width: 100%; padding: 15px; border: 2px solid var(--border); border-radius: 12px; font-size: 16px; resize: vertical; min-height: 100px; margin-bottom: 15px; }
+        .rating-stars { display: flex; gap: 10px; margin-bottom: 15px; }
+        .rating-stars i { font-size: 1.5rem; color: var(--text-muted); cursor: pointer; transition: color 0.3s; }
+        .rating-stars i.active { color: var(--warning); }
+        .upload-section { margin-top: 25px; padding: 25px; background: var(--bg-input); border-radius: 15px; }
+        .upload-section h4 { color: var(--primary); margin-bottom: 15px; }
+        .upload-section input[type="file"] { width: 100%; padding: 15px; border: 2px dashed var(--border); border-radius: 12px; margin-bottom: 15px; }
+        .upload-section textarea { width: 100%; padding: 15px; border: 2px solid var(--border); border-radius: 12px; font-size: 16px; resize: vertical; min-height: 80px; margin-bottom: 15px; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
         .modal.active { display: flex; }
-
-        .modal-content {
-            background: var(--bg-panel);
-            border-radius: var(--radius);
-            border: 1px solid var(--border);
-            width: 100%;
-            max-width: 650px;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .modal-header {
-            padding: 20px 25px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            background: var(--bg-panel);
-            z-index: 10;
-        }
-
-        .modal-header h3 {
-            font-size: 1.2rem;
-            color: var(--text-main);
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            font-size: 1.5rem;
-            cursor: pointer;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-        }
-
-        .modal-close:hover {
-            color: var(--danger);
-            background: rgba(255, 68, 68, 0.1);
-        }
-
+        .modal-content { background: var(--bg-panel); border-radius: var(--radius); border: 1px solid var(--border); width: 100%; max-width: 900px; max-height: 90vh; overflow-y: auto; }
+        .modal-header { padding: 20px 25px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h3 { font-size: 1.2rem; color: var(--text-main); }
+        .modal-close { background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+        .modal-close:hover { color: var(--danger); background: rgba(255, 68, 68, 0.1); }
         .modal-body { padding: 25px; }
-
-        footer {
-            padding: 20px;
-            text-align: center;
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            border-top: 1px solid var(--border);
-            background: var(--bg-panel);
-        }
-
+        .invoice-container { background: #ffffff; color: #000000; padding: 40px; border-radius: 8px; }
+        .invoice-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid var(--primary); }
+        .invoice-logo h2 { color: var(--primary); font-size: 2rem; margin-bottom: 5px; }
+        .invoice-logo p { color: #666; font-size: 0.9rem; }
+        .invoice-info { text-align: right; }
+        .invoice-info h3 { color: #000; font-size: 1.5rem; margin-bottom: 10px; }
+        .invoice-sections { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 30px; }
+        .invoice-section { background: #f5f5f5; padding: 15px; border-radius: 8px; }
+        .invoice-section h4 { color: var(--primary); margin-bottom: 10px; font-size: 0.9rem; text-transform: uppercase; }
+        .invoice-section p { margin-bottom: 5px; font-size: 0.9rem; }
+        .invoice-summary { background: var(--bg-input); padding: 20px; border-radius: 8px; margin-top: 20px; }
+        .invoice-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
+        .invoice-row:last-child { border-bottom: none; font-weight: 700; font-size: 1.1rem; color: var(--primary); }
+        .invoice-footer { margin-top: 30px; padding-top: 20px; border-top: 2px solid var(--border); text-align: center; color: #666; font-size: 0.85rem; }
+        .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 99; }
+        .overlay.active { display: block; }
+        footer { padding: 20px; text-align: center; font-size: 0.8rem; color: var(--text-muted); border-top: 1px solid var(--border); background: var(--bg-panel); }
         @media (max-width: 768px) {
             .sidebar { transform: translateX(-100%); }
             .sidebar.active { transform: translateX(0); }
             .main-content { margin-left: 0; }
             .menu-toggle { display: block; }
-            .form-grid { grid-template-columns: 1fr; }
-            .overlay {
-                display: none;
-                position: fixed;
-                inset: 0;
-                background: rgba(0,0,0,0.5);
-                z-index: 99;
-            }
-            .overlay.active { display: block; }
+            .top-bar { padding: 0 15px; }
+            .panel { padding: 15px; }
+            .user-profile span { display: none; }
+            .hub-badge { display: none; }
+            .bank-details { grid-template-columns: 1fr; }
+            .routing-stages { flex-direction: column; }
+            .stage-item { min-width: 100%; }
+            .invoice-header { flex-direction: column; gap: 20px; }
+            .invoice-info { text-align: left; }
+            .invoice-sections { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 480px) {
+            .theme-toggle span { display: none; }
         }
     </style>
 </head>
 <body>
     <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
-
     <aside class="sidebar" id="sidebar">
         <div class="brand"><i class="fas fa-cube"></i> TBOS v3.0</div>
         <div class="nav-scroll">
@@ -421,15 +170,12 @@
             <a href="staff.html" class="nav-item"><i class="fas fa-users"></i> Staff & ID Cards</a>
             <a href="inventory.html" class="nav-item"><i class="fas fa-boxes"></i> Inventory</a>
             <a href="clients.html" class="nav-item active"><i class="fas fa-user-friends"></i> Client Portal</a>
-            
             <div class="nav-section">Knowledge</div>
             <a href="knowledge.html" class="nav-item"><i class="fas fa-book"></i> Knowledge Center</a>
             <a href="reports.html" class="nav-item"><i class="fas fa-chart-line"></i> Reports</a>
-            
-            <a href="#" class="nav-item" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            <a href="index.html" class="nav-item"><i class="fas fa-sign-in-alt"></i> Staff Login</a>
         </div>
     </aside>
-
     <main class="main-content">
         <header class="top-bar">
             <div style="display: flex; align-items: center; gap: 15px;">
@@ -441,20 +187,17 @@
                     <i class="fas fa-moon" id="theme-icon"></i>
                     <span id="theme-text">Dark</span>
                 </button>
-                <span id="user-name">User</span>
-                <span id="user-hub" class="hub-badge">Hub</span>
+                <a href="index.html" class="btn-sm btn-outline">
+                    <i class="fas fa-sign-in-alt"></i> Staff Login
+                </a>
             </div>
         </header>
-
         <div class="content-scroll">
             <div class="panel">
                 <div class="panel-header">
                     <div class="panel-title"><i class="fas fa-search"></i> Check Job Status</div>
                 </div>
-                <p style="color: var(--text-muted); margin-bottom: 20px;">
-                    Clients can check their job status using their Tracking ID or Phone Number
-                </p>
-                
+                <p style="color: var(--text-muted); margin-bottom: 20px;">Check your job status using your Tracking ID or Phone Number</p>
                 <div class="form-grid" style="max-width: 600px;">
                     <div class="form-group form-full">
                         <label>Tracking ID or Phone Number</label>
@@ -464,160 +207,179 @@
                         </div>
                     </div>
                     <div class="form-group form-full">
-                        <button class="btn-primary" onclick="searchClientJob()" style="width: 100%;">
-                            <i class="fas fa-search"></i> Check Status
+                        <button class="btn-primary" onclick="searchJob()" style="width: 100%;">
+                            <i class="fas fa-search"></i>
+                            <span>Track Job</span>
                         </button>
                     </div>
                 </div>
-                
-                <div id="client-job-result" class="hidden" style="margin-top: 30px;"></div>
-            </div>
-
-            <div class="panel">
-                <div class="panel-header">
-                    <div class="panel-title"><i class="fas fa-comment-dots"></i> Client Feedback</div>
-                </div>
-                <p style="color: var(--text-muted); margin-bottom: 20px;">
-                    Share your experience with our services
-                </p>
-                
-                <form id="feedback-form" class="form-grid" style="max-width: 600px;">
-                    <div class="form-group form-full">
-                        <label>Tracking ID</label>
-                        <div class="input-wrapper">
-                            <i class="fas fa-hashtag"></i>
-                            <input type="text" id="feedback-tracking" placeholder="TBOS-240001">
+                <div id="jobStatusResult" class="job-status-result">
+                    <div class="job-info-card">
+                        <h4 style="color: var(--primary); margin-bottom: 20px;"><i class="fas fa-briefcase"></i> Job Details</h4>
+                        <div class="job-info-grid" id="jobInfoGrid"></div>
+                        <div class="routing-timeline">
+                            <h4><i class="fas fa-route"></i> Job Progress</h4>
+                            <div class="routing-stages" id="routingStages"></div>
+                        </div>
+                        <div class="bank-card">
+                            <h4 style="margin-bottom: 20px;"><i class="fas fa-credit-card"></i> Payment Information</h4>
+                            <div class="bank-details" id="paymentDetails"></div>
+                        </div>
+                        <div class="form-actions" style="margin-top: 20px;">
+                            <button class="btn-primary btn-whatsapp" onclick="contactWhatsApp()">
+                                <i class="fab fa-whatsapp"></i>
+                                <span>Contact on WhatsApp</span>
+                            </button>
+                            <button class="btn-primary btn-info" onclick="showInvoice()">
+                                <i class="fas fa-file-invoice"></i>
+                                <span>View Invoice</span>
+                            </button>
+                            <button class="btn-primary btn-success" onclick="confirmPayment()">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Confirm Payment</span>
+                            </button>
                         </div>
                     </div>
-                    <div class="form-group form-full">
-                        <label>Feedback / Rating</label>
-                        <div class="input-wrapper">
-                            <i class="fas fa-comment"></i>
-                            <textarea id="feedback-message" rows="4" placeholder="Share your experience..."></textarea>
+                    <div class="feedback-form">
+                        <h4 style="color: var(--primary); margin-bottom: 15px;"><i class="fas fa-comment"></i> Share Your Feedback</h4>
+                        <div class="rating-stars" id="ratingStars">
+                            <i class="fas fa-star" onclick="setRating(1)"></i>
+                            <i class="fas fa-star" onclick="setRating(2)"></i>
+                            <i class="fas fa-star" onclick="setRating(3)"></i>
+                            <i class="fas fa-star" onclick="setRating(4)"></i>
+                            <i class="fas fa-star" onclick="setRating(5)"></i>
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Rating</label>
-                        <div class="input-wrapper">
-                            <i class="fas fa-star"></i>
-                            <select id="feedback-rating">
-                                <option value="5">⭐⭐⭐⭐⭐ Excellent</option>
-                                <option value="4">⭐⭐⭐⭐ Very Good</option>
-                                <option value="3">⭐⭐⭐ Good</option>
-                                <option value="2">⭐⭐ Fair</option>
-                                <option value="1">⭐ Poor</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-group form-full">
-                        <button type="submit" class="btn-primary" style="width: 100%;">
-                            <i class="fas fa-paper-plane"></i> Submit Feedback
+                        <textarea id="feedbackText" placeholder="Share your experience with our service..."></textarea>
+                        <button class="btn-primary" onclick="submitFeedback()" style="width: auto;">
+                            <i class="fas fa-paper-plane"></i>
+                            <span>Submit Feedback</span>
                         </button>
                     </div>
-                </form>
-            </div>
-
-            <div class="panel">
-                <div class="panel-header">
-                    <div class="panel-title"><i class="fas fa-upload"></i> Upload Files</div>
-                </div>
-                <p style="color: var(--text-muted); margin-bottom: 20px;">
-                    Clients can upload additional files for their jobs
-                </p>
-                
-                <form id="upload-form" class="form-grid" style="max-width: 600px;">
-                    <div class="form-group form-full">
-                        <label>Tracking ID</label>
-                        <div class="input-wrapper">
-                            <i class="fas fa-hashtag"></i>
-                            <input type="text" id="upload-tracking" placeholder="TBOS-240001">
-                        </div>
-                    </div>
-                    <div class="form-group form-full">
-                        <label>Select Files</label>
-                        <div class="input-wrapper">
+                    <div class="upload-section">
+                        <h4><i class="fas fa-upload"></i> Upload Additional Files</h4>
+                        <input type="file" id="fileUpload" multiple accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                        <textarea id="uploadDescription" placeholder="Describe the files you're uploading..."></textarea>
+                        <button class="btn-primary" onclick="uploadFiles()" style="width: auto;">
                             <i class="fas fa-upload"></i>
-                            <input type="file" id="upload-files" multiple accept=".pdf,.doc,.docx,.jpg,.png,.zip">
-                            <small style="color: var(--text-muted); display: block; margin-top: 5px;">PDF, DOC, Images supported. Max 10MB per file.</small>
-                        </div>
-                    </div>
-                    <div class="form-group form-full">
-                        <label>Description</label>
-                        <div class="input-wrapper">
-                            <i class="fas fa-align-left"></i>
-                            <textarea id="upload-desc" rows="3" placeholder="Describe the files..."></textarea>
-                        </div>
-                    </div>
-                    <div class="form-group form-full">
-                        <button type="submit" class="btn-primary" style="width: 100%;">
-                            <i class="fas fa-upload"></i> Upload Files
+                            <span>Upload Files</span>
                         </button>
                     </div>
-                </form>
+                </div>
             </div>
-
             <div class="panel">
                 <div class="panel-header">
                     <div class="panel-title"><i class="fas fa-credit-card"></i> Payment Options</div>
                 </div>
-                <div class="form-grid">
-                    <div style="text-align: center; padding: 20px;">
-                        <i class="fas fa-credit-card" style="font-size: 3rem; color: var(--primary); margin-bottom: 15px;"></i>
-                        <h4 style="margin-bottom: 10px;">Paystack</h4>
-                        <p style="color: var(--text-muted); font-size: 0.9rem;">Secure online payments via Paystack</p>
+                <div class="payment-notice">
+                    <i class="fas fa-info-circle"></i>
+                    <div>
+                        <strong>Payment Method:</strong> Bank Transfer Only<br>
+                        <small>Please complete payment within 24 hours of job creation</small>
                     </div>
-                    <div style="text-align: center; padding: 20px;">
-                        <i class="fas fa-mobile-alt" style="font-size: 3rem; color: var(--primary); margin-bottom: 15px;"></i>
-                        <h4 style="margin-bottom: 10px;">Flutterwave</h4>
-                        <p style="color: var(--text-muted); font-size: 0.9rem;">Mobile money & card payments</p>
+                </div>
+                <div class="bank-card">
+                    <h3><i class="fas fa-university"></i> Bank Transfer Details</h3>
+                    <div class="bank-details">
+                        <div class="bank-detail-item">
+                            <label>Bank Name</label>
+                            <div class="value">
+                                <span>Moniepoint</span>
+                                <button class="copy-btn" onclick="copyToClipboard('Moniepoint')"><i class="fas fa-copy"></i></button>
+                            </div>
+                        </div>
+                        <div class="bank-detail-item">
+                            <label>Account Number</label>
+                            <div class="value">
+                                <span>8185504382</span>
+                                <button class="copy-btn" onclick="copyToClipboard('8185504382')"><i class="fas fa-copy"></i></button>
+                            </div>
+                        </div>
+                        <div class="bank-detail-item">
+                            <label>Account Name</label>
+                            <div class="value">
+                                <span>Tomstudio BizHub</span>
+                                <button class="copy-btn" onclick="copyToClipboard('Tomstudio BizHub')"><i class="fas fa-copy"></i></button>
+                            </div>
+                        </div>
+                        <div class="bank-detail-item">
+                            <label>Bank Code</label>
+                            <div class="value">
+                                <span>50515</span>
+                                <button class="copy-btn" onclick="copyToClipboard('50515')"><i class="fas fa-copy"></i></button>
+                            </div>
+                        </div>
                     </div>
-                    <div style="text-align: center; padding: 20px;">
-                        <i class="fas fa-money-bill-wave" style="font-size: 3rem; color: var(--primary); margin-bottom: 15px;"></i>
-                        <h4 style="margin-bottom: 10px;">Bank Transfer</h4>
-                        <p style="color: var(--text-muted); font-size: 0.9rem;">Direct bank transfer available</p>
+                    <div class="bank-instructions">
+                        <h4 style="margin-bottom: 15px;"><i class="fas fa-list-ol"></i> Payment Instructions</h4>
+                        <ol>
+                            <li>Transfer the exact job amount to the account number above</li>
+                            <li>Use your <strong>Tracking ID</strong> as payment reference/narration</li>
+                            <li>Save your payment confirmation/receipt</li>
+                            <li>Send proof of payment via WhatsApp to <strong>+234 818 550 4382</strong></li>
+                            <li>Your job will be confirmed within 2 hours of payment verification</li>
+                        </ol>
                     </div>
+                    <div style="margin-top: 20px; text-align: center;">
+                        <button class="btn-whatsapp" onclick="sendPaymentProof()" style="padding: 12px 25px; font-size: 1rem; display: inline-flex; align-items: center; gap: 8px;">
+                            <i class="fab fa-whatsapp"></i>
+                            <span>Send Payment Proof on WhatsApp</span>
+                        </button>
+                    </div>
+                </div>
+                <div style="margin-top: 20px; padding: 15px; background: rgba(0, 128, 128, 0.1); border-radius: 8px; border-left: 4px solid var(--primary);">
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">
+                        <i class="fas fa-shield-alt"></i> 
+                        <strong>Secure Payment:</strong> All payments are protected. Your job will not commence until payment is confirmed.
+                    </p>
                 </div>
             </div>
         </div>
-
         <footer>
             TBOS v3.0 | Tomstudio BizHub Operations System<br>
             Track • Record • Route • Report • Improve<br>
-            Built by Tomstudio Tech Academy | Contact: +234 803 082 7417
+            Built by Tomstudio Tech Academy | Contact: +234 818 550 4382
         </footer>
     </main>
-
-    <!-- Invoice Modal -->
-    <div class="modal" id="invoice-modal">
-        <div class="modal-content">
+    <div class="modal" id="invoiceModal">
+        <div class="modal-content" style="max-width: 900px;">
             <div class="modal-header">
                 <h3><i class="fas fa-file-invoice"></i> Invoice</h3>
-                <button class="modal-close" onclick="toggleModal('invoice-modal')">&times;</button>
+                <button class="modal-close" onclick="toggleModal('invoiceModal')">&times;</button>
             </div>
             <div class="modal-body">
-                <div class="invoice-preview" id="invoice-content"></div>
+                <div class="invoice-container" id="invoiceContent"></div>
                 <div class="form-actions" style="justify-content: center; margin-top: 20px;">
-                    <button class="btn-primary" onclick="alert('Downloading PDF...')"><i class="fas fa-download"></i> Download PDF</button>
-                    <button class="btn-whatsapp" onclick="sendInvoiceWhatsApp()"><i class="fab fa-whatsapp"></i> Share via WhatsApp</button>
-                    <button class="btn-sm btn-success" onclick="alert('Opening Paystack...')"><i class="fas fa-credit-card"></i> Pay Now</button>
-                    <button class="btn-sm btn-outline" onclick="window.print()"><i class="fas fa-print"></i> Print</button>
+                    <button class="btn-primary" onclick="downloadInvoice()"><i class="fas fa-download"></i> PDF</button>
+                    <button class="btn-whatsapp" onclick="sendInvoiceWhatsApp()"><i class="fab fa-whatsapp"></i> WhatsApp</button>
+                    <button class="btn-sm btn-info" onclick="window.print()"><i class="fas fa-print"></i> Print</button>
                 </div>
             </div>
         </div>
     </div>
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+        const SUPABASE_URL = 'https://wbmshbmfrteutglydiay.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndibXNoYm1mcnRldXRnbHlkaWF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMjk5OTIsImV4cCI6MjA5MjkwNTk5Mn0.UiV0Uaxv0fXb_sHuoIOJ2AGJKenUmfmFAzaifPY0A6Y';
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        let currentJob = null;
+        let selectedRating = 0;
+        const WHATSAPP_NUMBER = '2348185504382';
+        const JOB_STAGES = [
+            { id: 'Client/staff', label: 'Client', icon: 'fa-user' },
+            { id: 'Graphics', label: 'Graphics', icon: 'fa-paint-brush' },
+            { id: 'Printing', label: 'Printing', icon: 'fa-print' },
+            { id: 'Photography', label: 'Photo', icon: 'fa-camera' },
+            { id: 'Secretary Review', label: 'Secretary', icon: 'fa-clipboard-check' },
+            { id: 'Admin Approval', label: 'Admin', icon: 'fa-user-shield' },
+            { id: 'Delivery', label: 'Delivery', icon: 'fa-truck' },
+            { id: 'Completed', label: 'Done', icon: 'fa-check-circle' }
+        ];
 
-    <script>
-        // GOOGLE SHEETS DATABASE - SheetDB APIs
-        const API_USERS = 'https://sheetdb.io/api/v1/gjd4fyhfyalnm';
-        const API_DATA = 'https://sheetdb.io/api/v1/mhbv4ydfvjquv';
-
-        // Theme Toggle
         function toggleTheme() {
             const currentTheme = document.documentElement.getAttribute('data-theme');
             const newTheme = currentTheme === 'cool' ? 'dark' : 'cool';
             const icon = document.getElementById('theme-icon');
             const text = document.getElementById('theme-text');
-            
             if (newTheme === 'cool') {
                 document.documentElement.setAttribute('data-theme', 'cool');
                 icon.className = 'fas fa-sun';
@@ -631,19 +393,306 @@
             }
         }
 
-        // Toggle Sidebar
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('active');
             document.getElementById('overlay').classList.toggle('active');
         }
 
-        // Toggle Modal
         function toggleModal(modalId) {
             const modal = document.getElementById(modalId);
             modal.classList.toggle('active');
         }
 
-        // Load saved theme
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Copied: ' + text);
+            }).catch(err => {
+                alert('Failed to copy');
+            });
+        }
+
+        async function searchJob() {
+            const searchTerm = document.getElementById('client-search').value.trim();
+            if (!searchTerm) {
+                alert('Please enter Tracking ID or Phone Number');
+                return;
+            }
+            try {
+                const {  jobs, error } = await supabase.from('jobs').select('*');
+                if (error) throw error;
+                const job = jobs.find(j => 
+                    (j.tracking_id || j.trackingId) === searchTerm || 
+                    (j.client_phone || j.phone) === searchTerm
+                );
+                if (!job) {
+                    alert('Job not found. Please check your Tracking ID or Phone Number.');
+                    document.getElementById('jobStatusResult').classList.remove('active');
+                    return;
+                }
+                currentJob = job;
+                displayJobDetails(job);
+            } catch (error) {
+                console.error('Search job error:', error);
+                alert('Error searching job: ' + error.message);
+            }
+        }
+
+        function displayJobDetails(job) {
+            const resultDiv = document.getElementById('jobStatusResult');
+            const statusClass = job.payment_status === 'PAID' ? 'status-paid' : job.payment_status === 'PARTIALLY PAID' ? 'status-partial' : 'status-unpaid';
+            const trackingId = job.tracking_id || job.trackingId || 'N/A';
+            const clientName = job.client_name || job.client || 'N/A';
+            const clientPhone = job.client_phone || job.phone || 'N/A';
+            const clientEmail = job.client_email || 'N/A';
+            const hub = job.hub || 'N/A';
+            const stage = job.stage || 'Client/staff';
+            const amount = parseFloat(job.amount) || 0;
+            const paid = parseFloat(job.paid) || 0;
+            const balance = parseFloat(job.balance) || amount;
+            const delivery = job.delivery_date || 'N/A';
+            document.getElementById('jobInfoGrid').innerHTML = `
+                <div class="job-info-item">
+                    <label>Tracking ID</label>
+                    <strong style="color: var(--primary);">${trackingId}</strong>
+                </div>
+                <div class="job-info-item">
+                    <label>Client Name</label>
+                    <strong>${clientName}</strong>
+                </div>
+                <div class="job-info-item">
+                    <label>Phone Number</label>
+                    <strong>${clientPhone}</strong>
+                </div>
+                <div class="job-info-item">
+                    <label>Hub/Department</label>
+                    <strong>${hub}</strong>
+                </div>
+                <div class="job-info-item">
+                    <label>Current Stage</label>
+                    <strong>${stage}</strong>
+                </div>
+                <div class="job-info-item">
+                    <label>Payment Status</label>
+                    <span class="status-badge ${statusClass}">${job.payment_status || 'UNPAID'}</span>
+                </div>
+                <div class="job-info-item">
+                    <label>Total Amount</label>
+                    <strong>₦${amount.toLocaleString()}</strong>
+                </div>
+                <div class="job-info-item">
+                    <label>Amount Paid</label>
+                    <strong>₦${paid.toLocaleString()}</strong>
+                </div>
+                <div class="job-info-item">
+                    <label>Balance Due</label>
+                    <strong style="color: var(--danger);">₦${balance.toLocaleString()}</strong>
+                </div>
+                <div class="job-info-item">
+                    <label>Delivery Date</label>
+                    <strong>${delivery}</strong>
+                </div>
+            `;
+            const currentStage = stage;
+            const currentIndex = JOB_STAGES.findIndex(s => s.id === currentStage);
+            let stagesHTML = '';
+            JOB_STAGES.forEach((stage, index) => {
+                let className = 'stage-item';
+                if (index === currentIndex) className += ' active';
+                if (index < currentIndex) className += ' completed';
+                stagesHTML += `
+                    <div class="${className}">
+                        <div class="icon"><i class="fas ${stage.icon}"></i></div>
+                        <div class="label">${stage.label}</div>
+                    </div>
+                `;
+            });
+            document.getElementById('routingStages').innerHTML = stagesHTML;
+            document.getElementById('paymentDetails').innerHTML = `
+                <div class="bank-detail-item">
+                    <label>Total Amount</label>
+                    <strong>₦${amount.toLocaleString()}</strong>
+                </div>
+                <div class="bank-detail-item">
+                    <label>Amount Paid</label>
+                    <strong>₦${paid.toLocaleString()}</strong>
+                </div>
+                <div class="bank-detail-item">
+                    <label>Balance Due</label>
+                    <strong>₦${balance.toLocaleString()}</strong>
+                </div>
+                <div class="bank-detail-item">
+                    <label>Status</label>
+                    <span class="status-badge ${statusClass}">${job.payment_status || 'UNPAID'}</span>
+                </div>
+            `;
+            resultDiv.classList.add('active');
+            resultDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function contactWhatsApp() {
+            if (!currentJob) return;
+            const message = `Hello Tomstudio BizHub,\n\nI'm inquiring about my job:\nTracking ID: ${currentJob.tracking_id || currentJob.trackingId}\nClient: ${currentJob.client_name || currentJob.client}\n\nPlease provide an update.\n\nThank you!`;
+            const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+            window.open(url, '_blank');
+        }
+
+        function sendPaymentProof() {
+            const message = `Hello Tomstudio BizHub,\n\nI have made a bank transfer payment.\n\nTracking ID: ${currentJob ? (currentJob.tracking_id || currentJob.trackingId) : '___________'}\nAmount: ₦${currentJob ? currentJob.amount : '___________'}\n\nPlease confirm receipt.\n\nThank you!`;
+            const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+            window.open(url, '_blank');
+        }
+
+        function confirmPayment() {
+            if (!currentJob) return;
+            const message = `Hello Tomstudio BizHub,\n\nI would like to confirm my payment:\n\nTracking ID: ${currentJob.tracking_id || currentJob.trackingId}\nAmount Paid: ₦${currentJob.paid || currentJob.amount}\nPayment Date: ${new Date().toLocaleDateString()}\n\nPlease verify and update my job status.\n\nThank you!`;
+            const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+            window.open(url, '_blank');
+        }
+
+        function showInvoice() {
+            if (!currentJob) return;
+            const trackingId = currentJob.tracking_id || currentJob.trackingId || 'N/A';
+            const clientName = currentJob.client_name || currentJob.client || 'N/A';
+            const clientPhone = currentJob.client_phone || currentJob.phone || 'N/A';
+            const clientEmail = currentJob.client_email || 'N/A';
+            const hub = currentJob.hub || 'N/A';
+            const stage = currentJob.stage || 'N/A';
+            const description = currentJob.description || 'N/A';
+            const amount = parseFloat(currentJob.amount) || 0;
+            const paid = parseFloat(currentJob.paid) || 0;
+            const balance = parseFloat(currentJob.balance) || amount;
+            const status = currentJob.payment_status || 'UNPAID';
+            const content = `
+                <div class="invoice-container">
+                    <div class="invoice-header">
+                        <div class="invoice-logo">
+                            <h2><i class="fas fa-cube"></i> TBOS</h2>
+                            <p>Tomstudio BizHub</p>
+                            <p>265, Isawo Road, Agric Ikorodu, Lagos</p>
+                            <p>Phone: +234 818 550 4382</p>
+                            <p>Email: info@tbos.com</p>
+                        </div>
+                        <div class="invoice-info">
+                            <h3>INVOICE</h3>
+                            <p><strong>${trackingId}</strong></p>
+                            <p>Date: ${new Date().toLocaleDateString()}</p>
+                            <p>Due: ${currentJob.delivery_date || 'On Delivery'}</p>
+                        </div>
+                    </div>
+                    <div class="invoice-sections">
+                        <div class="invoice-section">
+                            <h4><i class="fas fa-user"></i> Client Information</h4>
+                            <p><strong>Name:</strong> ${clientName}</p>
+                            <p><strong>Phone:</strong> ${clientPhone}</p>
+                            <p><strong>Email:</strong> ${clientEmail}</p>
+                        </div>
+                        <div class="invoice-section">
+                            <h4><i class="fas fa-briefcase"></i> Job Information</h4>
+                            <p><strong>Hub:</strong> ${hub}</p>
+                            <p><strong>Stage:</strong> ${stage}</p>
+                            <p><strong>Description:</strong> ${description}</p>
+                        </div>
+                    </div>
+                    <div class="invoice-summary">
+                        <div class="invoice-row">
+                            <span>Total Amount:</span>
+                            <span>₦${amount.toLocaleString()}</span>
+                        </div>
+                        <div class="invoice-row">
+                            <span>Amount Paid:</span>
+                            <span>₦${paid.toLocaleString()}</span>
+                        </div>
+                        <div class="invoice-row">
+                            <span>Balance Due:</span>
+                            <span>₦${balance.toLocaleString()}</span>
+                        </div>
+                        <div class="invoice-row">
+                            <span>Payment Status:</span>
+                            <span>${status}</span>
+                        </div>
+                    </div>
+                    <div class="invoice-footer">
+                        <p><strong>Payment Instructions:</strong></p>
+                        <p>Bank: Moniepoint | Account: 8185504382 | Name: Tomstudio BizHub</p>
+                        <p>Use Tracking ID as payment reference</p>
+                        <p>Send proof of payment to +234 818 550 4382</p>
+                        <p style="margin-top: 20px;">"Consistency builds trust. Trust builds growth."</p>
+                    </div>
+                </div>
+            `;
+            document.getElementById('invoiceContent').innerHTML = content;
+            toggleModal('invoiceModal');
+        }
+
+        function downloadInvoice() {
+            const element = document.getElementById('invoiceContent');
+            const trackingId = currentJob ? (currentJob.tracking_id || currentJob.trackingId) : 'N/A';
+            const opt = {
+                margin: 10,
+                filename: `TBOS_Invoice_${trackingId}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save().then(() => {
+                alert('Invoice downloaded successfully!');
+            }).catch(err => {
+                alert('Error generating PDF: ' + err.message);
+            });
+        }
+
+        function sendInvoiceWhatsApp() {
+            if (!currentJob) return;
+            const trackingId = currentJob.tracking_id || currentJob.trackingId || 'N/A';
+            const amount = parseFloat(currentJob.amount) || 0;
+            const paid = parseFloat(currentJob.paid) || 0;
+            const balance = parseFloat(currentJob.balance) || amount;
+            const message = `Hello,\n\nPlease find your invoice details:\n\nTracking ID: ${trackingId}\nTotal Amount: ₦${amount.toLocaleString()}\nAmount Paid: ₦${paid.toLocaleString()}\nBalance Due: ₦${balance.toLocaleString()}\n\nPayment Details:\nBank: Moniepoint\nAccount: 8185504382\nAccount Name: Tomstudio BizHub\n\nThank you for choosing Tomstudio BizHub!\nContact: +234 818 550 4382`;
+            const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+            window.open(url, '_blank');
+        }
+
+        function setRating(rating) {
+            selectedRating = rating;
+            const stars = document.querySelectorAll('.rating-stars i');
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.add('active');
+                } else {
+                    star.classList.remove('active');
+                }
+            });
+        }
+
+        function submitFeedback() {
+            if (selectedRating === 0) {
+                alert('Please select a rating');
+                return;
+            }
+            const feedback = document.getElementById('feedbackText').value.trim();
+            alert('Thank you for your feedback!');
+            document.getElementById('feedbackText').value = '';
+            selectedRating = 0;
+            document.querySelectorAll('.rating-stars i').forEach(i => i.classList.remove('active'));
+        }
+
+        function uploadFiles() {
+            const fileInput = document.getElementById('fileUpload');
+            const description = document.getElementById('uploadDescription').value.trim();
+            if (fileInput.files.length === 0) {
+                alert('Please select files to upload');
+                return;
+            }
+            alert(`${fileInput.files.length} file(s) uploaded successfully!`);
+            fileInput.value = '';
+            document.getElementById('uploadDescription').value = '';
+            const message = `Hello,\n\nI have uploaded additional files for my job:\nTracking ID: ${currentJob ? (currentJob.tracking_id || currentJob.trackingId) : 'N/A'}\nFiles: ${fileInput.files.length}\nDescription: ${description || 'N/A'}\n\nPlease review.\n\nThank you!`;
+            const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+            if (confirm('Files uploaded! Would you like to notify Tomstudio on WhatsApp?')) {
+                window.open(url, '_blank');
+            }
+        }
+
         window.addEventListener('DOMContentLoaded', function() {
             const savedTheme = localStorage.getItem('tbos_theme');
             if (savedTheme === 'cool') {
@@ -651,152 +700,35 @@
                 document.getElementById('theme-icon').className = 'fas fa-sun';
                 document.getElementById('theme-text').textContent = 'Cool';
             }
-            checkAuth();
         });
 
-        // Auth Check
-        async function checkAuth() {
-            const user = localStorage.getItem('tbos_user');
-            if (user) {
-                const userData = JSON.parse(user);
-                document.getElementById('user-name').textContent = userData.name;
-                document.getElementById('user-hub').textContent = userData.hub;
-            }
-        }
-
-        // Search Client Job
-        async function searchClientJob() {
-            const search = document.getElementById('client-search').value.trim();
-            const resultDiv = document.getElementById('client-job-result');
-            
-            if (!search) {
-                alert('Please enter a Tracking ID or Phone Number');
-                return;
-            }
-
-            resultDiv.innerHTML = '<div style="text-align: center; padding: 40px;"><i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-right: 10px;"></i> Searching...</div>';
-            resultDiv.style.display = 'block';
-
-            try {
-                const response = await fetch(API_DATA);
-                const data = await response.json();
-                const jobs = data.filter(item => item.type === 'job');
-                
-                const job = jobs.find(j => 
-                    j.tracking_id === search || 
-                    j.client_phone.includes(search) ||
-                    j.client_name.toLowerCase().includes(search.toLowerCase())
-                );
-
-                if (job) {
-                    const statusClass = job.status === 'PAID' ? 'status-paid' : 
-                                       job.status === 'PARTIALLY PAID' ? 'status-partial' : 'status-unpaid';
-
-                    resultDiv.innerHTML = 
-                        '<div class="panel" style="border-left: 4px solid var(--primary);">' +
-                        '<h4 style="margin-bottom: 20px; color: var(--primary);">Job Status: ' + job.tracking_id + '</h4>' +
-                        '<div class="form-grid">' +
-                        '<div><strong>Client:</strong> ' + job.client_name + '</div>' +
-                        '<div><strong>Phone:</strong> ' + job.client_phone + '</div>' +
-                        '<div><strong>Hub:</strong> ' + job.hub + '</div>' +
-                        '<div><strong>Current Stage:</strong> ' + job.stage + '</div>' +
-                        '<div><strong>Status:</strong> <span class="status-badge ' + statusClass + '">' + job.status + '</span></div>' +
-                        '<div><strong>Amount:</strong> ₦' + parseFloat(job.amount).toLocaleString() + '</div>' +
-                        '<div><strong>Paid:</strong> ₦' + parseFloat(job.paid || 0).toLocaleString() + '</div>' +
-                        '<div><strong>Balance:</strong> ₦' + parseFloat(job.balance || 0).toLocaleString() + '</div>' +
-                        '<div><strong>Delivery Date:</strong> ' + job.delivery_date + '</div>' +
-                        '</div>' +
-                        '<div class="form-actions" style="margin-top: 20px;">' +
-                        '<button class="btn-success" onclick="showInvoiceByTracking(\'' + job.tracking_id + '\')"><i class="fas fa-file-invoice"></i> View Invoice</button> ' +
-                        '<button class="btn-whatsapp" onclick="sendJobWhatsApp(\'' + job.tracking_id + '\', \'' + job.client_phone + '\')"><i class="fab fa-whatsapp"></i> Share Status</button>' +
-                        (job.balance > 0 ? 
-                        '<button class="btn-primary" onclick="alert(\'Opening Paystack...\')"><i class="fas fa-credit-card"></i> Pay Now</button>' : '') +
-                        '</div>' +
-                        '</div>';
-                } else {
-                    resultDiv.innerHTML = 
-                        '<div class="panel" style="border-left: 4px solid var(--danger);">' +
-                        '<p style="color: var(--danger); text-align: center; padding: 40px;">' +
-                        '<i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 20px;"></i><br>' +
-                        'Job not found. Please check your Tracking ID or Phone Number and try again.' +
-                        '</p>' +
-                        '</div>';
-                }
-
-            } catch (error) {
-                console.error('Search error:', error);
-                resultDiv.innerHTML = 
-                    '<div class="panel" style="border-left: 4px solid var(--danger);">' +
-                    '<p style="color: var(--danger); text-align: center; padding: 40px;">Error searching for job. Please try again.</p>' +
-                    '</div>';
-            }
-        }
-
-        // Show Invoice
-        function showInvoiceByTracking(trackingId) {
-            const content = 
-                '<div class="invoice-header">' +
-                '<div><h2 style="color: var(--primary);">TBOS</h2><p>Tomstudio BizHub</p>' +
-                '<p style="font-size: 0.85rem;">+234 803 082 7417</p></div>' +
-                '<div style="text-align: right;"><h3>INVOICE</h3>' +
-                '<p>' + trackingId + '</p>' +
-                '<p>Date: ' + new Date().toLocaleDateString() + '</p></div></div>' +
-                '<p>Invoice details loaded from database...</p>';
-            
-            document.getElementById('invoice-content').innerHTML = content;
-            toggleModal('invoice-modal');
-        }
-
-        // WhatsApp
-        function sendJobWhatsApp(trackingId, phone) {
-            const cleanPhone = phone.replace(/[^0-9]/g, '');
-            const message = 'Hello,\n\nYour job status update - ' + trackingId + '\n\nCheck your status at our client portal.\n\nThank you for choosing Tomstudio BizHub!';
-            const url = 'https://wa.me/234' + cleanPhone.substring(3) + '?text=' + encodeURIComponent(message);
-            window.open(url, '_blank');
-        }
-
-        function sendInvoiceWhatsApp() {
-            alert('Invoice shared via WhatsApp');
-        }
-
-        // Feedback Form
-        document.getElementById('feedback-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            alert('Thank you for your feedback! We appreciate your input.');
-            this.reset();
-        });
-
-        // Upload Form
-        document.getElementById('upload-form').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            try {
-                const response = await fetch(API_DATA);
-                const data = await response.json();
-                const jobs = data.filter(item => item.type === 'job');
-                const trackingId = document.getElementById('upload-tracking').value;
-                
-                const job = jobs.find(j => j.tracking_id === trackingId);
-
-                if (!job) {
-                    alert('Job not found. Please check your Tracking ID.');
-                    return;
-                }
-
-                alert('Files uploaded successfully! Our team will review them shortly.');
-                this.reset();
-
-            } catch (error) {
-                console.error('Upload error:', error);
-                alert('Upload failed: ' + error.message);
+        document.addEventListener('click', function(e) {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            const menuToggle = document.querySelector('.menu-toggle');
+            if (sidebar && overlay && menuToggle && 
+                !sidebar.contains(e.target) && 
+                !menuToggle.contains(e.target) &&
+                sidebar.classList.contains('active')) {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
             }
         });
 
-        // Logout
-        function logout() {
-            localStorage.removeItem('tbos_user');
-            window.location.href = 'index.html';
-        }
+        window.toggleTheme = toggleTheme;
+        window.toggleSidebar = toggleSidebar;
+        window.toggleModal = toggleModal;
+        window.copyToClipboard = copyToClipboard;
+        window.searchJob = searchJob;
+        window.contactWhatsApp = contactWhatsApp;
+        window.sendPaymentProof = sendPaymentProof;
+        window.confirmPayment = confirmPayment;
+        window.showInvoice = showInvoice;
+        window.downloadInvoice = downloadInvoice;
+        window.sendInvoiceWhatsApp = sendInvoiceWhatsApp;
+        window.setRating = setRating;
+        window.submitFeedback = submitFeedback;
+        window.uploadFiles = uploadFiles;
     </script>
 </body>
 </html>

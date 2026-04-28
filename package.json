@@ -1,16 +1,29 @@
 {
-  "name": "tbos-v3",
-  "version": "1.0.0",
-  "description": "Track • Record • Route • Report • Improve",
-  "main": "setup.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
-  "dependencies": {
-    "pocketbase": "^0.26.8"
-  }
+    "name": "tbos-v3",
+    "version": "3.0.0",
+    "description": "Tomstudio BizHub Operations System - Track • Record • Route • Report • Improve",
+    "main": "index.html",
+    "scripts": {
+        "start": "npx http-server -p 5500",
+        "build": "echo 'PWA Ready!'",
+        "test": "echo 'No tests specified'"
+    },
+    "keywords": [
+        "business",
+        "operations",
+        "pwa",
+        "tomstudio",
+        "tbos"
+    ],
+    "author": "Tomstudio Tech Academy",
+    "license": "ISC",
+    "type": "commonjs",
+    "dependencies": {
+        "http-server": "^14.1.1"
+    },
+    "pwa": {
+        "enabled": true,
+        "manifest": "./manifest.json",
+        "serviceWorker": "./sw.js"
+    }
 }

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline | TBOS v3.0</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+            padding: 20px;
+        }
+        .offline-container {
+            max-width: 500px;
+            padding: 40px;
+        }
+        .icon {
+            font-size: 5rem;
+            color: #008080;
+            margin-bottom: 30px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+        p {
+            color: #a0a0a0;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        .btn {
+            background: #008080;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn:hover {
+            background: #006666;
+        }
+        .status {
+            margin-top: 30px;
+            padding: 15px;
+            background: rgba(0, 128, 128, 0.2);
+            border-radius: 10px;
+            border: 1px solid #008080;
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="icon">
+            <i class="fas fa-wifi"></i>
+        </div>
+        <h1>You're Offline</h1>
+        <p>
+            Don't worry! TBOS v3.0 works offline. 
+            Your data is saved locally and will sync when you're back online.
+        </p>
+        <a href="index.html" class="btn">
+            <i class="fas fa-home"></i> Go to Home
+        </a>
+        <div class="status">
+            <p><i class="fas fa-info-circle"></i> Some features may be limited until you reconnect.</p>
+        </div>
+    </div>
+    <script>
+        // Auto-reload when back online
+        window.addEventListener('online', () => {
+            if (confirm('✅ You\'re back online! Reload to sync data?')) {
+                window.location.reload();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,22 +1,27 @@
 # TBOS v3.0 - Tomstudio BizHub Operations System
+## Track • Record • Route • Report • Improve
 
-Track • Record • Route • Report • Improve
+### 📱 PWA (Progressive Web App) Features
 
-## Features
+✅ **Installable** - Add to home screen on mobile and desktop
+✅ **Offline Support** - Works without internet
+✅ **Push Notifications** - Get updates even when app is closed
+✅ **Fast Loading** - Cached assets for instant load
+✅ **Responsive** - Works on all devices
 
-- Staff Management & ID Cards
-- Job Management & Routing
-- Automatic Invoicing
-- Payment Tracking
-- Inventory Management
-- WhatsApp Notifications
-- AI Price Estimation
-- Performance Analytics
+### 🚀 Installation
 
-## Built By
+#### On Mobile (Android/iOS):
+1. Open the app in Chrome/Safari
+2. Tap the menu (⋮ or ⬆️)
+3. Tap "Add to Home Screen" or "Install App"
+4. Confirm installation
+5. App will appear on your home screen!
 
-Tomstudio Tech Academy
+#### On Desktop (Chrome/Edge):
+1. Open the app in browser
+2. Look for the install icon (⬇️) in address bar
+3. Click "Install"
+4. App will open in its own window!
 
-## Contact
-
-+234 803 082 7417
+### 📂 File Structure

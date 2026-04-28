@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel | TBOS v3.0</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script type="module" src="config.js"></script>
     <style>
         :root {
             --bg-body: #0a0a0a;
@@ -19,11 +20,11 @@
             --success: #00c851;
             --warning: #ffbb33;
             --danger: #ff4444;
+            --info: #00b0ff;
             --sidebar-width: 280px;
             --header-height: 70px;
             --radius: 12px;
         }
-
         [data-theme="cool"] {
             --bg-body: #f0f4f8;
             --bg-panel: #ffffff;
@@ -33,12 +34,10 @@
             --text-muted: #718096;
             --border: #e2e8f0;
         }
-
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; transition: background-color 0.3s, color 0.3s; }
-        body { background: var(--bg-body); color: var(--text-main); display: flex; min-height: 100vh; }
+        body { background: var(--bg-body); color: var(--text-main); display: flex; min-height: 100vh; overflow-x: hidden; width: 100%; }
         a { text-decoration: none; color: inherit; }
         button { cursor: pointer; border: none; outline: none; transition: 0.3s; }
-
         .sidebar {
             width: var(--sidebar-width);
             background: var(--bg-sidebar);
@@ -47,363 +46,128 @@
             height: 100vh;
             overflow-y: auto;
             z-index: 100;
+            transition: transform 0.3s ease;
         }
-
-        .brand {
-            padding: 25px;
-            border-bottom: 1px solid var(--border);
-            color: var(--primary);
-            font-size: 1.5rem;
-            font-weight: 700;
+        .brand { padding: 25px; border-bottom: 1px solid var(--border); color: var(--primary); font-size: 1.5rem; font-weight: 700; text-align: center; }
+        .nav-section { font-size: 0.7rem; text-transform: uppercase; color: #555; margin: 20px 15px 10px; font-weight: 700; padding-left: 15px; }
+        .nav-item { padding: 15px 25px; color: var(--text-muted); display: flex; align-items: center; gap: 12px; transition: 0.3s; cursor: pointer; }
+        .nav-item:hover, .nav-item.active { background: rgba(0, 128, 128, 0.1); color: var(--primary); }
+        .nav-item i { width: 20px; text-align: center; }
+        .main-content { flex: 1; margin-left: var(--sidebar-width); display: flex; flex-direction: column; min-height: 100vh; }
+        .top-bar { height: var(--header-height); background: var(--bg-panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 25px; position: sticky; top: 0; z-index: 50; }
+        .menu-toggle { display: none; color: var(--text-main); font-size: 1.5rem; cursor: pointer; padding: 10px; border-radius: 8px; }
+        .user-profile { display: flex; align-items: center; gap: 15px; }
+        .hub-badge { padding: 5px 15px; background: rgba(0, 128, 128, 0.2); color: var(--primary); border-radius: 20px; font-size: 0.85rem; border: 1px solid var(--primary); }
+        .theme-toggle { background: rgba(255,255,255,0.1); border: 1px solid var(--border); border-radius: 20px; padding: 8px 12px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--text-main); }
+        .notification-btn { position: relative; color: var(--text-muted); font-size: 1.2rem; cursor: pointer; padding: 10px; background: transparent; border: none; }
+        .notification-badge { position: absolute; top: 0; right: 0; background: var(--danger); color: white; font-size: 0.65rem; padding: 2px 6px; border-radius: 10px; min-width: 18px; text-align: center; }
+        .notification-dropdown { position: absolute; top: 60px; right: 20px; background: var(--bg-panel); border: 1px solid var(--border); border-radius: 12px; width: 350px; max-height: 400px; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.5); z-index: 200; display: none; }
+        .notification-dropdown.active { display: block; }
+        .notification-header { padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--bg-panel); z-index: 10; }
+        .notification-header h4 { font-size: 1rem; color: var(--text-main); }
+        .clear-notifications { color: var(--primary); font-size: 0.8rem; cursor: pointer; background: none; border: none; }
+        .notification-list { padding: 10px; }
+        .notification-item { padding: 15px; background: var(--bg-input); border-radius: 8px; margin-bottom: 10px; border-left: 3px solid var(--primary); cursor: pointer; transition: 0.3s; }
+        .notification-item:hover { background: rgba(0, 128, 128, 0.1); }
+        .notification-item.unread { background: rgba(0, 128, 128, 0.15); }
+        .notification-item .title { font-weight: 600; color: var(--text-main); margin-bottom: 5px; }
+        .notification-item .message { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; }
+        .notification-item .time { font-size: 0.75rem; color: var(--text-muted); }
+        .no-notifications { text-align: center; padding: 40px 20px; color: var(--text-muted); }
+        .content-scroll { flex: 1; overflow-y: auto; padding: 25px; }
+        .panel { background: var(--bg-panel); border-radius: var(--radius); padding: 25px; margin-bottom: 25px; border: 1px solid var(--border); }
+        .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        .panel-title { font-size: 1.15rem; font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 10px; }
+        .panel-title i { color: var(--primary); }
+        .admin-controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .control-btn {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
             text-align: center;
-        }
-
-        .nav-section {
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            color: #555;
-            margin: 20px 15px 10px;
-            font-weight: 700;
-            padding-left: 15px;
-        }
-
-        .nav-item {
-            padding: 15px 25px;
-            color: var(--text-muted);
-            display: flex;
-            align-items: center;
-            gap: 12px;
+            cursor: pointer;
             transition: 0.3s;
         }
-
-        .nav-item:hover, .nav-item.active {
-            background: rgba(0, 128, 128, 0.1);
-            color: var(--primary);
-        }
-
-        .nav-item i { width: 20px; text-align: center; }
-
-        .main-content {
-            flex: 1;
-            margin-left: var(--sidebar-width);
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
-        .top-bar {
-            height: var(--header-height);
-            background: var(--bg-panel);
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 25px;
-            position: sticky;
-            top: 0;
-            z-index: 50;
-        }
-
-        .menu-toggle {
-            display: none;
-            color: var(--text-main);
-            font-size: 1.5rem;
-            cursor: pointer;
-            padding: 10px;
-            border-radius: 8px;
-        }
-
-        .user-profile {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .hub-badge {
-            padding: 5px 15px;
-            background: rgba(0, 128, 128, 0.2);
-            color: var(--primary);
-            border-radius: 20px;
-            font-size: 0.85rem;
-            border: 1px solid var(--primary);
-        }
-
-        .theme-toggle {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 8px 12px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.85rem;
-            color: var(--text-main);
-        }
-
-        .content-scroll {
-            flex: 1;
-            overflow-y: auto;
-            padding: 25px;
-        }
-
-        .panel {
-            background: var(--bg-panel);
-            border-radius: var(--radius);
-            padding: 25px;
-            margin-bottom: 25px;
-            border: 1px solid var(--border);
-        }
-
-        .panel-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .panel-title {
-            font-size: 1.15rem;
-            font-weight: 600;
-            color: var(--text-main);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .panel-title i { color: var(--primary); }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 25px;
-        }
-
-        .stat-card {
-            background: var(--bg-panel);
-            padding: 25px;
-            border-radius: var(--radius);
-            border: 1px solid var(--border);
-            border-left: 4px solid var(--primary);
-        }
-
-        .stat-value { font-size: 2rem; font-weight: 700; margin-bottom: 5px; color: var(--primary); }
+        .control-btn:hover { background: rgba(0, 128, 128, 0.1); border-color: var(--primary); transform: translateY(-2px); }
+        .control-btn i { font-size: 2rem; color: var(--primary); margin-bottom: 10px; }
+        .control-btn span { display: block; font-size: 0.9rem; color: var(--text-main); }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 25px; }
+        .stat-card { background: var(--bg-panel); padding: 25px; border-radius: var(--radius); border: 1px solid var(--border); border-left: 4px solid var(--primary); }
+        .stat-value { font-size: 2.5rem; font-weight: 700; margin-bottom: 5px; color: var(--primary); }
+        .stat-value.text-warning { color: var(--warning); }
+        .stat-value.text-danger { color: var(--danger); }
+        .stat-value.text-success { color: var(--success); }
         .stat-label { color: var(--text-muted); font-size: 0.9rem; }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 15px;
-        }
-
-        .form-full { grid-column: 1 / -1; }
-
-        .form-group { margin-bottom: 15px; }
-
-        .form-group label {
-            display: block;
-            color: var(--text-muted);
-            margin-bottom: 8px;
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
-
-        .input-wrapper { position: relative; }
-
-        .input-wrapper i {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-muted);
-        }
-
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 12px 12px 12px 40px;
-            background: var(--bg-input);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            color: var(--text-main);
-            font-size: 0.95rem;
-        }
-
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
-            border-color: var(--primary);
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(0, 128, 128, 0.2);
-        }
-
-        .form-group textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-
-        .btn-primary {
-            padding: 14px 25px;
-            background: var(--primary);
-            color: white;
-            border-radius: 8px;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-primary:hover {
-            background: var(--primary-hover);
-            transform: translateY(-2px);
-        }
-
-        .btn-sm {
-            padding: 8px 15px;
-            font-size: 0.8rem;
-            border-radius: 6px;
-        }
-
-        .btn-success { background: var(--success); color: white; }
-        .btn-warning { background: var(--warning); color: #000; }
-        .btn-danger { background: var(--danger); color: white; }
-        .btn-outline {
-            background: transparent;
-            border: 1px solid var(--border);
-            color: var(--text-muted);
-        }
-
-        .btn-outline:hover {
-            border-color: var(--primary);
-            color: var(--primary);
-        }
-
-        .form-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-            flex-wrap: wrap;
-        }
-
-        .announcement-list {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .announcement-card {
-            background: var(--bg-input);
-            padding: 20px;
-            border-radius: 8px;
-            border-left: 4px solid var(--primary);
-        }
-
-        .announcement-card.info { border-left-color: #00b0ff; }
+        .announcement-list { display: flex; flex-direction: column; gap: 15px; }
+        .announcement-card { background: var(--bg-input); padding: 20px; border-radius: 8px; border-left: 4px solid var(--primary); }
+        .announcement-card.info { border-left-color: var(--info); }
         .announcement-card.warning { border-left-color: var(--warning); }
         .announcement-card.alert { border-left-color: var(--danger); }
         .announcement-card.success { border-left-color: var(--success); }
-
-        .announcement-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .announcement-title {
-            font-weight: 600;
-            color: var(--text-main);
-        }
-
-        .announcement-time {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-        }
-
-        .announcement-message {
-            color: var(--text-muted);
-            line-height: 1.6;
-        }
-
-        .approval-card {
-            background: var(--bg-input);
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .approval-info {
-            flex: 1;
-            min-width: 200px;
-        }
-
-        .approval-info h4 {
-            color: var(--text-main);
-            margin-bottom: 5px;
-        }
-
-        .approval-info p {
-            color: var(--text-muted);
-            font-size: 0.85rem;
-        }
-
-        .approval-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .loading-spinner {
-            display: inline-block;
-            width: 18px;
-            height: 18px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-top-color: #fff;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
+        .announcement-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .announcement-title { font-weight: 600; color: var(--text-main); }
+        .announcement-time { font-size: 0.8rem; color: var(--text-muted); }
+        .announcement-message { color: var(--text-muted); line-height: 1.6; }
+        .approval-card { background: var(--bg-input); padding: 20px; border-radius: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .approval-info { flex: 1; min-width: 200px; }
+        .approval-info h4 { color: var(--text-main); margin-bottom: 5px; }
+        .approval-info p { color: var(--text-muted); font-size: 0.85rem; }
+        .approval-actions { display: flex; gap: 10px; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
+        .modal.active { display: flex; }
+        .modal-content { background: var(--bg-panel); border-radius: var(--radius); border: 1px solid var(--border); width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; }
+        .modal-header { padding: 20px 25px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h3 { font-size: 1.2rem; color: var(--text-main); }
+        .modal-close { background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+        .modal-close:hover { color: var(--danger); background: rgba(255, 68, 68, 0.1); }
+        .modal-body { padding: 25px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .form-full { grid-column: 1 / -1; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; color: var(--text-muted); margin-bottom: 8px; font-size: 0.9rem; font-weight: 500; }
+        .input-wrapper { position: relative; }
+        .input-wrapper i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 12px 12px 40px; background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px; color: var(--text-main); font-size: 0.95rem; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(0, 128, 128, 0.2); }
+        .form-group textarea { resize: vertical; min-height: 100px; }
+        .btn-primary { padding: 14px 25px; background: var(--primary); color: white; border-radius: 8px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-primary:hover { background: var(--primary-hover); transform: translateY(-2px); }
+        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .btn-sm { padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; margin: 2px; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-info { background: var(--info); color: white; }
+        .btn-whatsapp { background: #25D366; color: white; }
+        .btn-warning { background: var(--warning); color: #000; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-muted); }
+        .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+        .form-actions { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+        .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 99; }
+        .overlay.active { display: block; }
+        footer { padding: 20px; text-align: center; font-size: 0.8rem; color: var(--text-muted); border-top: 1px solid var(--border); background: var(--bg-panel); }
+        .loading-spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-
-        footer {
-            padding: 20px;
-            text-align: center;
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            border-top: 1px solid var(--border);
-            background: var(--bg-panel);
-        }
-
         @media (max-width: 768px) {
             .sidebar { transform: translateX(-100%); }
             .sidebar.active { transform: translateX(0); }
             .main-content { margin-left: 0; }
             .menu-toggle { display: block; }
+            .top-bar { padding: 0 15px; }
             .stats-grid { grid-template-columns: 1fr 1fr; }
-            .form-grid { grid-template-columns: 1fr; }
+            .admin-controls { grid-template-columns: 1fr; }
+            .notification-dropdown { width: calc(100vw - 40px); right: 20px; left: 20px; }
             .approval-card { flex-direction: column; align-items: flex-start; }
-            .overlay {
-                display: none;
-                position: fixed;
-                inset: 0;
-                background: rgba(0,0,0,0.5);
-                z-index: 99;
-            }
-            .overlay.active { display: block; }
+        }
+        @media (max-width: 480px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .theme-toggle span { display: none; }
+            .notification-dropdown { width: calc(100vw - 30px); }
         }
     </style>
 </head>
 <body>
     <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
-
     <aside class="sidebar" id="sidebar">
         <div class="brand"><i class="fas fa-cube"></i> TBOS v3.0</div>
         <div class="nav-scroll">
@@ -413,20 +177,16 @@
             <a href="staff.html" class="nav-item"><i class="fas fa-users"></i> Staff & ID Cards</a>
             <a href="inventory.html" class="nav-item"><i class="fas fa-boxes"></i> Inventory</a>
             <a href="clients.html" class="nav-item"><i class="fas fa-user-friends"></i> Client Portal</a>
-            
             <div class="nav-section">Knowledge</div>
             <a href="knowledge.html" class="nav-item"><i class="fas fa-book"></i> Knowledge Center</a>
             <a href="reports.html" class="nav-item"><i class="fas fa-chart-line"></i> Reports</a>
-            
             <div class="nav-section">Administration</div>
             <a href="admin.html" class="nav-item active"><i class="fas fa-cog"></i> Admin Panel</a>
             <a href="staff.html#approvals" class="nav-item"><i class="fas fa-user-check"></i> Staff Approvals</a>
             <a href="#announcements" class="nav-item"><i class="fas fa-bullhorn"></i> Announcements</a>
-            
             <a href="#" class="nav-item" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </div>
     </aside>
-
     <main class="main-content">
         <header class="top-bar">
             <div style="display: flex; align-items: center; gap: 15px;">
@@ -438,39 +198,65 @@
                     <i class="fas fa-moon" id="theme-icon"></i>
                     <span id="theme-text">Dark</span>
                 </button>
-                <span id="user-name">User</span>
-                <span id="user-hub" class="hub-badge">Hub</span>
+                <button class="notification-btn" onclick="toggleNotifications()">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge" id="notif-badge">0</span>
+                </button>
+                <span id="user-name">Admin</span>
+                <span id="user-hub" class="hub-badge">Administrator</span>
             </div>
         </header>
-
+        <div class="notification-dropdown" id="notification-dropdown">
+            <div class="notification-header">
+                <h4><i class="fas fa-bell"></i> Notifications</h4>
+                <button class="clear-notifications" onclick="clearNotifications()">Clear All</button>
+            </div>
+            <div class="notification-list" id="notification-list">
+                <div class="no-notifications">
+                    <i class="fas fa-bell-slash" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                    <p>No new notifications</p>
+                </div>
+            </div>
+        </div>
         <div class="content-scroll">
             <div class="panel">
                 <div class="panel-header">
                     <div class="panel-title"><i class="fas fa-cog"></i> Admin Controls</div>
                 </div>
-                <div class="form-grid">
-                    <button class="btn-primary" onclick="window.location.href='staff.html#approvals'">
-                        <i class="fas fa-user-check"></i> Approve Pending Staff
-                    </button>
-                    <button class="btn-primary" onclick="document.getElementById('announcements').scrollIntoView({behavior: 'smooth'})">
-                        <i class="fas fa-bullhorn"></i> Broadcast Announcement
-                    </button>
-                    <button class="btn-primary" onclick="alert('Upload functionality coming soon')">
-                        <i class="fas fa-upload"></i> Upload Files
-                    </button>
-                    <button class="btn-primary" onclick="alert('Export functionality coming soon')">
-                        <i class="fas fa-download"></i> Export Reports (PDF)
-                    </button>
+                <div class="admin-controls">
+                    <div class="control-btn" onclick="window.location.href='staff.html#approvals'">
+                        <i class="fas fa-user-check"></i>
+                        <span>Approve Pending Staff</span>
+                    </div>
+                    <div class="control-btn" onclick="document.getElementById('announcements').scrollIntoView({behavior: 'smooth'})">
+                        <i class="fas fa-bullhorn"></i>
+                        <span>Broadcast Announcement</span>
+                    </div>
+                    <div class="control-btn" onclick="alert('Upload feature coming soon!')">
+                        <i class="fas fa-upload"></i>
+                        <span>Upload Files</span>
+                    </div>
+                    <div class="control-btn" onclick="alert('Export feature coming soon!')">
+                        <i class="fas fa-file-download"></i>
+                        <span>Export Reports (PDF)</span>
+                    </div>
+                    <div class="control-btn" onclick="alert('Settings feature coming soon!')">
+                        <i class="fas fa-sliders-h"></i>
+                        <span>System Settings</span>
+                    </div>
+                    <div class="control-btn" onclick="alert('Payments feature coming soon!')">
+                        <i class="fas fa-credit-card"></i>
+                        <span>Payment Gateways</span>
+                    </div>
                 </div>
             </div>
-
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-value" id="stat-total-users">0</div>
                     <div class="stat-label">Total Users</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value" id="stat-pending-approvals">0</div>
+                    <div class="stat-value text-warning" id="stat-pending-approvals">0</div>
                     <div class="stat-label">Pending Approvals</div>
                 </div>
                 <div class="stat-card">
@@ -478,11 +264,10 @@
                     <div class="stat-label">Total Jobs</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value" id="stat-revenue">₦0</div>
+                    <div class="stat-value text-success" id="stat-total-revenue">₦0</div>
                     <div class="stat-label">Total Revenue</div>
                 </div>
             </div>
-
             <div class="panel" id="approvals">
                 <div class="panel-header">
                     <div class="panel-title"><i class="fas fa-user-check"></i> Pending Staff Approvals</div>
@@ -497,7 +282,6 @@
                     </p>
                 </div>
             </div>
-
             <div class="panel" id="announcements">
                 <div class="panel-header">
                     <div class="panel-title"><i class="fas fa-bullhorn"></i> Create Announcement</div>
@@ -541,13 +325,13 @@
                         </div>
                     </div>
                     <div class="form-actions form-full">
-                        <button type="submit" class="btn-primary" style="flex: 1;">
-                            <i class="fas fa-paper-plane"></i> Post Announcement
+                        <button type="submit" class="btn-primary" id="btn-post-announce" style="flex: 1;">
+                            <i class="fas fa-paper-plane"></i>
+                            <span>Post Announcement</span>
                         </button>
                     </div>
                 </form>
             </div>
-
             <div class="panel">
                 <div class="panel-header">
                     <div class="panel-title"><i class="fas fa-history"></i> All Announcements</div>
@@ -573,28 +357,25 @@
                 </div>
             </div>
         </div>
-
         <footer>
             TBOS v3.0 | Tomstudio BizHub Operations System<br>
             Track • Record • Route • Report • Improve<br>
-            Built by Tomstudio Tech Academy | Contact: +234 803 082 7417
+            Built by Tomstudio Tech Academy | Contact: +234 818 550 4382
         </footer>
     </main>
-
-    <script>
-        // GOOGLE SHEETS DATABASE - SheetDB APIs
-        const API_USERS = 'https://sheetdb.io/api/v1/gjd4fyhfyalnm';
-        const API_DATA = 'https://sheetdb.io/api/v1/mhbv4ydfvjquv';
-
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+        const SUPABASE_URL = 'https://wbmshbmfrteutglydiay.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndibXNoYm1mcnRldXRnbHlkaWF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMjk5OTIsImV4cCI6MjA5MjkwNTk5Mn0.UiV0Uaxv0fXb_sHuoIOJ2AGJKenUmfmFAzaifPY0A6Y';
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         let currentUser = null;
+        let notifications = [];
 
-        // Theme Toggle
         function toggleTheme() {
             const currentTheme = document.documentElement.getAttribute('data-theme');
             const newTheme = currentTheme === 'cool' ? 'dark' : 'cool';
             const icon = document.getElementById('theme-icon');
             const text = document.getElementById('theme-text');
-            
             if (newTheme === 'cool') {
                 document.documentElement.setAttribute('data-theme', 'cool');
                 icon.className = 'fas fa-sun';
@@ -608,57 +389,116 @@
             }
         }
 
-        // Toggle Sidebar
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('active');
             document.getElementById('overlay').classList.toggle('active');
         }
 
-        // Load saved theme
-        window.addEventListener('DOMContentLoaded', async function() {
+        function toggleModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.toggle('active');
+        }
+
+        function toggleNotifications() {
+            const dropdown = document.getElementById('notification-dropdown');
+            dropdown.classList.toggle('active');
+            if (dropdown.classList.contains('active')) {
+                notifications.forEach(n => n.unread = false);
+                updateNotificationBadge();
+                saveNotifications();
+            }
+        }
+
+        function addNotification(type, title, message) {
+            const notification = { id: Date.now(), type: type, title: title, message: message, time: new Date().toLocaleString(), unread: true };
+            notifications.unshift(notification);
+            if (notifications.length > 20) notifications = notifications.slice(0, 20);
+            updateNotificationBadge();
+            renderNotifications();
+            saveNotifications();
+        }
+
+        function updateNotificationBadge() {
+            const unreadCount = notifications.filter(n => n.unread).length;
+            const badge = document.getElementById('notif-badge');
+            badge.textContent = unreadCount;
+            badge.style.display = unreadCount > 0 ? 'block' : 'none';
+        }
+
+        function renderNotifications() {
+            const list = document.getElementById('notification-list');
+            if (notifications.length === 0) {
+                list.innerHTML = `<div class="no-notifications"><i class="fas fa-bell-slash" style="font-size: 2rem; margin-bottom: 10px;"></i><p>No new notifications</p></div>`;
+                return;
+            }
+            list.innerHTML = notifications.map(n => `
+                <div class="notification-item ${n.unread ? 'unread' : ''}" onclick="viewNotification('${n.id}')">
+                    <div class="title">${n.title}</div>
+                    <div class="message">${n.message}</div>
+                    <div class="time">${n.time}</div>
+                </div>
+            `).join('');
+        }
+
+        function clearNotifications() {
+            notifications = [];
+            updateNotificationBadge();
+            renderNotifications();
+            saveNotifications();
+        }
+
+        function viewNotification(id) {
+            const notification = notifications.find(n => n.id == id);
+            if (notification) {
+                notification.unread = false;
+                updateNotificationBadge();
+                saveNotifications();
+                document.getElementById('notification-dropdown').classList.remove('active');
+                alert(`${notification.title}\n\n${notification.message}\n\n${notification.time}`);
+            }
+        }
+
+        function saveNotifications() {
+            localStorage.setItem('tbos_notifications', JSON.stringify(notifications));
+        }
+
+        function loadNotifications() {
+            const saved = localStorage.getItem('tbos_notifications');
+            if (saved) {
+                notifications = JSON.parse(saved);
+                updateNotificationBadge();
+                renderNotifications();
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', function() {
             const savedTheme = localStorage.getItem('tbos_theme');
             if (savedTheme === 'cool') {
                 document.documentElement.setAttribute('data-theme', 'cool');
                 document.getElementById('theme-icon').className = 'fas fa-sun';
                 document.getElementById('theme-text').textContent = 'Cool';
             }
-            
-            await checkAuth();
-        });
-
-        // Auth Check
-        async function checkAuth() {
-            const user = localStorage.getItem('tbos_user');
-            if (!user) {
+            loadNotifications();
+            const savedUser = localStorage.getItem('currentUser');
+            if (!savedUser) {
                 window.location.href = 'index.html';
                 return;
             }
+            currentUser = JSON.parse(savedUser);
+            document.getElementById('user-name').textContent = currentUser.name || 'Admin';
+            document.getElementById('user-hub').textContent = currentUser.hub || 'Administrator';
+            loadAdminData();
+        });
 
-            currentUser = JSON.parse(user);
-            document.getElementById('user-name').textContent = currentUser.name;
-            document.getElementById('user-hub').textContent = currentUser.hub;
-            
-            if (currentUser.role !== 'Administrator') {
-                alert('Access Denied. Admin privileges required.');
-                window.location.href = 'dashboard.html';
-                return;
-            }
-            
-            await loadAdminData();
-        }
-
-        // Load Admin Data
         async function loadAdminData() {
             try {
-                // Load users
-                const usersResponse = await fetch(API_USERS);
-                const users = await usersResponse.json();
+                const [users, jobs] = await Promise.all([
+                    API.get('users'),
+                    API.get('jobs')
+                ]);
                 document.getElementById('stat-total-users').textContent = users.length;
-                
-                // Load pending approvals
                 const pendingStaff = users.filter(u => u.status === 'Pending Approval');
                 document.getElementById('stat-pending-approvals').textContent = pendingStaff.length;
-                
                 if (pendingStaff.length > 0) {
                     let html = '';
                     pendingStaff.forEach(s => {
@@ -682,34 +522,50 @@
                     });
                     document.getElementById('pending-approvals').innerHTML = html;
                 }
-                
-                // Load jobs stats
-                const dataResponse = await fetch(API_DATA);
-                const data = await dataResponse.json();
-                const jobs = data.filter(item => item.type === 'job');
-                
                 document.getElementById('stat-total-jobs').textContent = jobs.length;
-                document.getElementById('stat-revenue').textContent = '₦' + jobs.reduce((sum, j) => sum + (parseInt(j.amount) || 0), 0).toLocaleString();
-                
+                const totalRevenue = jobs.reduce((sum, j) => sum + (parseFloat(j.paid) || 0), 0);
+                document.getElementById('stat-total-revenue').textContent = '₦' + totalRevenue.toLocaleString();
+                loadAnnouncements();
             } catch (error) {
-                console.error('Load admin data error:', error);
+                console.error('❌ Load admin data error:', error);
+                document.getElementById('stat-total-users').textContent = '0';
+                document.getElementById('stat-pending-approvals').textContent = '0';
+                document.getElementById('stat-total-jobs').textContent = '0';
+                document.getElementById('stat-total-revenue').textContent = '₦0';
             }
         }
 
-        // Approve Staff
+        async function loadAnnouncements() {
+            try {
+                const announcements = await API.get('announcements');
+                const list = document.getElementById('all-announcements');
+                if (announcements.length === 0) {
+                    list.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 40px;">No announcements yet.</p>';
+                    return;
+                }
+                list.innerHTML = announcements.map(a => `
+                    <div class="announcement-card ${a.type || 'info'}">
+                        <div class="announcement-header">
+                            <span class="announcement-title">${a.type ? a.type.charAt(0).toUpperCase() + a.type.slice(1) : 'Announcement'}</span>
+                            <span class="announcement-time">${a.created_at ? new Date(a.created_at).toLocaleString() : 'Just now'}</span>
+                        </div>
+                        <p class="announcement-message">${a.message || 'No message'}</p>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('❌ Load announcements error:', error);
+            }
+        }
+
         async function approveStaff(staffId) {
             try {
-                // Update in Google Sheets
-                await fetch(API_USERS, {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify([{
-                        id: staffId,
-                        status: 'Active'
-                    }])
-                });
+                const { data: result, error } = await supabase
+                    .from('users')
+                    .update({ status: 'Active' })
+                    .eq('id', staffId)
+                    .select();
+                if (error) throw error;
+                addNotification('approval', 'Staff Approved', 'Staff member has been approved and can now login');
                 alert('Staff approved successfully!');
                 loadAdminData();
             } catch (error) {
@@ -717,20 +573,15 @@
             }
         }
 
-        // Reject Staff
         async function rejectStaff(staffId) {
             if (confirm('Are you sure you want to reject this staff member?')) {
                 try {
-                    await fetch(API_USERS, {
-                        method: 'PATCH',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify([{
-                            id: staffId,
-                            status: 'Rejected'
-                        }])
-                    });
+                    const { data: result, error } = await supabase
+                        .from('users')
+                        .update({ status: 'Rejected' })
+                        .eq('id', staffId)
+                        .select();
+                    if (error) throw error;
                     alert('Staff rejected.');
                     loadAdminData();
                 } catch (error) {
@@ -739,26 +590,15 @@
             }
         }
 
-        // Approve All Staff
         async function approveAllStaff() {
             if (confirm('Approve all pending staff members?')) {
                 try {
-                    const usersResponse = await fetch(API_USERS);
-                    const users = await usersResponse.json();
+                    const users = await API.get('users');
                     const pendingStaff = users.filter(u => u.status === 'Pending Approval');
-                    
                     for (const user of pendingStaff) {
-                        await fetch(API_USERS, {
-                            method: 'PATCH',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify([{
-                                id: user.id,
-                                status: 'Active'
-                            }])
-                        });
+                        await supabase.from('users').update({ status: 'Active' }).eq('id', user.id);
                     }
+                    addNotification('approval', 'Bulk Approval', `${pendingStaff.length} staff members approved`);
                     alert('All staff approved successfully!');
                     loadAdminData();
                 } catch (error) {
@@ -767,66 +607,69 @@
             }
         }
 
-        // Announcement Form
         document.getElementById('announcement-form').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
-            const message = document.getElementById('announce-message').value;
-            const type = document.getElementById('announce-type').value;
-            const hub = document.getElementById('announce-hub').value;
-            
+            const btnSubmit = document.getElementById('btn-post-announce');
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = '<div class="loading-spinner"></div> Posting...';
             try {
-                const newAnnouncement = {
-                    type: 'announcement',
-                    id: String(Date.now()),
-                    title: 'New Announcement',
-                    message: message,
-                    target_hub: hub,
-                    created_by: currentUser.id,
-                    created_date: new Date().toISOString().split('T')[0]
+                const announcementData = {
+                    message: document.getElementById('announce-message').value,
+                    type: document.getElementById('announce-type').value,
+                    target_hub: document.getElementById('announce-hub').value,
+                    created_by: currentUser.id || 'admin',
+                    created_at: new Date().toISOString()
                 };
-                
-                await fetch(API_DATA, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify([newAnnouncement])
-                });
-                
+                const { data: result, error } = await supabase
+                    .from('announcements')
+                    .insert([announcementData])
+                    .select();
+                if (error) throw error;
+                addNotification('announcement', 'New Announcement', announcementData.message);
                 alert('Announcement posted successfully!');
                 this.reset();
-                
-                // Add to display
-                const list = document.getElementById('all-announcements');
-                const newAnnouncementHTML = `
-                    <div class="announcement-card ${type}">
-                        <div class="announcement-header">
-                            <span class="announcement-title">New Announcement</span>
-                            <span class="announcement-time">Just now</span>
-                        </div>
-                        <p class="announcement-message">${message}</p>
-                    </div>
-                `;
-                list.innerHTML = newAnnouncementHTML + list.innerHTML;
-                
+                loadAnnouncements();
             } catch (error) {
+                console.error('❌ Post announcement error:', error);
                 alert('Error posting announcement: ' + error.message);
             }
+            btnSubmit.disabled = false;
+            btnSubmit.innerHTML = '<i class="fas fa-paper-plane"></i> Post Announcement';
         });
 
-        // Clear All Announcements
         function clearAllAnnouncements() {
             if (confirm('Clear all announcements?')) {
                 document.getElementById('all-announcements').innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 40px;">No announcements.</p>';
+                addNotification('announcement', 'Announcements Cleared', 'All announcements have been cleared');
             }
         }
 
-        // Logout
         function logout() {
-            localStorage.removeItem('tbos_user');
-            window.location.href = 'index.html';
+            if (confirm('Log out?')) {
+                localStorage.removeItem('currentUser');
+                localStorage.removeItem('currentStaffId');
+                window.location.href = 'index.html';
+            }
         }
+
+        document.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('notification-dropdown');
+            const btn = document.querySelector('.notification-btn');
+            if (dropdown && !dropdown.contains(e.target) && !btn.contains(e.target)) {
+                dropdown.classList.remove('active');
+            }
+        });
+
+        window.toggleTheme = toggleTheme;
+        window.toggleSidebar = toggleSidebar;
+        window.toggleModal = toggleModal;
+        window.toggleNotifications = toggleNotifications;
+        window.clearNotifications = clearNotifications;
+        window.approveStaff = approveStaff;
+        window.rejectStaff = rejectStaff;
+        window.approveAllStaff = approveAllStaff;
+        window.clearAllAnnouncements = clearAllAnnouncements;
+        window.logout = logout;
     </script>
 </body>
 </html>
