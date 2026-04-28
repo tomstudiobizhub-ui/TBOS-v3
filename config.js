@@ -1,5 +1,5 @@
 // config.js - TBOS v3.0 Supabase Configuration
-const SUPABASE_URL = 'https://wbmshbmfrteutglyydiay.supabase.co';
+const SUPABASE_URL = 'https://wbmshbmfrteutglydiay.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndibXNoYmZydGV1dGdseWlkaWF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyMjk5OTIsImV4cCI6MjA5MjkwNTk5Mn0.UiV0Uaxv0fXb_sHuoIOJ2AGJKenUmfmFAzaifPY0A6Y';
 
 const API = {
@@ -117,3 +117,5 @@ const API = {
 
 console.log('✅ TBOS v3.0 - Supabase Backend Connected');
 console.log('📊 Project URL:', SUPABASE_URL);
+
+window.API = API;
