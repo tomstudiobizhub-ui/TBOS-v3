@@ -1,23 +1,24 @@
-// config.js - TBOS v3.0 Supabase Configuration
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+// ✅ config.js - TBOS v3.0 Supabase Configuration
+// ✅ FIXED - No spaces in code
 
-// ✅ YOUR SUPABASE CREDENTIALS
-const SUPABASE_URL = 'https://wbmshbmfrteutglydiay.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndibXNoYm1mcnRldXRnbHlkaWF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMjk5OTIsImV4cCI6MjA5MjkwNTk5Mn0.UiV0Uaxv0fXb_sHuoIOJ2AGJKenUmfmFAzaifPY0A6Y';
+const API_CONFIG = {
+    url: 'https://script.google.com/macros/s/AKfycbxPA7cp1TDTlLzNP3nd9KVf8mqi4GklbOR-sEQmCmOdkcJB7Mq2okx6IGyoeCxqI8uPzw/exec',
+    sheetId: '152j4vVhX1eHoiHpzxVaoPH0WjsYQ9Wcn2LBgkTHtvxs'
+};
 
-// ✅ Initialize Supabase Client
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-// ✅ API Helper Functions
 const API = {
     async get(collection, id = null) {
+        const url = id 
+            ? `${API_CONFIG.url}?action=getOne&collection=${collection}&id=${id}`
+            : `${API_CONFIG.url}?action=getAll&collection=${collection}`;
+        
+        console.log('🔗 API GET:', url);
+        
         try {
-            let query = supabase.from(collection).select('*');
-            if (id) query = query.eq('id', id);
-            const { data, error } = await query;
-            if (error) throw error;
-            console.log('✅ GET:', collection, data?.length || 0, 'records');
-            return data || [];
+            const response = await fetch(url);
+            const data = await response.json();
+            console.log('📊 API Response:', data);
+            return Array.isArray(data) ? data : (data.error ? [] : [data]);
         } catch (error) {
             console.error('❌ API GET Error:', error);
             return JSON.parse(localStorage.getItem(`local_${collection}`) || '[]');
@@ -25,17 +26,28 @@ const API = {
     },
 
     async create(collection, data) {
+        console.log('📝 API CREATE:', collection, data);
+        
         try {
-            const { data: result, error } = await supabase
-                .from(collection)
-                .insert([data])
-                .select();
-            if (error) throw error;
-            console.log('✅ CREATE:', collection, result[0]);
-            const localData = JSON.parse(localStorage.getItem(`local_${collection}`) || '[]');
-            localData.push(result[0]);
-            localStorage.setItem(`local_${collection}`, JSON.stringify(localData));
-            return { success: true, data: result[0] };
+            const response = await fetch(API_CONFIG.url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'create',
+                    collection: collection,
+                    data: data
+                })
+            });
+            const result = await response.json();
+            console.log('✅ API CREATE Result:', result);
+            
+            if (result.success) {
+                const localData = JSON.parse(localStorage.getItem(`local_${collection}`) || '[]');
+                localData.push(data);
+                localStorage.setItem(`local_${collection}`, JSON.stringify(localData));
+            }
+            
+            return result;
         } catch (error) {
             console.error('❌ API CREATE Error:', error);
             const localData = JSON.parse(localStorage.getItem(`local_${collection}`) || '[]');
@@ -47,23 +59,33 @@ const API = {
     },
 
     async update(collection, data) {
+        console.log('🔄 API UPDATE:', collection, data);
+        
         try {
-            const { data: result, error } = await supabase
-                .from(collection)
-                .update(data)
-                .eq('id', data.id)
-                .select();
-            if (error) throw error;
-            console.log('✅ UPDATE:', collection, result[0]);
-            const localData = JSON.parse(localStorage.getItem(`local_${collection}`) || '[]');
-            const index = localData.findIndex(item => item.id === data.id);
-            if (index >= 0) localData[index] = data;
-            localStorage.setItem(`local_${collection}`, JSON.stringify(localData));
-            return { success: true, data: result[0] };
+            const response = await fetch(API_CONFIG.url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'update',
+                    collection: collection,
+                    data: data
+                })
+            });
+            const result = await response.json();
+            console.log('✅ API UPDATE Result:', result);
+            
+            if (result.success) {
+                const localData = JSON.parse(localStorage.getItem(`local_${collection}`) || '[]');
+                const index = localData.findIndex(item => item.id == data.id);
+                if (index >= 0) localData[index] = data;
+                localStorage.setItem(`local_${collection}`, JSON.stringify(localData));
+            }
+            
+            return result;
         } catch (error) {
             console.error('❌ API UPDATE Error:', error);
             const localData = JSON.parse(localStorage.getItem(`local_${collection}`) || '[]');
-            const index = localData.findIndex(item => item.id === data.id);
+            const index = localData.findIndex(item => item.id == data.id);
             if (index >= 0) localData[index] = data;
             localStorage.setItem(`local_${collection}`, JSON.stringify(localData));
             return { success: true, local: true };
@@ -71,56 +93,38 @@ const API = {
     },
 
     async delete(collection, id) {
+        console.log('🗑️ API DELETE:', collection, id);
+        
         try {
-            const { error } = await supabase
-                .from(collection)
-                .delete()
-                .eq('id', id);
-            if (error) throw error;
-            console.log('✅ DELETE:', collection, id);
-            const localData = JSON.parse(localStorage.getItem(`local_${collection}`) || '[]');
-            const filtered = localData.filter(item => item.id !== id);
-            localStorage.setItem(`local_${collection}`, JSON.stringify(filtered));
-            return { success: true };
+            const response = await fetch(API_CONFIG.url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'delete',
+                    collection: collection,
+                    data: { id: id }
+                })
+            });
+            const result = await response.json();
+            console.log('✅ API DELETE Result:', result);
+            
+            if (result.success) {
+                const localData = JSON.parse(localStorage.getItem(`local_${collection}`) || '[]');
+                const filtered = localData.filter(item => item.id != id);
+                localStorage.setItem(`local_${collection}`, JSON.stringify(filtered));
+            }
+            
+            return result;
         } catch (error) {
             console.error('❌ API DELETE Error:', error);
             const localData = JSON.parse(localStorage.getItem(`local_${collection}`) || '[]');
-            const filtered = localData.filter(item => item.id !== id);
+            const filtered = localData.filter(item => item.id != id);
             localStorage.setItem(`local_${collection}`, JSON.stringify(filtered));
             return { success: true, local: true };
         }
-    },
-
-    async login(email, password) {
-        try {
-            const { data, error } = await supabase
-                .from('users')
-                .select('*')
-                .eq('email', email)
-                .eq('password', password)
-                .single();
-            if (error || !data) throw new Error('Invalid credentials');
-            if (data.status !== 'Active') throw new Error('Account not active');
-            console.log('✅ LOGIN:', data.name);
-            localStorage.setItem('currentUser', JSON.stringify(data));
-            localStorage.setItem('currentStaffId', data.id);
-            return { success: true, user: data };
-        } catch (error) {
-            console.error('❌ LOGIN Error:', error);
-            return { success: false, error: error.message };
-        }
-    },
-
-    logout() {
-        localStorage.removeItem('currentUser');
-        localStorage.removeItem('currentStaffId');
-        console.log('✅ LOGOUT');
     }
 };
 
-console.log('✅ TBOS v3.0 - Supabase Backend Connected');
-console.log('📊 Project URL:', SUPABASE_URL);
-
-// Make supabase and API available globally
-window.supabase = supabase;
-window.API = API;
+console.log('✅ TBOS v3.0 - Google Sheets Backend Connected');
+console.log('📊 Sheet ID:', API_CONFIG.sheetId);
+console.log('🌐 API URL:', API_CONFIG.url);
