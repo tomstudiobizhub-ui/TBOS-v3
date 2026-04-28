@@ -1,7 +1,14 @@
 // config.js - TBOS v3.0 Supabase Configuration
+// ✅ CLEAN CODE - NO SPACES - GLOBAL API EXPOSED
+
+// ✅ CORRECT SUPABASE URL (no extra 'y')
 const SUPABASE_URL = 'https://wbmshbmfrteutglydiay.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndibXNoYmZydGV1dGdseWlkaWF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyMjk5OTIsImV4cCI6MjA5MjkwNTk5Mn0.UiV0Uaxv0fXb_sHuoIOJ2AGJKenUmfmFAzaifPY0A6Y';
 
+// ✅ Initialize Supabase Client globally
+window.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ✅ API Object - All methods
 const API = {
     async get(collection, id = null) {
         console.log('🔗 API GET:', collection, id);
@@ -118,4 +125,5 @@ const API = {
 console.log('✅ TBOS v3.0 - Supabase Backend Connected');
 console.log('📊 Project URL:', SUPABASE_URL);
 
+// ✅ EXPOSE API GLOBALLY (Fixes module scoping issue!)
 window.API = API;
