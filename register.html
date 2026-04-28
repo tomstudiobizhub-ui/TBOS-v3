@@ -322,6 +322,25 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndibXNoYm1mcnRldXRnbHlkaWF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMjk5OTIsImV4cCI6MjA5MjkwNTk5Mn0.UiV0Uaxv0fXb_sHuoIOJ2AGJKenUmfmFAzaifPY0A6Y';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        const userData = {
+    email: document.getElementById('email').value,
+    password: document.getElementById('password').value,
+    name: document.getElementById('fullName').value,
+    phone: document.getElementById('phone').value,
+    hub: document.getElementById('hub').value,
+    role: document.getElementById('role').value,
+    address: document.getElementById('address').value,
+    location: document.getElementById('location').value,
+    status: 'Pending Approval',  // Important!
+    score: 0,
+    created_at: new Date().toISOString()
+};
+
+// Insert into Supabase
+const { data, error } = await supabase
+    .from('users')
+    .insert([userData]);
+
         function toggleTheme() {
             const currentTheme = document.documentElement.getAttribute('data-theme');
             const newTheme = currentTheme === 'cool' ? 'dark' : 'cool';
