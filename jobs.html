@@ -6,21 +6,8 @@
     <title>Jobs & Routing | TBOS v3.0</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <<!-- Load Supabase FIRST -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<!-- Then load config (which initializes Supabase and exposes API) -->
-<script src="config.js"></script>
-
-<!-- Initialize Supabase after config loads -->
-<script>
-    if (typeof initSupabase === 'function') {
-        initSupabase();
-    }
-</script>
-
-<!-- Then load your app logic -->
-<script src="app.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="config.js"></script>
     <style>
         :root {
             --bg-body: #0a0a0a;
@@ -375,11 +362,7 @@
             </div>
         </div>
     </div>
-    <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
-        const SUPABASE_URL = 'https://wbmshbmfrteutglydiay.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndibXNoYm1mcnRldXRnbHlkaWF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMjk5OTIsImV4cCI6MjA5MjkwNTk5Mn0.UiV0Uaxv0fXb_sHuoIOJ2AGJKenUmfmFAzaifPY0A6Y';
-        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    <script>
         const AI_PRICING = {
             'Graphics Design': { base: 5000, min: 3000, max: 50000 },
             'Printing': { base: 10000, min: 5000, max: 100000 },
@@ -444,7 +427,7 @@
             const estimated = Math.round(pricing.base * multiplier);
             const min = Math.max(pricing.min, Math.round(estimated * 0.8));
             const max = Math.min(pricing.max, Math.round(estimated * 1.3));
-            aiInput.value = `₦${estimated.toLocaleString()} (Range: ₦${min.toLocaleString()} - ₦${max.toLocaleString()})`;
+            aiInput.value = '₦' + estimated.toLocaleString() + ' (Range: ₦' + min.toLocaleString() + ' - ₦' + max.toLocaleString() + ')';
             const amountField = document.getElementById('job-amount');
             if (!amountField.value || amountField.value === '0') { amountField.value = estimated; }
         }
@@ -469,7 +452,10 @@
 
         async function loadJobs() {
             try {
-                console.log('📊 Loading jobs from Supabase...');
+                console.log('📊 Loading jobs from Google Sheets...');
+                if (typeof API === 'undefined') {
+                    throw new Error('API not loaded. Please refresh the page.');
+                }
                 allJobs = await API.get('jobs');
                 console.log('✅ Jobs loaded:', allJobs.length);
                 filteredJobs = [...allJobs];
@@ -509,8 +495,8 @@
                     '<td>₦' + parseFloat(job.amount).toLocaleString() + '</td>' +
                     '<td><span class="status-badge ' + statusClass + '">' + job.payment_status + '</span></td>' +
                     '<td>' +
-                    '<button class="btn-sm btn-info" onclick="viewJobDetail(\'' + job.id + '\')" title="View & Route"><i class="fas fa-eye"></i></button> ' +
-                    '<button class="btn-sm btn-warning" onclick="editJob(\'' + job.id + '\')" title="Edit Job"><i class="fas fa-edit"></i></button> ' +
+                    '<button class="btn-sm btn-info" onclick="viewJobDetail(\'' + (job.id || '') + '\')" title="View & Route"><i class="fas fa-eye"></i></button> ' +
+                    '<button class="btn-sm btn-warning" onclick="editJob(\'' + (job.id || '') + '\')" title="Edit Job"><i class="fas fa-edit"></i></button> ' +
                     '<button class="btn-sm btn-success" onclick="showInvoiceByTracking(\'' + trackingId + '\')" title="Invoice"><i class="fas fa-file-invoice"></i></button> ' +
                     '<button class="btn-sm btn-whatsapp" onclick="sendJobWhatsApp(\'' + trackingId + '\', \'' + clientPhone + '\')" title="WhatsApp"><i class="fab fa-whatsapp"></i></button>' +
                     '</td></tr>';
@@ -548,6 +534,9 @@
             btnSubmitText.textContent = editId ? 'Updating...' : 'Creating...';
             btnSubmitIcon.className = 'fas fa-spinner fa-spin';
             try {
+                if (typeof API === 'undefined') {
+                    throw new Error('API not loaded');
+                }
                 const amount = parseFloat(document.getElementById('job-amount').value);
                 const paid = parseFloat(document.getElementById('job-paid').value);
                 const jobData = {
@@ -593,6 +582,9 @@
         async function editJob(jobId) {
             try {
                 console.log('📝 Editing job:', jobId);
+                if (typeof API === 'undefined') {
+                    throw new Error('API not loaded');
+                }
                 currentJob = await API.get('jobs', jobId);
                 if (!currentJob || currentJob.error) {
                     currentJob = allJobs.find(j => j.id === jobId);
@@ -623,6 +615,9 @@
         async function viewJobDetail(jobId) {
             try {
                 console.log('👁️ Viewing job:', jobId);
+                if (typeof API === 'undefined') {
+                    throw new Error('API not loaded');
+                }
                 currentJob = await API.get('jobs', jobId);
                 if (!currentJob || currentJob.error) {
                     currentJob = allJobs.find(j => j.id === jobId);
@@ -733,7 +728,7 @@
             const job = currentJob || allJobs[0];
             const opt = {
                 margin: 10,
-                filename: `TBOS_Invoice_${job.tracking_id || job.trackingId || 'N/A'}.pdf`,
+                filename: 'TBOS_Invoice_' + (job.tracking_id || job.trackingId || 'N/A') + '.pdf',
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2, useCORS: true },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
@@ -752,15 +747,15 @@
                 return;
             }
             const cleanPhone = phone.replace(/[^0-9]/g, '');
-            const message = `Hello,\n\nYour job status update - ${trackingId}\nAction: ${action || 'update'}\n\nThank you for choosing Tomstudio BizHub!\nContact: +234 818 550 4382`;
-            const url = `https://wa.me/234${cleanPhone.substring(3)}?text=${encodeURIComponent(message)}`;
+            const message = 'Hello,\n\nYour job status update - ' + trackingId + '\nAction: ' + (action || 'update') + '\n\nThank you for choosing Tomstudio BizHub!\nContact: +234 818 550 4382';
+            const url = 'https://wa.me/234' + cleanPhone.substring(3) + '?text=' + encodeURIComponent(message);
             window.open(url, '_blank');
         }
 
         function sendInvoiceWhatsApp() {
             const job = currentJob || allJobs[0];
-            const message = `Hello,\n\nPlease find your invoice details:\n\nTracking ID: ${job.tracking_id || job.trackingId}\nTotal Amount: ₦${parseFloat(job.amount || 0).toLocaleString()}\nAmount Paid: ₦${parseFloat(job.paid || 0).toLocaleString()}\nBalance Due: ₦${parseFloat(job.balance || 0).toLocaleString()}\n\nPayment Details:\nBank: Moniepoint\nAccount: 8185504382\nAccount Name: Tomstudio BizHub\n\nThank you for choosing Tomstudio BizHub!\nContact: +234 818 550 4382`;
-            const url = `https://wa.me/2348185504382?text=${encodeURIComponent(message)}`;
+            const message = 'Hello,\n\nPlease find your invoice details:\n\nTracking ID: ' + (job.tracking_id || job.trackingId) + '\nTotal Amount: ₦' + parseFloat(job.amount || 0).toLocaleString() + '\nAmount Paid: ₦' + parseFloat(job.paid || 0).toLocaleString() + '\nBalance Due: ₦' + parseFloat(job.balance || 0).toLocaleString() + '\n\nPayment Details:\nBank: Moniepoint\nAccount: 8185504382\nAccount Name: Tomstudio BizHub\n\nThank you for choosing Tomstudio BizHub!\nContact: +234 818 550 4382';
+            const url = 'https://wa.me/2348185504382?text=' + encodeURIComponent(message);
             window.open(url, '_blank');
         }
 
@@ -779,44 +774,10 @@
         }
 
         function exportJobsPDF() {
-            const content = `
-                <div style="padding: 40px; font-family: Arial, sans-serif;">
-                    <h1 style="color: #008080; text-align: center;">TBOS v3.0 - Jobs Report</h1>
-                    <p style="text-align: center; color: #666;">Generated: ${new Date().toLocaleString()}</p>
-                    <p style="text-align: center; color: #666;">Total Jobs: ${filteredJobs.length}</p>
-                    <table style="width: 100%; border-collapse: collapse; margin-top: 30px;">
-                        <thead>
-                            <tr style="background: #008080; color: white;">
-                                <th style="padding: 12px; border: 1px solid #ddd;">Tracking ID</th>
-                                <th style="padding: 12px; border: 1px solid #ddd;">Client</th>
-                                <th style="padding: 12px; border: 1px solid #ddd;">Hub</th>
-                                <th style="padding: 12px; border: 1px solid #ddd;">Stage</th>
-                                <th style="padding: 12px; border: 1px solid #ddd;">Amount</th>
-                                <th style="padding: 12px; border: 1px solid #ddd;">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${filteredJobs.map(job => `
-                                <tr>
-                                    <td style="padding: 10px; border: 1px solid #ddd;">${job.tracking_id || job.trackingId}</td>
-                                    <td style="padding: 10px; border: 1px solid #ddd;">${job.client_name || job.client}</td>
-                                    <td style="padding: 10px; border: 1px solid #ddd;">${job.hub}</td>
-                                    <td style="padding: 10px; border: 1px solid #ddd;">${job.stage}</td>
-                                    <td style="padding: 10px; border: 1px solid #ddd;">₦${parseFloat(job.amount).toLocaleString()}</td>
-                                    <td style="padding: 10px; border: 1px solid #ddd;">${job.payment_status}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                    <div style="margin-top: 40px; text-align: center; color: #666; font-size: 0.85rem;">
-                        <p>Tomstudio BizHub | 265, Isawo Road, Agric Ikorodu, Lagos</p>
-                        <p>Phone: +234 818 550 4382 | Email: info@tbos.com</p>
-                    </div>
-                </div>
-            `;
+            const content = '<div style="padding: 40px; font-family: Arial, sans-serif;"><h1 style="color: #008080; text-align: center;">TBOS v3.0 - Jobs Report</h1><p style="text-align: center; color: #666;">Generated: ' + new Date().toLocaleString() + '</p><p style="text-align: center; color: #666;">Total Jobs: ' + filteredJobs.length + '</p><table style="width: 100%; border-collapse: collapse; margin-top: 30px;"><thead><tr style="background: #008080; color: white;"><th style="padding: 12px; border: 1px solid #ddd;">Tracking ID</th><th style="padding: 12px; border: 1px solid #ddd;">Client</th><th style="padding: 12px; border: 1px solid #ddd;">Hub</th><th style="padding: 12px; border: 1px solid #ddd;">Stage</th><th style="padding: 12px; border: 1px solid #ddd;">Amount</th><th style="padding: 12px; border: 1px solid #ddd;">Status</th></tr></thead><tbody>' + filteredJobs.map(job => '<tr><td style="padding: 10px; border: 1px solid #ddd;">' + (job.tracking_id || job.trackingId) + '</td><td style="padding: 10px; border: 1px solid #ddd;">' + (job.client_name || job.client) + '</td><td style="padding: 10px; border: 1px solid #ddd;">' + job.hub + '</td><td style="padding: 10px; border: 1px solid #ddd;">' + job.stage + '</td><td style="padding: 10px; border: 1px solid #ddd;">₦' + parseFloat(job.amount).toLocaleString() + '</td><td style="padding: 10px; border: 1px solid #ddd;">' + job.payment_status + '</td></tr>').join('') + '</tbody></table><div style="margin-top: 40px; text-align: center; color: #666; font-size: 0.85rem;"><p>Tomstudio BizHub | 265, Isawo Road, Agric Ikorodu, Lagos</p><p>Phone: +234 818 550 4382 | Email: info@tbos.com</p></div></div>';
             const opt = {
                 margin: 10,
-                filename: `TBOS_Jobs_Report_${new Date().toISOString().split('T')[0]}.pdf`,
+                filename: 'TBOS_Jobs_Report_' + new Date().toISOString().split('T')[0] + '.pdf',
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2 },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
@@ -845,7 +806,7 @@
             const ws = XLSX.utils.json_to_sheet(data);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, 'Jobs Report');
-            const fileName = `TBOS_Jobs_Report_${new Date().toISOString().split('T')[0]}.xlsx`;
+            const fileName = 'TBOS_Jobs_Report_' + new Date().toISOString().split('T')[0] + '.xlsx';
             XLSX.writeFile(wb, fileName);
             alert('Excel file exported successfully!');
         }
@@ -870,7 +831,7 @@
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `TBOS_Jobs_Report_${new Date().toISOString().split('T')[0]}.csv`;
+            a.download = 'TBOS_Jobs_Report_' + new Date().toISOString().split('T')[0] + '.csv';
             a.click();
             alert('CSV file exported successfully!');
         }
