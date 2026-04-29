@@ -705,7 +705,7 @@
                 '</div>' +
                 '<div class="invoice-footer">' +
                 '<p><strong>Payment Instructions:</strong></p>' +
-                '<p>Bank: Moniepoint | Account: 8185504382 | Name: Tomstudio BizHub</p>' +
+                '<p>Bank: Moniepoint | Account: 8030827417 | Name: Tomstudio BizHub</p>' +
                 '<p>Use Tracking ID as payment reference</p>' +
                 '<p>Send proof of payment to +234 818 550 4382</p>' +
                 '<p style="margin-top: 20px;">"Consistency builds trust. Trust builds growth."</p>' +
@@ -746,7 +746,7 @@
 
         function sendInvoiceWhatsApp() {
             const job = currentJob || allJobs[0];
-            const message = `Hello,\n\nPlease find your invoice details:\n\nTracking ID: ${job.tracking_id || job.trackingId}\nTotal Amount: ₦${parseFloat(job.amount || 0).toLocaleString()}\nAmount Paid: ₦${parseFloat(job.paid || 0).toLocaleString()}\nBalance Due: ₦${parseFloat(job.balance || 0).toLocaleString()}\n\nPayment Details:\nBank: Moniepoint\nAccount: 8185504382\nAccount Name: Tomstudio BizHub\n\nThank you for choosing Tomstudio BizHub!\nContact: +234 818 550 4382`;
+            const message = `Hello,\n\nPlease find your invoice details:\n\nTracking ID: ${job.tracking_id || job.trackingId}\nTotal Amount: ₦${parseFloat(job.amount || 0).toLocaleString()}\nAmount Paid: ₦${parseFloat(job.paid || 0).toLocaleString()}\nBalance Due: ₦${parseFloat(job.balance || 0).toLocaleString()}\n\nPayment Details:\nBank: Moniepoint\nAccount: 8030827417\nAccount Name: Tomstudio BizHub\n\nThank you for choosing Tomstudio BizHub!\nContact: +234 818 550 4382`;
             const url = `https://wa.me/2348185504382?text=${encodeURIComponent(message)}`;
             window.open(url, '_blank');
         }
