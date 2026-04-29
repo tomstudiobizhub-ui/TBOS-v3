@@ -1,20 +1,23 @@
 // config.js - TBOS v3.0 Supabase Configuration
-// ✅ CLEAN CODE - NO SPACES - GLOBAL API EXPOSED
+// ✅ FIXED - NO SPACES - GLOBAL API EXPOSED
 
-// ✅ CORRECT SUPABASE URL (no extra 'y')
+// Supabase Configuration
 const SUPABASE_URL = 'https://wbmshbmfrteutglydiay.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndibXNoYmZydGV1dGdseWlkaWF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyMjk5OTIsImV4cCI6MjA5MjkwNTk5Mn0.UiV0Uaxv0fXb_sHuoIOJ2AGJKenUmfmFAzaifPY0A6Y';
 
-// ✅ Initialize Supabase Client globally
-window.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// Initialize Supabase Client (must be done AFTER supabase library loads)
+let supabaseClient = null;
 
-// ✅ API Object - All methods
 const API = {
     async get(collection, id = null) {
         console.log('🔗 API GET:', collection, id);
         
         try {
-            let query = supabase.from(collection).select('*');
+            if (!supabaseClient) {
+                throw new Error('Supabase client not initialized');
+            }
+            
+            let query = supabaseClient.from(collection).select('*');
             
             if (id) {
                 query = query.eq('id', id);
@@ -36,7 +39,11 @@ const API = {
         console.log('📝 API CREATE:', collection, data);
         
         try {
-            const { data: result, error } = await supabase
+            if (!supabaseClient) {
+                throw new Error('Supabase client not initialized');
+            }
+            
+            const {  result, error } = await supabaseClient
                 .from(collection)
                 .insert([data])
                 .select();
@@ -66,7 +73,11 @@ const API = {
         console.log('🔄 API UPDATE:', collection, data);
         
         try {
-            const { data: result, error } = await supabase
+            if (!supabaseClient) {
+                throw new Error('Supabase client not initialized');
+            }
+            
+            const {  result, error } = await supabaseClient
                 .from(collection)
                 .update(data)
                 .eq('id', data.id)
@@ -83,7 +94,7 @@ const API = {
                 localStorage.setItem(`local_${collection}`, JSON.stringify(localData));
             }
             
-            return { success: true, data: result ? result[0] : data };
+            return { success: true,  result ? result[0] : data };
         } catch (error) {
             console.error('❌ API UPDATE Error:', error);
             const localData = JSON.parse(localStorage.getItem(`local_${collection}`) || '[]');
@@ -98,7 +109,11 @@ const API = {
         console.log('🗑️ API DELETE:', collection, id);
         
         try {
-            const { error } = await supabase
+            if (!supabaseClient) {
+                throw new Error('Supabase client not initialized');
+            }
+            
+            const { error } = await supabaseClient
                 .from(collection)
                 .delete()
                 .eq('id', id);
@@ -122,8 +137,22 @@ const API = {
     }
 };
 
-console.log('✅ TBOS v3.0 - Supabase Backend Connected');
-console.log('📊 Project URL:', SUPABASE_URL);
+// Initialize Supabase when this file loads
+function initSupabase() {
+    if (window.supabase) {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        console.log('✅ TBOS v3.0 - Supabase Backend Connected');
+        console.log('📊 Project URL:', SUPABASE_URL);
+    } else {
+        console.error('❌ Supabase library not loaded!');
+    }
+}
 
-// ✅ EXPOSE API GLOBALLY (Fixes module scoping issue!)
+// Expose API globally
 window.API = API;
+window.initSupabase = initSupabase;
+
+// Auto-initialize if Supabase is already loaded
+if (window.supabase) {
+    initSupabase();
+}

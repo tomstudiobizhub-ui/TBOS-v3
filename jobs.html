@@ -6,8 +6,21 @@
     <title>Jobs & Routing | TBOS v3.0</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script type="module" src="config.js"></script>
+    <<!-- Load Supabase FIRST -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- Then load config (which initializes Supabase and exposes API) -->
+<script src="config.js"></script>
+
+<!-- Initialize Supabase after config loads -->
+<script>
+    if (typeof initSupabase === 'function') {
+        initSupabase();
+    }
+</script>
+
+<!-- Then load your app logic -->
+<script src="app.js"></script>
     <style>
         :root {
             --bg-body: #0a0a0a;
