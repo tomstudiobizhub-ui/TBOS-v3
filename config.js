@@ -1,5 +1,5 @@
 // config.js - TBOS v3.0 Google Sheets Configuration
-// ✅ CLEAN CODE - NO SPACES - GLOBAL API
+// ✅ CLEAN CODE - NO SPACES - GLOBAL API EXPOSED
 
 const API_CONFIG = {
     url: 'https://script.google.com/macros/s/AKfycbxPA7cp1TDTlLzNP3nd9KVf8mqi4GklbOR-sEQmCmOdkcJB7Mq2okx6IGyoeCxqI8uPzw/exec',

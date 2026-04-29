@@ -5,21 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard | TBOS v3.0</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-   <!-- Load Supabase FIRST -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<!-- Then load config (which initializes Supabase and exposes API) -->
-<script src="config.js"></script>
-
-<!-- Initialize Supabase after config loads -->
-<script>
-    if (typeof initSupabase === 'function') {
-        initSupabase();
-    }
-</script>
-
-<!-- Then load your app logic -->
-<script src="app.js"></script>
+    <script src="config.js"></script>
     <style>
         :root {
             --bg-body: #0a0a0a;
@@ -34,7 +20,6 @@
             --success: #00c851;
             --warning: #ffbb33;
             --danger: #ff4444;
-            --info: #00b0ff;
             --sidebar-width: 280px;
             --header-height: 70px;
             --radius: 12px;
@@ -52,16 +37,7 @@
         body { background: var(--bg-body); color: var(--text-main); display: flex; min-height: 100vh; overflow-x: hidden; width: 100%; }
         a { text-decoration: none; color: inherit; }
         button { cursor: pointer; border: none; outline: none; transition: 0.3s; }
-        .sidebar {
-            width: var(--sidebar-width);
-            background: var(--bg-sidebar);
-            border-right: 1px solid var(--border);
-            position: fixed;
-            height: 100vh;
-            overflow-y: auto;
-            z-index: 100;
-            transition: transform 0.3s ease;
-        }
+        .sidebar { width: var(--sidebar-width); background: var(--bg-sidebar); border-right: 1px solid var(--border); position: fixed; height: 100vh; overflow-y: auto; z-index: 100; transition: transform 0.3s ease; }
         .brand { padding: 25px; border-bottom: 1px solid var(--border); color: var(--primary); font-size: 1.5rem; font-weight: 700; text-align: center; }
         .nav-section { font-size: 0.7rem; text-transform: uppercase; color: #555; margin: 20px 15px 10px; font-weight: 700; padding-left: 15px; }
         .nav-item { padding: 15px 25px; color: var(--text-muted); display: flex; align-items: center; gap: 12px; transition: 0.3s; cursor: pointer; }
@@ -85,7 +61,6 @@
         .stat-value.text-warning { color: var(--warning); }
         .stat-value.text-danger { color: var(--danger); }
         .stat-value.text-success { color: var(--success); }
-        .stat-value.restricted { color: var(--text-muted); font-size: 1.5rem; }
         .stat-label { color: var(--text-muted); font-size: 0.9rem; }
         .table-responsive { overflow-x: auto; }
         .data-table { width: 100%; border-collapse: collapse; }
@@ -95,8 +70,6 @@
         .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 99; }
         .overlay.active { display: block; }
         footer { padding: 20px; text-align: center; font-size: 0.8rem; color: var(--text-muted); border-top: 1px solid var(--border); background: var(--bg-panel); }
-        .loading-spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
         @media (max-width: 768px) {
             .sidebar { transform: translateX(-100%); }
             .sidebar.active { transform: translateX(0); }
@@ -203,15 +176,8 @@
             Built by Tomstudio Tech Academy | Contact: +234 818 550 4382
         </footer>
     </main>
-    <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
-        const SUPABASE_URL = 'https://wbmshbmfrteutglydiay.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndibXNoYm1mcnRldXRnbHlkaWF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMjk5OTIsImV4cCI6MjA5MjkwNTk5Mn0.UiV0Uaxv0fXb_sHuoIOJ2AGJKenUmfmFAzaifPY0A6Y';
-        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    <script>
         let currentUser = null;
-
-        // ✅ ROLES THAT CAN VIEW REVENUE
-        const REVENUE_ROLES = ['Administrator', 'Secretary', 'Executive Director', 'Branch Manager', 'HOD'];
 
         function toggleTheme() {
             const currentTheme = document.documentElement.getAttribute('data-theme');
@@ -236,12 +202,6 @@
             document.getElementById('overlay').classList.toggle('active');
         }
 
-        // ✅ CHECK IF USER CAN VIEW REVENUE
-        function canViewRevenue() {
-            if (!currentUser) return false;
-            return REVENUE_ROLES.includes(currentUser.role);
-        }
-
         window.addEventListener('DOMContentLoaded', async function() {
             const savedTheme = localStorage.getItem('tbos_theme');
             if (savedTheme === 'cool') {
@@ -260,17 +220,16 @@
             document.getElementById('user-name').textContent = currentUser.name || currentUser.email;
             document.getElementById('user-hub').textContent = currentUser.hub || 'N/A';
             
-            // ✅ HIDE REVENUE FOR UNAUTHORIZED ROLES
-            if (!canViewRevenue()) {
-                document.getElementById('stat-revenue').textContent = '🔒 Restricted';
-                document.getElementById('stat-revenue').classList.add('restricted');
-            }
-            
             await loadDashboard();
         });
 
         async function loadDashboard() {
             try {
+                // Check if API is available
+                if (typeof API === 'undefined') {
+                    throw new Error('API not loaded');
+                }
+
                 const [jobs, users, announcements] = await Promise.all([
                     API.get('jobs'),
                     API.get('users'),
@@ -281,28 +240,15 @@
                 const todayJobs = jobs.filter(j => j.date && j.date.includes(today));
                 const pendingJobs = jobs.filter(j => j.payment_status === 'UNPAID' || j.payment_status === 'Pending');
                 const delayedJobs = jobs.filter(j => j.status === 'DELAYED');
-                
-                // ✅ ONLY CALCULATE REVENUE FOR AUTHORIZED ROLES
-                let totalRevenue = 0;
-                if (canViewRevenue()) {
-                    totalRevenue = jobs.reduce((sum, j) => sum + (parseFloat(j.paid) || 0), 0);
-                }
+                const totalRevenue = jobs.reduce((sum, j) => sum + (parseFloat(j.paid) || 0), 0);
 
                 document.getElementById('stat-jobs').textContent = todayJobs.length || jobs.length;
                 document.getElementById('stat-pending').textContent = pendingJobs.length;
-                
-                // ✅ SHOW REVENUE ONLY IF AUTHORIZED
-                if (canViewRevenue()) {
-                    document.getElementById('stat-revenue').textContent = '₦' + totalRevenue.toLocaleString();
-                    document.getElementById('stat-revenue').classList.remove('restricted');
-                } else {
-                    document.getElementById('stat-revenue').textContent = '🔒 Restricted';
-                    document.getElementById('stat-revenue').classList.add('restricted');
-                }
-                
+                document.getElementById('stat-revenue').textContent = '₦' + totalRevenue.toLocaleString();
                 document.getElementById('stat-delayed').textContent = delayedJobs.length;
                 document.getElementById('job-badge').textContent = pendingJobs.length;
 
+                // Load announcements
                 const announcementList = document.getElementById('announcement-list');
                 if (announcements && announcements.length > 0) {
                     announcementList.innerHTML = announcements.slice(0, 3).map(a => `
@@ -315,6 +261,7 @@
                     announcementList.innerHTML = '<p style="color: var(--text-muted);">No new announcements.</p>';
                 }
 
+                // Load leaderboard
                 const sortedUsers = users.sort((a, b) => (parseFloat(b.score) || 0) - (parseFloat(a.score) || 0));
                 document.getElementById('leaderboard-body').innerHTML = sortedUsers.slice(0, 5).map((u, i) => `
                     <tr>
@@ -330,11 +277,7 @@
                 console.error('Dashboard load error:', error);
                 document.getElementById('stat-jobs').textContent = '0';
                 document.getElementById('stat-pending').textContent = '0';
-                if (canViewRevenue()) {
-                    document.getElementById('stat-revenue').textContent = '₦0';
-                } else {
-                    document.getElementById('stat-revenue').textContent = '🔒 Restricted';
-                }
+                document.getElementById('stat-revenue').textContent = '₦0';
                 document.getElementById('stat-delayed').textContent = '0';
                 document.getElementById('announcement-list').innerHTML = '<p style="color: var(--text-muted);">No announcements available.</p>';
                 document.getElementById('leaderboard-body').innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px; color: var(--text-muted);">No data available</td></tr>';

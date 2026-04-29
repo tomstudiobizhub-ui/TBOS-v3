@@ -6,22 +6,7 @@
     <meta name="theme-color" content="#008080">
     <title>Login | TBOS v3.0</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <!-- Load Supabase FIRST -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<!-- Then load config (which initializes Supabase and exposes API) -->
-<script src="config.js"></script>
-
-<!-- Initialize Supabase after config loads -->
-<script>
-    if (typeof initSupabase === 'function') {
-        initSupabase();
-    }
-</script>
-
-<!-- Then load your app logic -->
-<script src="app.js"></script>
+    <script src="config.js"></script>
     <style>
         :root {
             --bg-body: #0a0a0a;
@@ -221,14 +206,14 @@
                     <label>Staff Email</label>
                     <div class="input-wrapper">
                         <i class="fas fa-user"></i>
-                        <input type="email" id="login-email" placeholder="staff@tbos.com" required>
+                        <input type="email" id="login-email" required placeholder="staff@tbos.com">
                     </div>
                 </div>
                 <div class="form-group">
                     <label>Password</label>
                     <div class="input-wrapper">
                         <i class="fas fa-lock"></i>
-                        <input type="password" id="login-password" placeholder="••••••••" required>
+                        <input type="password" id="login-password" required placeholder="••••••••">
                         <button type="button" class="password-toggle" onclick="togglePassword()">
                             <i class="fas fa-eye" id="password-eye"></i>
                         </button>
@@ -249,12 +234,8 @@
             </div>
         </div>
     </div>
-    <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
-        const SUPABASE_URL = 'https://wbmshbmfrteutglydiay.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndibXNoYm1mcnRldXRnbHlkaWF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMjk5OTIsImV4cCI6MjA5MjkwNTk5Mn0.UiV0Uaxv0fXb_sHuoIOJ2AGJKenUmfmFAzaifPY0A6Y';
-        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+    <script>
+        // Theme Toggle
         function toggleTheme() {
             const currentTheme = document.documentElement.getAttribute('data-theme');
             const newTheme = currentTheme === 'cool' ? 'dark' : 'cool';
@@ -273,6 +254,7 @@
             }
         }
 
+        // Password Toggle
         function togglePassword() {
             const passwordInput = document.getElementById('login-password');
             const passwordEye = document.getElementById('password-eye');
@@ -287,6 +269,7 @@
             }
         }
 
+        // Check if already logged in
         window.addEventListener('DOMContentLoaded', function() {
             const savedTheme = localStorage.getItem('tbos_theme');
             if (savedTheme === 'cool') {
@@ -307,6 +290,7 @@
             }
         });
 
+        // Login Form
         document.getElementById('login-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             const email = document.getElementById('login-email').value;
@@ -315,39 +299,57 @@
             const errorMessage = document.getElementById('error-message');
             const errorText = document.getElementById('error-text');
             const successMessage = document.getElementById('success-message');
+
             btnSubmit.disabled = true;
             btnSubmit.innerHTML = '<div class="loading-spinner"></div> Signing In...';
             errorMessage.style.display = 'none';
             successMessage.style.display = 'none';
+
             try {
-                const { data, error } = await supabase
-                    .from('users')
-                    .select('*')
-                    .eq('email', email)
-                    .eq('password', password)
-                    .single();
-                if (error || !data) {
+                // Check if API is available
+                if (typeof API === 'undefined') {
+                    throw new Error('API not loaded. Please refresh the page.');
+                }
+
+                // Get users from Google Sheets
+                const users = await API.get('users');
+                console.log('Users loaded:', users.length);
+
+                // Find user by email
+                const user = users.find(u => u.email === email);
+                console.log('User found:', user);
+
+                if (!user) {
                     throw new Error('User not found. Please check your email or register first.');
                 }
-                if (data.password !== password) {
+
+                // Check password
+                if (user.password !== password) {
                     throw new Error('Incorrect password. Please try again.');
                 }
-                if (data.status !== 'Active') {
+
+                // Check status
+                if (user.status !== 'Active') {
                     throw new Error('Account not active. Contact admin for approval.');
                 }
-                localStorage.setItem('currentUser', JSON.stringify(data));
-                localStorage.setItem('currentStaffId', data.id);
+
+                // Save user session
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                localStorage.setItem('currentStaffId', user.id || email);
+
                 successMessage.style.display = 'flex';
                 document.getElementById('success-text').textContent = 'Login successful! Redirecting...';
+
                 setTimeout(() => {
-                    if (data.role === 'Administrator') {
+                    if (user.role === 'Administrator') {
                         window.location.href = 'admin.html';
                     } else {
                         window.location.href = 'dashboard.html';
                     }
                 }, 1000);
+
             } catch (error) {
-                console.error('❌ Login error:', error);
+                console.error('Login error:', error);
                 errorMessage.style.display = 'flex';
                 errorText.textContent = 'Login failed: ' + error.message;
                 btnSubmit.disabled = false;
@@ -355,6 +357,8 @@
                 document.getElementById('login-password').value = '';
             }
         });
+
+        // Make functions global
         window.toggleTheme = toggleTheme;
         window.togglePassword = togglePassword;
     </script>
