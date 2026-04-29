@@ -1,34 +1,24 @@
-// config.js - TBOS v3.0 Supabase Configuration
-// ✅ FIXED - NO SPACES - GLOBAL API EXPOSED
+// config.js - TBOS v3.0 Google Sheets Configuration
+// ✅ CLEAN CODE - NO SPACES - GLOBAL API
 
-// Supabase Configuration
-const SUPABASE_URL = 'https://wbmshbmfrteutglydiay.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndibXNoYmZydGV1dGdseWlkaWF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyMjk5OTIsImV4cCI6MjA5MjkwNTk5Mn0.UiV0Uaxv0fXb_sHuoIOJ2AGJKenUmfmFAzaifPY0A6Y';
-
-// Initialize Supabase Client (must be done AFTER supabase library loads)
-let supabaseClient = null;
+const API_CONFIG = {
+    url: 'https://script.google.com/macros/s/AKfycbxPA7cp1TDTlLzNP3nd9KVf8mqi4GklbOR-sEQmCmOdkcJB7Mq2okx6IGyoeCxqI8uPzw/exec',
+    sheetId: '152j4vVhX1eHoiHpzxVaoPH0WjsYQ9Wcn2LBgkTHtvxs'
+};
 
 const API = {
     async get(collection, id = null) {
-        console.log('🔗 API GET:', collection, id);
+        const url = id 
+            ? `${API_CONFIG.url}?action=getOne&collection=${collection}&id=${id}`
+            : `${API_CONFIG.url}?action=getAll&collection=${collection}`;
+        
+        console.log('🔗 API GET:', url);
         
         try {
-            if (!supabaseClient) {
-                throw new Error('Supabase client not initialized');
-            }
-            
-            let query = supabaseClient.from(collection).select('*');
-            
-            if (id) {
-                query = query.eq('id', id);
-            }
-            
-            const { data, error } = await query;
-            
-            if (error) throw error;
-            
+            const response = await fetch(url);
+            const data = await response.json();
             console.log('📊 API Response:', data);
-            return data || [];
+            return Array.isArray(data) ? data : (data.error ? [] : [data]);
         } catch (error) {
             console.error('❌ API GET Error:', error);
             return JSON.parse(localStorage.getItem(`local_${collection}`) || '[]');
@@ -39,26 +29,25 @@ const API = {
         console.log('📝 API CREATE:', collection, data);
         
         try {
-            if (!supabaseClient) {
-                throw new Error('Supabase client not initialized');
-            }
-            
-            const {  result, error } = await supabaseClient
-                .from(collection)
-                .insert([data])
-                .select();
-            
-            if (error) throw error;
-            
+            const response = await fetch(API_CONFIG.url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'create',
+                    collection: collection,
+                    data: data
+                })
+            });
+            const result = await response.json();
             console.log('✅ API CREATE Result:', result);
             
-            if (result && result[0]) {
+            if (result.success) {
                 const localData = JSON.parse(localStorage.getItem(`local_${collection}`) || '[]');
-                localData.push(result[0]);
+                localData.push(data);
                 localStorage.setItem(`local_${collection}`, JSON.stringify(localData));
             }
             
-            return { success: true, data: result ? result[0] : data };
+            return result;
         } catch (error) {
             console.error('❌ API CREATE Error:', error);
             const localData = JSON.parse(localStorage.getItem(`local_${collection}`) || '[]');
@@ -73,28 +62,26 @@ const API = {
         console.log('🔄 API UPDATE:', collection, data);
         
         try {
-            if (!supabaseClient) {
-                throw new Error('Supabase client not initialized');
-            }
-            
-            const {  result, error } = await supabaseClient
-                .from(collection)
-                .update(data)
-                .eq('id', data.id)
-                .select();
-            
-            if (error) throw error;
-            
+            const response = await fetch(API_CONFIG.url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'update',
+                    collection: collection,
+                    data: data
+                })
+            });
+            const result = await response.json();
             console.log('✅ API UPDATE Result:', result);
             
-            if (result && result[0]) {
+            if (result.success) {
                 const localData = JSON.parse(localStorage.getItem(`local_${collection}`) || '[]');
                 const index = localData.findIndex(item => item.id == data.id);
                 if (index >= 0) localData[index] = data;
                 localStorage.setItem(`local_${collection}`, JSON.stringify(localData));
             }
             
-            return { success: true,  result ? result[0] : data };
+            return result;
         } catch (error) {
             console.error('❌ API UPDATE Error:', error);
             const localData = JSON.parse(localStorage.getItem(`local_${collection}`) || '[]');
@@ -109,24 +96,25 @@ const API = {
         console.log('🗑️ API DELETE:', collection, id);
         
         try {
-            if (!supabaseClient) {
-                throw new Error('Supabase client not initialized');
+            const response = await fetch(API_CONFIG.url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'delete',
+                    collection: collection,
+                    data: { id: id }
+                })
+            });
+            const result = await response.json();
+            console.log('✅ API DELETE Result:', result);
+            
+            if (result.success) {
+                const localData = JSON.parse(localStorage.getItem(`local_${collection}`) || '[]');
+                const filtered = localData.filter(item => item.id != id);
+                localStorage.setItem(`local_${collection}`, JSON.stringify(filtered));
             }
             
-            const { error } = await supabaseClient
-                .from(collection)
-                .delete()
-                .eq('id', id);
-            
-            if (error) throw error;
-            
-            console.log('✅ API DELETE Result: Success');
-            
-            const localData = JSON.parse(localStorage.getItem(`local_${collection}`) || '[]');
-            const filtered = localData.filter(item => item.id != id);
-            localStorage.setItem(`local_${collection}`, JSON.stringify(filtered));
-            
-            return { success: true };
+            return result;
         } catch (error) {
             console.error('❌ API DELETE Error:', error);
             const localData = JSON.parse(localStorage.getItem(`local_${collection}`) || '[]');
@@ -137,22 +125,9 @@ const API = {
     }
 };
 
-// Initialize Supabase when this file loads
-function initSupabase() {
-    if (window.supabase) {
-        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        console.log('✅ TBOS v3.0 - Supabase Backend Connected');
-        console.log('📊 Project URL:', SUPABASE_URL);
-    } else {
-        console.error('❌ Supabase library not loaded!');
-    }
-}
+console.log('✅ TBOS v3.0 - Google Sheets Backend Connected');
+console.log('📊 Sheet ID:', API_CONFIG.sheetId);
+console.log('🌐 API URL:', API_CONFIG.url);
 
-// Expose API globally
+// ✅ EXPOSE API GLOBALLY (Fixes "API is not defined" error!)
 window.API = API;
-window.initSupabase = initSupabase;
-
-// Auto-initialize if Supabase is already loaded
-if (window.supabase) {
-    initSupabase();
-}
