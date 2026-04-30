@@ -7,7 +7,6 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
         :root {
@@ -531,12 +530,10 @@
                 if (stage.id === currentStage) className += ' active';
                 if (index < currentIndex) className += ' completed';
                 
-                html += `
-                    <div class="${className}" data-stage="${stage.id}" onclick="selectStage('${stage.id}')">
-                        <div class="icon"><i class="fas ${stage.icon}"></i></div>
-                        <div class="label">${stage.label}</div>
-                    </div>
-                `;
+                html += '<div class="' + className + '" data-stage="' + stage.id + '" onclick="selectStage(\'' + stage.id + '\')">';
+                html += '<div class="icon"><i class="fas ' + stage.icon + '"></i></div>';
+                html += '<div class="label">' + stage.label + '</div>';
+                html += '</div>';
             });
             
             container.innerHTML = html;
@@ -598,19 +595,19 @@
                 const trackingId = job.tracking_id || job.trackingId || 'N/A';
                 const clientName = job.client_name || job.client || 'N/A';
                 const clientPhone = job.client_phone || job.phone || 'N/A';
-                html += '<tr>' +
-                    '<td><strong style="color: var(--primary);">' + trackingId + '</strong></td>' +
-                    '<td>' + clientName + '<br><small style="color: var(--text-muted);">' + clientPhone + '</small></td>' +
-                    '<td>' + job.hub + '</td>' +
-                    '<td>' + job.stage + '</td>' +
-                    '<td>₦' + parseFloat(job.amount).toLocaleString() + '</td>' +
-                    '<td><span class="status-badge ' + statusClass + '">' + job.payment_status + '</span></td>' +
-                    '<td>' +
-                    '<button class="btn-sm btn-info" onclick="viewJobDetail(\'' + (job.id || '') + '\')" title="View & Route"><i class="fas fa-eye"></i></button> ' +
-                    '<button class="btn-sm btn-warning" onclick="editJob(\'' + (job.id || '') + '\')" title="Edit Job"><i class="fas fa-edit"></i></button> ' +
-                    '<button class="btn-sm btn-success" onclick="showInvoiceByTracking(\'' + trackingId + '\')" title="Invoice"><i class="fas fa-file-invoice"></i></button> ' +
-                    '<button class="btn-sm btn-whatsapp" onclick="sendJobWhatsApp(\'' + trackingId + '\', \'' + clientPhone + '\')" title="WhatsApp"><i class="fab fa-whatsapp"></i></button>' +
-                    '</td></tr>';
+                html += '<tr>';
+                html += '<td><strong style="color: var(--primary);">' + trackingId + '</strong></td>';
+                html += '<td>' + clientName + '<br><small style="color: var(--text-muted);">' + clientPhone + '</small></td>';
+                html += '<td>' + job.hub + '</td>';
+                html += '<td>' + job.stage + '</td>';
+                html += '<td>₦' + parseFloat(job.amount).toLocaleString() + '</td>';
+                html += '<td><span class="status-badge ' + statusClass + '">' + job.payment_status + '</span></td>';
+                html += '<td>';
+                html += '<button class="btn-sm btn-info" onclick="viewJobDetail(\'' + (job.id || '') + '\')" title="View & Route"><i class="fas fa-eye"></i></button> ';
+                html += '<button class="btn-sm btn-warning" onclick="editJob(\'' + (job.id || '') + '\')" title="Edit Job"><i class="fas fa-edit"></i></button> ';
+                html += '<button class="btn-sm btn-success" onclick="showInvoiceByTracking(\'' + trackingId + '\')" title="Invoice"><i class="fas fa-file-invoice"></i></button> ';
+                html += '<button class="btn-sm btn-whatsapp" onclick="sendJobWhatsApp(\'' + trackingId + '\', \'' + clientPhone + '\')" title="WhatsApp"><i class="fab fa-whatsapp"></i></button>';
+                html += '</td></tr>';
             });
             tbody.innerHTML = html;
             document.getElementById('job-count').textContent = jobs.length;
@@ -776,10 +773,26 @@
                 return;
             }
             if (confirm('Move job from "' + currentJob.stage + '" to "' + selectedStage + '"?')) {
-                API.update('jobs', {
+                // ✅ FIX: Only update the stage field, preserve ALL other data
+                const updateData = {
                     id: currentJob.id,
-                    stage: selectedStage
-                }).then(result => {
+                    stage: selectedStage,
+                    // Preserve all other fields
+                    tracking_id: currentJob.tracking_id || currentJob.trackingId,
+                    client_name: currentJob.client_name || currentJob.client,
+                    client_phone: currentJob.client_phone || currentJob.phone,
+                    client_email: currentJob.client_email || currentJob.email,
+                    hub: currentJob.hub,
+                    description: currentJob.description,
+                    amount: currentJob.amount,
+                    paid: currentJob.paid,
+                    balance: currentJob.balance,
+                    payment_status: currentJob.payment_status,
+                    status: currentJob.status,
+                    delivery_date: currentJob.delivery_date
+                };
+                
+                API.update('jobs', updateData).then(result => {
                     if (result.success) {
                         alert('Job stage updated successfully!');
                         currentJob.stage = selectedStage;
@@ -788,6 +801,8 @@
                     } else {
                         alert('Error updating stage: ' + (result.error || 'Unknown error'));
                     }
+                }).catch(error => {
+                    alert('Error: ' + error.message);
                 });
             }
         }
@@ -845,7 +860,7 @@
                 '</div>' +
                 '<div class="invoice-footer">' +
                 '<p><strong>Payment Instructions:</strong></p>' +
-                '<p>Bank: Moniepoint | Account: 8030827417 | Name: Tomstudio BizHub</p>' +
+                '<p>Bank: Moniepoint | Account: 8185504382 | Name: Tomstudio BizHub</p>' +
                 '<p>Use Tracking ID as payment reference</p>' +
                 '<p>Send proof of payment to +234 818 550 4382</p>' +
                 '<p style="margin-top: 20px;">"Consistency builds trust. Trust builds growth."</p>' +
@@ -907,7 +922,7 @@
             const amount = parseFloat(currentJob.amount) || 0;
             const paid = parseFloat(currentJob.paid) || 0;
             const balance = parseFloat(currentJob.balance) || amount;
-            const message = 'Hello,\n\nPlease find your invoice details:\n\nTracking ID: ' + trackingId + '\nTotal Amount: ₦' + amount.toLocaleString() + '\nAmount Paid: ₦' + paid.toLocaleString() + '\nBalance Due: ₦' + balance.toLocaleString() + '\n\nPayment Details:\nBank: Moniepoint\nAccount: 8030827417\nAccount Name: Tomstudio BizHub\n\nThank you for choosing Tomstudio BizHub!\nContact: +234 818 550 4382';
+            const message = 'Hello,\n\nPlease find your invoice details:\n\nTracking ID: ' + trackingId + '\nTotal Amount: ₦' + amount.toLocaleString() + '\nAmount Paid: ₦' + paid.toLocaleString() + '\nBalance Due: ₦' + balance.toLocaleString() + '\n\nPayment Details:\nBank: Moniepoint\nAccount: 8185504382\nAccount Name: Tomstudio BizHub\n\nThank you for choosing Tomstudio BizHub!\nContact: +234 818 550 4382';
             const url = 'https://wa.me/2348185504382?text=' + encodeURIComponent(message);
             window.open(url, '_blank');
         }
