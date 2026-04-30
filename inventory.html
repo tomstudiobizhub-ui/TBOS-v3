@@ -5,8 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inventory | TBOS v3.0</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    
+    <!-- Load Supabase FIRST -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Then load config -->
     <script src="config.js"></script>
+    
     <style>
         :root {
             --bg-body: #0a0a0a;
@@ -97,6 +102,7 @@
         .input-wrapper i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
         .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 12px 12px 40px; background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px; color: var(--text-main); font-size: 0.95rem; }
         .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(0, 128, 128, 0.2); }
+        .form-group textarea { resize: vertical; min-height: 100px; }
         .form-actions { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
         .hub-examples { background: rgba(0, 128, 128, 0.1); border: 1px solid var(--primary); border-radius: 8px; padding: 15px; margin-top: 10px; }
         .hub-examples h4 { color: var(--primary); font-size: 0.85rem; margin-bottom: 10px; }
@@ -299,11 +305,7 @@
             </div>
         </div>
     </div>
-    <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
-        const SUPABASE_URL = 'https://wbmshbmfrteutglydiay.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndibXNoYm1mcnRldXRnbHlkaWF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMjk5OTIsImV4cCI6MjA5MjkwNTk5Mn0.UiV0Uaxv0fXb_sHuoIOJ2AGJKenUmfmFAzaifPY0A6Y';
-        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    <script>
         const hubExamples = {
             'Printing Materials': ['A4 Paper Ream', 'A3 Paper Ream', 'Glossy Photo Paper', 'Ink Cartridges', 'Toner', 'Lamination Pouches'],
             'Photography Equipment': ['Camera Batteries', 'Memory Cards (SD)', 'Lens Cleaning Kit', 'Tripod', 'Light Stand', 'Softbox'],
@@ -356,7 +358,7 @@
             const examplesList = document.getElementById('examples-list');
             if (category && hubExamples[category]) {
                 examplesList.innerHTML = hubExamples[category].map(example => 
-                    `<li onclick="document.getElementById('inv-name').value='${example}'">${example}</li>`
+                    '<li onclick="document.getElementById(\'inv-name\').value=\'' + example + '\'">' + example + '</li>'
                 ).join('');
                 examplesDiv.style.display = 'block';
             } else {
@@ -379,16 +381,29 @@
             currentUser = JSON.parse(savedUser);
             document.getElementById('user-name').textContent = currentUser.name || currentUser.email;
             document.getElementById('user-hub').textContent = currentUser.hub || 'N/A';
+            
+            // Wait for API to be available
+            if (typeof API === 'undefined') {
+                console.error('❌ API not loaded!');
+                document.getElementById('inventory-table-body').innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--danger);">API not loaded. Please refresh the page.</td></tr>';
+                return;
+            }
+            
             await loadInventory();
         });
 
         async function loadInventory() {
             try {
                 console.log('📊 Loading inventory from Supabase...');
-                const {  items, error } = await supabase.from('inventory').select('*');
-                if (error) throw error;
-                inventoryItems = items || [];
+                
+                // Check if API is available
+                if (typeof API === 'undefined') {
+                    throw new Error('API not loaded. Please refresh the page.');
+                }
+                
+                inventoryItems = await API.get('inventory');
                 console.log('✅ Inventory loaded:', inventoryItems.length, 'items');
+                
                 const tbody = document.getElementById('inventory-table-body');
                 if (inventoryItems.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--text-muted);">No inventory items. Add your first item!</td></tr>';
@@ -491,14 +506,18 @@
                 const editId = document.getElementById('edit-item-id').value;
                 let result;
                 if (editId) {
-                    result = await supabase.from('inventory').update(itemData).eq('id', editId);
+                    itemData.id = editId;
+                    result = await API.update('inventory', itemData);
                 } else {
-                    result = await supabase.from('inventory').insert([itemData]);
+                    result = await API.create('inventory', itemData);
                 }
-                if (result.error) throw result.error;
-                alert('Item ' + (editId ? 'updated' : 'added') + ' successfully!');
-                closeModal();
-                await loadInventory();
+                if (result.success) {
+                    alert('Item ' + (editId ? 'updated' : 'added') + ' successfully!');
+                    closeModal();
+                    await loadInventory();
+                } else {
+                    alert('Error: ' + (result.error || 'Unknown error'));
+                }
             } catch (error) {
                 console.error('❌ Save inventory error:', error);
                 alert('Error saving item: ' + error.message);
@@ -509,8 +528,14 @@
 
         async function editItem(itemId) {
             try {
-                const {  item, error } = await supabase.from('inventory').select('*').eq('id', itemId).single();
-                if (error || !item) throw error;
+                const item = await API.get('inventory', itemId);
+                if (!item || item.error) {
+                    item = inventoryItems.find(i => i.id === itemId);
+                }
+                if (!item) {
+                    alert('Item not found');
+                    return;
+                }
                 document.getElementById('modal-title').textContent = 'Edit Inventory Item';
                 document.getElementById('modal-icon').className = 'fas fa-edit';
                 document.getElementById('edit-item-id').value = item.id;
@@ -531,21 +556,27 @@
             const addition = prompt('Enter quantity to ADD to ' + itemName + ' (use negative number to subtract):', '0');
             if (addition && !isNaN(addition)) {
                 try {
-                    const {  item, error } = await supabase.from('inventory').select('*').eq('id', itemId).single();
-                    if (error || !item) throw error;
+                    const item = await API.get('inventory', itemId);
+                    if (!item) {
+                        throw new Error('Item not found');
+                    }
                     const newStock = parseInt(item.stock_quantity || item.stock || 0) + parseInt(addition);
                     const alertLevel = parseInt(item.alert_level || item.alert || 5);
                     let newStatus = 'OK';
                     if (newStock === 0) newStatus = 'OUT';
                     else if (newStock <= alertLevel) newStatus = 'LOW';
-                    const result = await supabase.from('inventory').update({
+                    const result = await API.update('inventory', {
+                        id: itemId,
                         stock_quantity: newStock,
                         stock: newStock,
                         status: newStatus
-                    }).eq('id', itemId);
-                    if (result.error) throw result.error;
-                    alert('Stock updated! New quantity: ' + newStock);
-                    await loadInventory();
+                    });
+                    if (result.success) {
+                        alert('Stock updated! New quantity: ' + newStock);
+                        await loadInventory();
+                    } else {
+                        alert('Error updating stock: ' + (result.error || 'Unknown error'));
+                    }
                 } catch (error) {
                     alert('Error updating stock: ' + error.message);
                 }
@@ -555,10 +586,13 @@
         async function deleteItem(itemId, itemName) {
             if (confirm('Are you sure you want to delete "' + itemName + '"?\n\nThis action cannot be undone!')) {
                 try {
-                    const result = await supabase.from('inventory').delete().eq('id', itemId);
-                    if (result.error) throw result.error;
-                    alert('Item deleted successfully!');
-                    await loadInventory();
+                    const result = await API.delete('inventory', itemId);
+                    if (result.success) {
+                        alert('Item deleted successfully!');
+                        await loadInventory();
+                    } else {
+                        alert('Error deleting item: ' + (result.error || 'Unknown error'));
+                    }
                 } catch (error) {
                     alert('Error deleting item: ' + error.message);
                 }

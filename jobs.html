@@ -6,7 +6,7 @@
     <title>Jobs & Routing | TBOS v3.0</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="config.js"></script>
     <style>
         :root {
@@ -70,7 +70,7 @@
         .btn-primary { padding: 14px 25px; background: var(--primary); color: white; border-radius: 8px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; }
         .btn-primary:hover { background: var(--primary-hover); transform: translateY(-2px); }
         .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-        .btn-sm { padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; margin: 2px; }
+        .btn-sm { padding: 8px 15px; font-size: 0.85rem; border-radius: 6px; margin: 2px; }
         .btn-success { background: var(--success); color: white; }
         .btn-info { background: var(--info); color: white; }
         .btn-whatsapp { background: #25D366; color: white; }
@@ -78,21 +78,23 @@
         .btn-danger { background: var(--danger); color: white; }
         .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-muted); }
         .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+        .btn-action { padding: 10px 18px; font-size: 0.9rem; border-radius: 8px; margin: 5px; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-action:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
         .form-actions { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
         .table-responsive { overflow-x: auto; }
         .data-table { width: 100%; border-collapse: collapse; }
         .data-table th { text-align: left; padding: 15px; color: var(--text-muted); border-bottom: 2px solid var(--border); font-size: 0.8rem; text-transform: uppercase; }
         .data-table td { padding: 15px; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
         .data-table tr:hover { background: rgba(255,255,255,0.02); }
-        .status-badge { padding: 5px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; display: inline-block; }
+        .status-badge { padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; display: inline-block; }
         .status-paid { background: rgba(0, 200, 81, 0.2); color: var(--success); }
         .status-partial { background: rgba(255, 187, 51, 0.2); color: var(--warning); }
         .status-unpaid { background: rgba(255, 68, 68, 0.2); color: var(--danger); }
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
         .modal.active { display: flex; }
-        .modal-content { background: var(--bg-panel); border-radius: var(--radius); border: 1px solid var(--border); width: 100%; max-width: 800px; max-height: 90vh; overflow-y: auto; }
+        .modal-content { background: var(--bg-panel); border-radius: var(--radius); border: 1px solid var(--border); width: 100%; max-width: 900px; max-height: 90vh; overflow-y: auto; }
         .modal-header { padding: 20px 25px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--bg-panel); z-index: 10; }
-        .modal-header h3 { font-size: 1.2rem; color: var(--text-main); }
+        .modal-header h3 { font-size: 1.3rem; color: var(--text-main); }
         .modal-close { background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
         .modal-close:hover { color: var(--danger); background: rgba(255, 68, 68, 0.1); }
         .modal-body { padding: 25px; }
@@ -103,7 +105,38 @@
         footer { padding: 20px; text-align: center; font-size: 0.8rem; color: var(--text-muted); border-top: 1px solid var(--border); background: var(--bg-panel); }
         .loading-spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .invoice-container { background: #ffffff; color: #000000; padding: 40px; border-radius: 8px; }
+        
+        /* Job Detail Styles */
+        .job-detail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 25px; }
+        .job-detail-item { background: var(--bg-input); padding: 20px; border-radius: 10px; border-left: 4px solid var(--primary); }
+        .job-detail-item label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; }
+        .job-detail-item .value { font-size: 1rem; color: var(--text-main); font-weight: 600; }
+        .job-detail-item .value.highlight { color: var(--primary); font-size: 1.1rem; }
+        
+        /* Routing Timeline */
+        .routing-section { margin: 25px 0; padding: 25px; background: var(--bg-input); border-radius: 12px; }
+        .routing-section h4 { color: var(--primary); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .routing-stages { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 20px; }
+        .stage-item { background: var(--bg-panel); padding: 15px 10px; border-radius: 10px; border: 2px solid var(--border); text-align: center; transition: all 0.3s; cursor: pointer; }
+        .stage-item:hover { border-color: var(--primary); transform: translateY(-2px); }
+        .stage-item.active { border-color: var(--primary); background: rgba(0, 128, 128, 0.15); }
+        .stage-item.completed { border-color: var(--success); background: rgba(0, 200, 81, 0.15); }
+        .stage-item .icon { font-size: 1.5rem; margin-bottom: 8px; color: var(--primary); }
+        .stage-item.completed .icon { color: var(--success); }
+        .stage-item .label { font-size: 0.75rem; color: var(--text-muted); }
+        
+        /* Action Buttons */
+        .action-buttons { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); }
+        .btn-action-group { display: flex; gap: 8px; flex-wrap: wrap; }
+        .btn-invoice { background: linear-gradient(135deg, var(--info) 0%, #0088cc 100%); }
+        .btn-invoice:hover { background: linear-gradient(135deg, #0088cc 0%, #0077b5 100%); }
+        .btn-whatsapp-action { background: linear-gradient(135deg, #25D366 0%, #20bd5a 100%); }
+        .btn-whatsapp-action:hover { background: linear-gradient(135deg, #20bd5a 0%, #1aa64f 100%); }
+        .btn-route { background: linear-gradient(135deg, var(--warning) 0%, #e6a82e 100%); color: #000; }
+        .btn-route:hover { background: linear-gradient(135deg, #e6a82e 0%, #cc9529 100%); }
+        
+        /* Invoice Modal */
+        .invoice-container { background: #ffffff; color: #000000; padding: 40px; border-radius: 12px; }
         .invoice-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid var(--primary); }
         .invoice-logo h2 { color: var(--primary); font-size: 2rem; margin-bottom: 5px; }
         .invoice-logo p { color: #666; font-size: 0.9rem; }
@@ -114,10 +147,11 @@
         .invoice-section h4 { color: var(--primary); margin-bottom: 15px; font-size: 0.9rem; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
         .invoice-section p { margin-bottom: 8px; font-size: 0.9rem; color: #333; }
         .invoice-section strong { color: #000; }
-        .invoice-summary { background: var(--primary); color: white; padding: 25px; border-radius: 8px; margin-top: 20px; }
-        .invoice-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.3); }
-        .invoice-row:last-child { border-bottom: none; font-weight: 700; font-size: 1.2rem; margin-top: 10px; padding-top: 15px; border-top: 2px solid rgba(255,255,255,0.5); }
-        .invoice-footer { margin-top: 30px; padding-top: 20px; border-top: 2px solid #ddd; text-align: center; color: #666; font-size: 0.85rem; }
+        .invoice-summary { background: var(--bg-input); color: var(--text-main); padding: 25px; border-radius: 8px; margin-top: 20px; }
+        .invoice-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); }
+        .invoice-row:last-child { border-bottom: none; font-weight: 700; font-size: 1.2rem; margin-top: 10px; padding-top: 15px; border-top: 2px solid var(--border); }
+        .invoice-footer { margin-top: 30px; padding-top: 20px; border-top: 2px solid var(--border); text-align: center; color: #666; font-size: 0.85rem; }
+        
         @media (max-width: 768px) {
             .sidebar { transform: translateX(-100%); }
             .sidebar.active { transform: translateX(0); }
@@ -133,9 +167,14 @@
             .invoice-sections { grid-template-columns: 1fr; }
             .filter-bar { flex-direction: column; }
             .filter-bar select, .filter-bar input { width: 100%; }
+            .routing-stages { grid-template-columns: repeat(2, 1fr); }
+            .job-detail-grid { grid-template-columns: 1fr; }
+            .action-buttons { flex-direction: column; }
+            .btn-action-group { width: 100%; justify-content: center; }
         }
         @media (max-width: 480px) {
             .theme-toggle span { display: none; }
+            .routing-stages { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -337,15 +376,40 @@
             Built by Tomstudio Tech Academy | Contact: +234 818 550 4382
         </footer>
     </main>
+
+    <!-- Job Detail Modal with Routing -->
     <div class="modal" id="job-detail-modal">
         <div class="modal-content">
             <div class="modal-header">
                 <h3><i class="fas fa-briefcase"></i> Job Details & Routing</h3>
                 <button class="modal-close" onclick="toggleModal('job-detail-modal')">&times;</button>
             </div>
-            <div class="modal-body" id="job-detail-content"></div>
+            <div class="modal-body">
+                <div class="job-detail-grid" id="job-detail-content"></div>
+                
+                <!-- Routing Section -->
+                <div class="routing-section">
+                    <h4><i class="fas fa-route"></i> Job Routing - Select Stage</h4>
+                    <div class="routing-stages" id="routing-stages"></div>
+                    <div class="action-buttons">
+                        <div class="btn-action-group">
+                            <button class="btn-action btn-invoice" onclick="showInvoice()">
+                                <i class="fas fa-file-invoice"></i> View Invoice
+                            </button>
+                            <button class="btn-action btn-whatsapp-action" onclick="sendJobWhatsApp()">
+                                <i class="fab fa-whatsapp"></i> WhatsApp Update
+                            </button>
+                            <button class="btn-action btn-route" onclick="updateJobStage()">
+                                <i class="fas fa-exchange-alt"></i> Update Stage
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
+
+    <!-- Invoice Modal -->
     <div class="modal" id="invoice-modal">
         <div class="modal-content" style="max-width: 900px;">
             <div class="modal-header">
@@ -362,11 +426,8 @@
             </div>
         </div>
     </div>
-    <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
-        const SUPABASE_URL = 'https://wbmshbmfrteutglydiay.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndibXNoYm1mcnRldXRnbHlkaWF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMjk5OTIsImV4cCI6MjA5MjkwNTk5Mn0.UiV0Uaxv0fXb_sHuoIOJ2AGJKenUmfmFAzaifPY0A6Y';
-        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    <script>
         const AI_PRICING = {
             'Graphics Design': { base: 5000, min: 3000, max: 50000 },
             'Printing': { base: 10000, min: 5000, max: 100000 },
@@ -378,10 +439,23 @@
             'Gadgets': { base: 10000, min: 5000, max: 100000 },
             'Other Services': { base: 3000, min: 2000, max: 30000 }
         };
+
+        const JOB_STAGES = [
+            { id: 'Client/staff', label: 'Client', icon: 'fa-user' },
+            { id: 'Graphics', label: 'Graphics', icon: 'fa-paint-brush' },
+            { id: 'Printing', label: 'Printing', icon: 'fa-print' },
+            { id: 'Photography', label: 'Photo', icon: 'fa-camera' },
+            { id: 'Secretary Review', label: 'Secretary', icon: 'fa-clipboard-check' },
+            { id: 'Admin Approval', label: 'Admin', icon: 'fa-user-shield' },
+            { id: 'Delivery', label: 'Delivery', icon: 'fa-truck' },
+            { id: 'Completed', label: 'Done', icon: 'fa-check-circle' }
+        ];
+
         let currentJob = null;
         let allJobs = [];
         let filteredJobs = [];
         let currentUser = null;
+        let selectedStage = null;
 
         function toggleTheme() {
             const currentTheme = document.documentElement.getAttribute('data-theme');
@@ -431,9 +505,41 @@
             const estimated = Math.round(pricing.base * multiplier);
             const min = Math.max(pricing.min, Math.round(estimated * 0.8));
             const max = Math.min(pricing.max, Math.round(estimated * 1.3));
-            aiInput.value = `₦${estimated.toLocaleString()} (Range: ₦${min.toLocaleString()} - ₦${max.toLocaleString()})`;
+            aiInput.value = '₦' + estimated.toLocaleString() + ' (Range: ₦' + min.toLocaleString() + ' - ₦' + max.toLocaleString() + ')';
             const amountField = document.getElementById('job-amount');
             if (!amountField.value || amountField.value === '0') { amountField.value = estimated; }
+        }
+
+        function selectStage(stageId) {
+            selectedStage = stageId;
+            document.querySelectorAll('.stage-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.dataset.stage === stageId) {
+                    item.classList.add('active');
+                }
+            });
+        }
+
+        function renderRoutingStages(currentStage) {
+            const container = document.getElementById('routing-stages');
+            const currentIndex = JOB_STAGES.findIndex(s => s.id === currentStage);
+            
+            let html = '';
+            JOB_STAGES.forEach((stage, index) => {
+                let className = 'stage-item';
+                if (stage.id === currentStage) className += ' active';
+                if (index < currentIndex) className += ' completed';
+                
+                html += `
+                    <div class="${className}" data-stage="${stage.id}" onclick="selectStage('${stage.id}')">
+                        <div class="icon"><i class="fas ${stage.icon}"></i></div>
+                        <div class="label">${stage.label}</div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+            selectedStage = currentStage;
         }
 
         window.addEventListener('DOMContentLoaded', async function() {
@@ -456,7 +562,10 @@
 
         async function loadJobs() {
             try {
-                console.log('📊 Loading jobs from Supabase...');
+                console.log('📊 Loading jobs from Google Sheets...');
+                if (typeof API === 'undefined') {
+                    throw new Error('API not loaded. Please refresh the page.');
+                }
                 allJobs = await API.get('jobs');
                 console.log('✅ Jobs loaded:', allJobs.length);
                 filteredJobs = [...allJobs];
@@ -496,8 +605,8 @@
                     '<td>₦' + parseFloat(job.amount).toLocaleString() + '</td>' +
                     '<td><span class="status-badge ' + statusClass + '">' + job.payment_status + '</span></td>' +
                     '<td>' +
-                    '<button class="btn-sm btn-info" onclick="viewJobDetail(\'' + job.id + '\')" title="View & Route"><i class="fas fa-eye"></i></button> ' +
-                    '<button class="btn-sm btn-warning" onclick="editJob(\'' + job.id + '\')" title="Edit Job"><i class="fas fa-edit"></i></button> ' +
+                    '<button class="btn-sm btn-info" onclick="viewJobDetail(\'' + (job.id || '') + '\')" title="View & Route"><i class="fas fa-eye"></i></button> ' +
+                    '<button class="btn-sm btn-warning" onclick="editJob(\'' + (job.id || '') + '\')" title="Edit Job"><i class="fas fa-edit"></i></button> ' +
                     '<button class="btn-sm btn-success" onclick="showInvoiceByTracking(\'' + trackingId + '\')" title="Invoice"><i class="fas fa-file-invoice"></i></button> ' +
                     '<button class="btn-sm btn-whatsapp" onclick="sendJobWhatsApp(\'' + trackingId + '\', \'' + clientPhone + '\')" title="WhatsApp"><i class="fab fa-whatsapp"></i></button>' +
                     '</td></tr>';
@@ -535,6 +644,9 @@
             btnSubmitText.textContent = editId ? 'Updating...' : 'Creating...';
             btnSubmitIcon.className = 'fas fa-spinner fa-spin';
             try {
+                if (typeof API === 'undefined') {
+                    throw new Error('API not loaded');
+                }
                 const amount = parseFloat(document.getElementById('job-amount').value);
                 const paid = parseFloat(document.getElementById('job-paid').value);
                 const jobData = {
@@ -580,6 +692,9 @@
         async function editJob(jobId) {
             try {
                 console.log('📝 Editing job:', jobId);
+                if (typeof API === 'undefined') {
+                    throw new Error('API not loaded');
+                }
                 currentJob = await API.get('jobs', jobId);
                 if (!currentJob || currentJob.error) {
                     currentJob = allJobs.find(j => j.id === jobId);
@@ -610,6 +725,9 @@
         async function viewJobDetail(jobId) {
             try {
                 console.log('👁️ Viewing job:', jobId);
+                if (typeof API === 'undefined') {
+                    throw new Error('API not loaded');
+                }
                 currentJob = await API.get('jobs', jobId);
                 if (!currentJob || currentJob.error) {
                     currentJob = allJobs.find(j => j.id === jobId);
@@ -618,29 +736,28 @@
                     alert('Job not found');
                     return;
                 }
+                
                 const statusClass = currentJob.payment_status === 'PAID' ? 'status-paid' : currentJob.payment_status === 'PARTIALLY PAID' ? 'status-partial' : 'status-unpaid';
                 const trackingId = currentJob.tracking_id || currentJob.trackingId || 'N/A';
                 const clientName = currentJob.client_name || currentJob.client || 'N/A';
                 const clientPhone = currentJob.client_phone || currentJob.phone || 'N/A';
                 const clientEmail = currentJob.client_email || currentJob.email || 'N/A';
+                
                 document.getElementById('job-detail-content').innerHTML = 
-                    '<div class="form-grid" style="margin-bottom: 20px;">' +
-                    '<div><strong>Tracking ID:</strong> <span style="color: var(--primary);">' + trackingId + '</span></div>' +
-                    '<div><strong>Client:</strong> ' + clientName + '</div>' +
-                    '<div><strong>Phone:</strong> ' + clientPhone + '</div>' +
-                    '<div><strong>Email:</strong> ' + clientEmail + '</div>' +
-                    '<div><strong>Hub:</strong> ' + currentJob.hub + '</div>' +
-                    '<div><strong>Current Stage:</strong> ' + currentJob.stage + '</div>' +
-                    '<div><strong>Status:</strong> <span class="status-badge ' + statusClass + '">' + currentJob.payment_status + '</span></div>' +
-                    '<div><strong>Amount:</strong> ₦' + parseFloat(currentJob.amount).toLocaleString() + '</div>' +
-                    '<div><strong>Paid:</strong> ₦' + parseFloat(currentJob.paid || 0).toLocaleString() + '</div>' +
-                    '<div><strong>Balance:</strong> ₦' + parseFloat(currentJob.balance || 0).toLocaleString() + '</div>' +
-                    '<div><strong>Delivery:</strong> ' + currentJob.delivery_date + '</div>' +
-                    '</div>' +
-                    '<div class="form-actions" style="margin-top: 20px;">' +
-                    '<button class="btn-success" onclick="showInvoiceByTracking(\'' + trackingId + '\')"><i class="fas fa-file-invoice"></i> Invoice</button> ' +
-                    '<button class="btn-whatsapp" onclick="sendJobWhatsApp(\'' + trackingId + '\', \'' + clientPhone + '\')"><i class="fab fa-whatsapp"></i> WhatsApp</button>' +
-                    '</div>';
+                    '<div class="job-detail-item"><label>Tracking ID</label><div class="value highlight">' + trackingId + '</div></div>' +
+                    '<div class="job-detail-item"><label>Client Name</label><div class="value">' + clientName + '</div></div>' +
+                    '<div class="job-detail-item"><label>Phone</label><div class="value">' + clientPhone + '</div></div>' +
+                    '<div class="job-detail-item"><label>Email</label><div class="value">' + clientEmail + '</div></div>' +
+                    '<div class="job-detail-item"><label>Hub</label><div class="value">' + currentJob.hub + '</div></div>' +
+                    '<div class="job-detail-item"><label>Current Stage</label><div class="value highlight">' + currentJob.stage + '</div></div>' +
+                    '<div class="job-detail-item"><label>Payment Status</label><div class="value"><span class="status-badge ' + statusClass + '">' + currentJob.payment_status + '</span></div></div>' +
+                    '<div class="job-detail-item"><label>Total Amount</label><div class="value">₦' + parseFloat(currentJob.amount).toLocaleString() + '</div></div>' +
+                    '<div class="job-detail-item"><label>Amount Paid</label><div class="value">₦' + parseFloat(currentJob.paid || 0).toLocaleString() + '</div></div>' +
+                    '<div class="job-detail-item"><label>Balance Due</label><div class="value" style="color: var(--danger);">₦' + parseFloat(currentJob.balance || 0).toLocaleString() + '</div></div>' +
+                    '<div class="job-detail-item"><label>Delivery Date</label><div class="value">' + currentJob.delivery_date + '</div></div>' +
+                    '<div class="job-detail-item"><label>Description</label><div class="value" style="font-size: 0.9rem;">' + (currentJob.description || 'N/A') + '</div></div>';
+                
+                renderRoutingStages(currentJob.stage);
                 toggleModal('job-detail-modal');
             } catch (error) {
                 console.error('❌ View job error:', error);
@@ -648,12 +765,34 @@
             }
         }
 
-        function showInvoiceByTracking(trackingId) {
-            const job = currentJob || allJobs.find(j => (j.tracking_id || j.trackingId) === trackingId);
-            if (!job) {
-                alert('Job not found');
+        function updateJobStage() {
+            if (!currentJob || !selectedStage) {
+                alert('Please select a stage first');
                 return;
             }
+            if (selectedStage === currentJob.stage) {
+                alert('Job is already at this stage');
+                return;
+            }
+            if (confirm('Move job from "' + currentJob.stage + '" to "' + selectedStage + '"?')) {
+                API.update('jobs', {
+                    id: currentJob.id,
+                    stage: selectedStage
+                }).then(result => {
+                    if (result.success) {
+                        alert('Job stage updated successfully!');
+                        currentJob.stage = selectedStage;
+                        renderRoutingStages(selectedStage);
+                        loadJobs();
+                    } else {
+                        alert('Error updating stage: ' + (result.error || 'Unknown error'));
+                    }
+                });
+            }
+        }
+
+        function showInvoice() {
+            if (!currentJob) return;
             const content = 
                 '<div class="invoice-container">' +
                 '<div class="invoice-header">' +
@@ -666,41 +805,41 @@
                 '</div>' +
                 '<div class="invoice-info">' +
                 '<h3>INVOICE</h3>' +
-                '<p><strong>' + (job.tracking_id || job.trackingId) + '</strong></p>' +
+                '<p><strong>' + (currentJob.tracking_id || currentJob.trackingId) + '</strong></p>' +
                 '<p>Date: ' + new Date().toLocaleDateString() + '</p>' +
-                '<p>Due: ' + (job.delivery_date || 'On Delivery') + '</p>' +
+                '<p>Due: ' + (currentJob.delivery_date || 'On Delivery') + '</p>' +
                 '</div>' +
                 '</div>' +
                 '<div class="invoice-sections">' +
                 '<div class="invoice-section">' +
                 '<h4><i class="fas fa-user"></i> Client Information</h4>' +
-                '<p><strong>Name:</strong> ' + (job.client_name || job.client || 'N/A') + '</p>' +
-                '<p><strong>Phone:</strong> ' + (job.client_phone || job.phone || 'N/A') + '</p>' +
-                '<p><strong>Email:</strong> ' + (job.client_email || 'N/A') + '</p>' +
+                '<p><strong>Name:</strong> ' + (currentJob.client_name || currentJob.client || 'N/A') + '</p>' +
+                '<p><strong>Phone:</strong> ' + (currentJob.client_phone || currentJob.phone || 'N/A') + '</p>' +
+                '<p><strong>Email:</strong> ' + (currentJob.client_email || 'N/A') + '</p>' +
                 '</div>' +
                 '<div class="invoice-section">' +
                 '<h4><i class="fas fa-briefcase"></i> Job Information</h4>' +
-                '<p><strong>Hub:</strong> ' + (job.hub || 'N/A') + '</p>' +
-                '<p><strong>Stage:</strong> ' + (job.stage || 'N/A') + '</p>' +
-                '<p><strong>Description:</strong> ' + (job.description || 'N/A') + '</p>' +
+                '<p><strong>Hub:</strong> ' + (currentJob.hub || 'N/A') + '</p>' +
+                '<p><strong>Stage:</strong> ' + (currentJob.stage || 'N/A') + '</p>' +
+                '<p><strong>Description:</strong> ' + (currentJob.description || 'N/A') + '</p>' +
                 '</div>' +
                 '</div>' +
                 '<div class="invoice-summary">' +
                 '<div class="invoice-row">' +
                 '<span>Total Amount:</span>' +
-                '<span>₦' + parseFloat(job.amount || 0).toLocaleString() + '</span>' +
+                '<span>₦' + parseFloat(currentJob.amount || 0).toLocaleString() + '</span>' +
                 '</div>' +
                 '<div class="invoice-row">' +
                 '<span>Amount Paid:</span>' +
-                '<span>₦' + parseFloat(job.paid || 0).toLocaleString() + '</span>' +
+                '<span>₦' + parseFloat(currentJob.paid || 0).toLocaleString() + '</span>' +
                 '</div>' +
                 '<div class="invoice-row">' +
                 '<span>Balance Due:</span>' +
-                '<span>₦' + parseFloat(job.balance || 0).toLocaleString() + '</span>' +
+                '<span>₦' + parseFloat(currentJob.balance || 0).toLocaleString() + '</span>' +
                 '</div>' +
                 '<div class="invoice-row">' +
                 '<span>Payment Status:</span>' +
-                '<span>' + (job.payment_status || 'UNPAID') + '</span>' +
+                '<span>' + (currentJob.payment_status || 'UNPAID') + '</span>' +
                 '</div>' +
                 '</div>' +
                 '<div class="invoice-footer">' +
@@ -715,12 +854,22 @@
             toggleModal('invoice-modal');
         }
 
+        function showInvoiceByTracking(trackingId) {
+            const job = currentJob || allJobs.find(j => (j.tracking_id || j.trackingId) === trackingId);
+            if (!job) {
+                alert('Job not found');
+                return;
+            }
+            currentJob = job;
+            showInvoice();
+        }
+
         function downloadInvoice() {
             const element = document.getElementById('invoice-content');
             const job = currentJob || allJobs[0];
             const opt = {
                 margin: 10,
-                filename: `TBOS_Invoice_${job.tracking_id || job.trackingId || 'N/A'}.pdf`,
+                filename: 'TBOS_Invoice_' + (job.tracking_id || job.trackingId || 'N/A') + '.pdf',
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2, useCORS: true },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
@@ -733,21 +882,32 @@
             });
         }
 
-        function sendJobWhatsApp(trackingId, phone, action) {
+        function sendJobWhatsApp() {
+            if (!currentJob) {
+                alert('No job selected');
+                return;
+            }
+            const phone = currentJob.client_phone || currentJob.phone;
             if (!phone) {
                 alert('No phone number');
                 return;
             }
+            const trackingId = currentJob.tracking_id || currentJob.trackingId || 'N/A';
+            const stage = currentJob.stage || 'N/A';
+            const message = 'Hello ' + (currentJob.client_name || currentJob.client || 'Valued Client') + ',\n\nYour job status update:\n\nTracking ID: ' + trackingId + '\nCurrent Stage: ' + stage + '\n\nThank you for choosing Tomstudio BizHub!\nContact: +234 818 550 4382';
             const cleanPhone = phone.replace(/[^0-9]/g, '');
-            const message = `Hello,\n\nYour job status update - ${trackingId}\nAction: ${action || 'update'}\n\nThank you for choosing Tomstudio BizHub!\nContact: +234 818 550 4382`;
-            const url = `https://wa.me/234${cleanPhone.substring(3)}?text=${encodeURIComponent(message)}`;
+            const url = 'https://wa.me/234' + cleanPhone.substring(3) + '?text=' + encodeURIComponent(message);
             window.open(url, '_blank');
         }
 
         function sendInvoiceWhatsApp() {
-            const job = currentJob || allJobs[0];
-            const message = `Hello,\n\nPlease find your invoice details:\n\nTracking ID: ${job.tracking_id || job.trackingId}\nTotal Amount: ₦${parseFloat(job.amount || 0).toLocaleString()}\nAmount Paid: ₦${parseFloat(job.paid || 0).toLocaleString()}\nBalance Due: ₦${parseFloat(job.balance || 0).toLocaleString()}\n\nPayment Details:\nBank: Moniepoint\nAccount: 8030827417\nAccount Name: Tomstudio BizHub\n\nThank you for choosing Tomstudio BizHub!\nContact: +234 818 550 4382`;
-            const url = `https://wa.me/2348185504382?text=${encodeURIComponent(message)}`;
+            if (!currentJob) return;
+            const trackingId = currentJob.tracking_id || currentJob.trackingId || 'N/A';
+            const amount = parseFloat(currentJob.amount) || 0;
+            const paid = parseFloat(currentJob.paid) || 0;
+            const balance = parseFloat(currentJob.balance) || amount;
+            const message = 'Hello,\n\nPlease find your invoice details:\n\nTracking ID: ' + trackingId + '\nTotal Amount: ₦' + amount.toLocaleString() + '\nAmount Paid: ₦' + paid.toLocaleString() + '\nBalance Due: ₦' + balance.toLocaleString() + '\n\nPayment Details:\nBank: Moniepoint\nAccount: 8030827417\nAccount Name: Tomstudio BizHub\n\nThank you for choosing Tomstudio BizHub!\nContact: +234 818 550 4382';
+            const url = 'https://wa.me/2348185504382?text=' + encodeURIComponent(message);
             window.open(url, '_blank');
         }
 
@@ -766,44 +926,10 @@
         }
 
         function exportJobsPDF() {
-            const content = `
-                <div style="padding: 40px; font-family: Arial, sans-serif;">
-                    <h1 style="color: #008080; text-align: center;">TBOS v3.0 - Jobs Report</h1>
-                    <p style="text-align: center; color: #666;">Generated: ${new Date().toLocaleString()}</p>
-                    <p style="text-align: center; color: #666;">Total Jobs: ${filteredJobs.length}</p>
-                    <table style="width: 100%; border-collapse: collapse; margin-top: 30px;">
-                        <thead>
-                            <tr style="background: #008080; color: white;">
-                                <th style="padding: 12px; border: 1px solid #ddd;">Tracking ID</th>
-                                <th style="padding: 12px; border: 1px solid #ddd;">Client</th>
-                                <th style="padding: 12px; border: 1px solid #ddd;">Hub</th>
-                                <th style="padding: 12px; border: 1px solid #ddd;">Stage</th>
-                                <th style="padding: 12px; border: 1px solid #ddd;">Amount</th>
-                                <th style="padding: 12px; border: 1px solid #ddd;">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${filteredJobs.map(job => `
-                                <tr>
-                                    <td style="padding: 10px; border: 1px solid #ddd;">${job.tracking_id || job.trackingId}</td>
-                                    <td style="padding: 10px; border: 1px solid #ddd;">${job.client_name || job.client}</td>
-                                    <td style="padding: 10px; border: 1px solid #ddd;">${job.hub}</td>
-                                    <td style="padding: 10px; border: 1px solid #ddd;">${job.stage}</td>
-                                    <td style="padding: 10px; border: 1px solid #ddd;">₦${parseFloat(job.amount).toLocaleString()}</td>
-                                    <td style="padding: 10px; border: 1px solid #ddd;">${job.payment_status}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                    <div style="margin-top: 40px; text-align: center; color: #666; font-size: 0.85rem;">
-                        <p>Tomstudio BizHub | 265, Isawo Road, Agric Ikorodu, Lagos</p>
-                        <p>Phone: +234 818 550 4382 | Email: info@tbos.com</p>
-                    </div>
-                </div>
-            `;
+            const content = '<div style="padding: 40px; font-family: Arial, sans-serif;"><h1 style="color: #008080; text-align: center;">TBOS v3.0 - Jobs Report</h1><p style="text-align: center; color: #666;">Generated: ' + new Date().toLocaleString() + '</p><p style="text-align: center; color: #666;">Total Jobs: ' + filteredJobs.length + '</p><table style="width: 100%; border-collapse: collapse; margin-top: 30px;"><thead><tr style="background: #008080; color: white;"><th style="padding: 12px; border: 1px solid #ddd;">Tracking ID</th><th style="padding: 12px; border: 1px solid #ddd;">Client</th><th style="padding: 12px; border: 1px solid #ddd;">Hub</th><th style="padding: 12px; border: 1px solid #ddd;">Stage</th><th style="padding: 12px; border: 1px solid #ddd;">Amount</th><th style="padding: 12px; border: 1px solid #ddd;">Status</th></tr></thead><tbody>' + filteredJobs.map(job => '<tr><td style="padding: 10px; border: 1px solid #ddd;">' + (job.tracking_id || job.trackingId) + '</td><td style="padding: 10px; border: 1px solid #ddd;">' + (job.client_name || job.client) + '</td><td style="padding: 10px; border: 1px solid #ddd;">' + job.hub + '</td><td style="padding: 10px; border: 1px solid #ddd;">' + job.stage + '</td><td style="padding: 10px; border: 1px solid #ddd;">₦' + parseFloat(job.amount).toLocaleString() + '</td><td style="padding: 10px; border: 1px solid #ddd;">' + job.payment_status + '</td></tr>').join('') + '</tbody></table><div style="margin-top: 40px; text-align: center; color: #666; font-size: 0.85rem;"><p>Tomstudio BizHub | 265, Isawo Road, Agric Ikorodu, Lagos</p><p>Phone: +234 818 550 4382 | Email: info@tbos.com</p></div></div>';
             const opt = {
                 margin: 10,
-                filename: `TBOS_Jobs_Report_${new Date().toISOString().split('T')[0]}.pdf`,
+                filename: 'TBOS_Jobs_Report_' + new Date().toISOString().split('T')[0] + '.pdf',
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2 },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
@@ -832,7 +958,7 @@
             const ws = XLSX.utils.json_to_sheet(data);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, 'Jobs Report');
-            const fileName = `TBOS_Jobs_Report_${new Date().toISOString().split('T')[0]}.xlsx`;
+            const fileName = 'TBOS_Jobs_Report_' + new Date().toISOString().split('T')[0] + '.xlsx';
             XLSX.writeFile(wb, fileName);
             alert('Excel file exported successfully!');
         }
@@ -857,7 +983,7 @@
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `TBOS_Jobs_Report_${new Date().toISOString().split('T')[0]}.csv`;
+            a.download = 'TBOS_Jobs_Report_' + new Date().toISOString().split('T')[0] + '.csv';
             a.click();
             alert('CSV file exported successfully!');
         }
@@ -882,9 +1008,12 @@
         window.toggleSidebar = toggleSidebar;
         window.toggleModal = toggleModal;
         window.calculateAIPrice = calculateAIPrice;
+        window.selectStage = selectStage;
         window.filterJobs = filterJobs;
         window.editJob = editJob;
         window.viewJobDetail = viewJobDetail;
+        window.updateJobStage = updateJobStage;
+        window.showInvoice = showInvoice;
         window.showInvoiceByTracking = showInvoiceByTracking;
         window.downloadInvoice = downloadInvoice;
         window.sendJobWhatsApp = sendJobWhatsApp;
