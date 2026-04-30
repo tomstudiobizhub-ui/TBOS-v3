@@ -273,8 +273,8 @@
                 <div class="bank-detail-item">
                     <label>Account Number</label>
                     <div class="value">
-                        <span>8185504382</span>
-                        <button class="copy-btn" onclick="copyToClipboard('8185504382')"><i class="fas fa-copy"></i></button>
+                        <span>8030827417</span>
+                        <button class="copy-btn" onclick="copyToClipboard('8030827417')"><i class="fas fa-copy"></i></button>
                     </div>
                 </div>
                 <div class="bank-detail-item">
@@ -577,7 +577,7 @@
                 '</div>' +
                 '<div class="invoice-footer">' +
                 '<p><strong>Payment Instructions:</strong></p>' +
-                '<p>Bank: Moniepoint | Account: 8185504382 | Name: Tomstudio BizHub</p>' +
+                '<p>Bank: Moniepoint | Account: 8030827417 | Name: Tomstudio BizHub</p>' +
                 '<p>Use Tracking ID as payment reference</p>' +
                 '<p>Send proof of payment to +234 818 550 4382</p>' +
                 '<p style="margin-top: 20px;">"Consistency builds trust. Trust builds growth."</p>' +
@@ -611,7 +611,7 @@
             const amount = parseFloat(currentJob.amount) || 0;
             const paid = parseFloat(currentJob.paid) || 0;
             const balance = parseFloat(currentJob.balance) || amount;
-            const message = 'Hello,\n\nPlease find your invoice details:\n\nTracking ID: ' + trackingId + '\nTotal Amount: ₦' + amount.toLocaleString() + '\nAmount Paid: ₦' + paid.toLocaleString() + '\nBalance Due: ₦' + balance.toLocaleString() + '\n\nPayment Details:\nBank: Moniepoint\nAccount: 8185504382\nAccount Name: Tomstudio BizHub\n\nThank you for choosing Tomstudio BizHub!\nContact: +234 818 550 4382';
+            const message = 'Hello,\n\nPlease find your invoice details:\n\nTracking ID: ' + trackingId + '\nTotal Amount: ₦' + amount.toLocaleString() + '\nAmount Paid: ₦' + paid.toLocaleString() + '\nBalance Due: ₦' + balance.toLocaleString() + '\n\nPayment Details:\nBank: Moniepoint\nAccount: 8030827417\nAccount Name: Tomstudio BizHub\n\nThank you for choosing Tomstudio BizHub!\nContact: +234 818 550 4382';
             const url = 'https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(message);
             window.open(url, '_blank');
         }

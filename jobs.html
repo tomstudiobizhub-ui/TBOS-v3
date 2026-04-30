@@ -7,6 +7,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
         :root {
@@ -560,7 +561,7 @@
 
         async function loadJobs() {
             try {
-                console.log('📊 Loading jobs from Google Sheets...');
+                console.log('📊 Loading jobs from supabase...');
                 if (typeof API === 'undefined') {
                     throw new Error('API not loaded. Please refresh the page.');
                 }

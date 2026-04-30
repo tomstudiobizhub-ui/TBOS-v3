@@ -15,7 +15,1094 @@
             --bg-input: #2a2a2a;
             --text-main: #ffffff;
             --text-muted: #a0a0a0;
+            --border: #333333;<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff & ID Cards | TBOS v3.0</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="config.js"></script>
+    <style>
+        :root {
+            --bg-body: #0a0a0a;
+            --bg-panel: #1a1a1a;
+            --bg-sidebar: #111111;
+            --bg-input: #2a2a2a;
+            --text-main: #ffffff;
+            --text-muted: #a0a0a0;
             --border: #333333;
+            --primary: #008080;
+            --primary-hover: #006666;
+            --success: #00c851;
+            --warning: #ffbb33;
+            --danger: #ff4444;
+            --sidebar-width: 280px;
+            --header-height: 70px;
+            --radius: 12px;
+        }
+        [data-theme="cool"] {
+            --bg-body: #f0f4f8;
+            --bg-panel: #ffffff;
+            --bg-sidebar: #ffffff;
+            --bg-input: #f5f7fa;
+            --text-main: #1a202c;
+            --text-muted: #718096;
+            --border: #e2e8f0;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; transition: background-color 0.3s, color 0.3s; }
+        body { background: var(--bg-body); color: var(--text-main); display: flex; min-height: 100vh; overflow-x: hidden; width: 100%; }
+        a { text-decoration: none; color: inherit; }
+        button { cursor: pointer; border: none; outline: none; transition: 0.3s; }
+        .sidebar { width: var(--sidebar-width); background: var(--bg-sidebar); border-right: 1px solid var(--border); position: fixed; height: 100vh; overflow-y: auto; z-index: 100; transition: transform 0.3s ease; }
+        .brand { padding: 25px; border-bottom: 1px solid var(--border); color: var(--primary); font-size: 1.5rem; font-weight: 700; text-align: center; }
+        .nav-section { font-size: 0.7rem; text-transform: uppercase; color: #555; margin: 20px 15px 10px; font-weight: 700; padding-left: 15px; }
+        .nav-item { padding: 15px 25px; color: var(--text-muted); display: flex; align-items: center; gap: 12px; transition: 0.3s; cursor: pointer; }
+        .nav-item:hover, .nav-item.active { background: rgba(0, 128, 128, 0.1); color: var(--primary); }
+        .nav-item i { width: 20px; text-align: center; }
+        .nav-badge { margin-left: auto; background: var(--danger); color: white; font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; }
+        .main-content { flex: 1; margin-left: var(--sidebar-width); display: flex; flex-direction: column; min-height: 100vh; }
+        .top-bar { height: var(--header-height); background: var(--bg-panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 25px; position: sticky; top: 0; z-index: 50; }
+        .menu-toggle { display: none; color: var(--text-main); font-size: 1.5rem; cursor: pointer; padding: 10px; border-radius: 8px; }
+        .user-profile { display: flex; align-items: center; gap: 15px; }
+        .hub-badge { padding: 5px 15px; background: rgba(0, 128, 128, 0.2); color: var(--primary); border-radius: 20px; font-size: 0.85rem; border: 1px solid var(--primary); }
+        .theme-toggle { background: rgba(255,255,255,0.1); border: 1px solid var(--border); border-radius: 20px; padding: 8px 12px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--text-main); }
+        .notification-btn { position: relative; color: var(--text-muted); font-size: 1.2rem; cursor: pointer; padding: 10px; background: transparent; border: none; }
+        .notification-badge { position: absolute; top: 0; right: 0; background: var(--danger); color: white; font-size: 0.65rem; padding: 2px 6px; border-radius: 10px; min-width: 18px; text-align: center; }
+        .notification-dropdown { position: absolute; top: 60px; right: 20px; background: var(--bg-panel); border: 1px solid var(--border); border-radius: 12px; width: 350px; max-height: 400px; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.5); z-index: 200; display: none; }
+        .notification-dropdown.active { display: block; }
+        .notification-header { padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--bg-panel); z-index: 10; }
+        .notification-header h4 { font-size: 1rem; color: var(--text-main); }
+        .clear-notifications { color: var(--primary); font-size: 0.8rem; cursor: pointer; background: none; border: none; }
+        .notification-list { padding: 10px; }
+        .notification-item { padding: 15px; background: var(--bg-input); border-radius: 8px; margin-bottom: 10px; border-left: 3px solid var(--primary); cursor: pointer; transition: 0.3s; }
+        .notification-item:hover { background: rgba(0, 128, 128, 0.1); }
+        .notification-item.unread { background: rgba(0, 128, 128, 0.15); }
+        .notification-item .title { font-weight: 600; color: var(--text-main); margin-bottom: 5px; }
+        .notification-item .message { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; }
+        .notification-item .time { font-size: 0.75rem; color: var(--text-muted); }
+        .no-notifications { text-align: center; padding: 40px 20px; color: var(--text-muted); }
+        .content-scroll { flex: 1; overflow-y: auto; padding: 25px; }
+        .panel { background: var(--bg-panel); border-radius: var(--radius); padding: 25px; margin-bottom: 25px; border: 1px solid var(--border); }
+        .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        .panel-title { font-size: 1.15rem; font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 10px; }
+        .panel-title i { color: var(--primary); }
+        .filter-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .filter-bar select, .filter-bar input { padding: 10px 15px; background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px; color: var(--text-main); font-size: 0.9rem; }
+        .btn-primary { padding: 14px 25px; background: var(--primary); color: white; border-radius: 8px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-primary:hover { background: var(--primary-hover); transform: translateY(-2px); }
+        .btn-sm { padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; margin: 2px; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-info { background: var(--info); color: white; }
+        .btn-whatsapp { background: #25D366; color: white; }
+        .btn-warning { background: var(--warning); color: #000; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-muted); }
+        .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+        .table-responsive { overflow-x: auto; }
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th { text-align: left; padding: 15px; color: var(--text-muted); border-bottom: 2px solid var(--border); font-size: 0.8rem; text-transform: uppercase; }
+        .data-table td { padding: 15px; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+        .data-table tr:hover { background: rgba(255,255,255,0.02); }
+        .status-badge { padding: 5px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; display: inline-block; }
+        .status-active { background: rgba(0, 200, 81, 0.2); color: var(--success); }
+        .status-pending { background: rgba(255, 187, 51, 0.2); color: var(--warning); }
+        .status-suspended { background: rgba(255, 68, 68, 0.2); color: var(--danger); }
+        .status-rejected { background: rgba(100, 100, 100, 0.2); color: var(--text-muted); }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
+        .modal.active { display: flex; }
+        .modal-content { background: var(--bg-panel); border-radius: var(--radius); border: 1px solid var(--border); width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; }
+        .modal-header { padding: 20px 25px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h3 { font-size: 1.2rem; color: var(--text-main); }
+        .modal-close { background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+        .modal-close:hover { color: var(--danger); background: rgba(255, 68, 68, 0.1); }
+        .modal-body { padding: 25px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .form-full { grid-column: 1 / -1; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; color: var(--text-muted); margin-bottom: 8px; font-size: 0.9rem; font-weight: 500; }
+        .input-wrapper { position: relative; }
+        .input-wrapper i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+        .form-group input, .form-group select { width: 100%; padding: 12px 12px 12px 40px; background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px; color: var(--text-main); font-size: 0.95rem; }
+        .form-group input:focus, .form-group select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(0, 128, 128, 0.2); }
+        .photo-upload { margin-bottom: 20px; text-align: center; }
+        .photo-preview { width: 120px; height: 120px; border-radius: 50%; background: var(--bg-input); border: 2px dashed var(--border); display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; overflow: hidden; cursor: pointer; transition: all 0.3s ease; }
+        .photo-preview:hover { border-color: var(--primary); transform: scale(1.05); }
+        .photo-preview img { width: 100%; height: 100%; object-fit: cover; display: none; }
+        .photo-preview i { font-size: 2.5rem; color: var(--text-muted); }
+        .photo-preview.has-image img { display: block; }
+        .photo-preview.has-image i { display: none; }
+        .photo-label { color: var(--text-muted); font-size: 0.85rem; }
+        .form-actions { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+        .approval-card { background: var(--bg-input); padding: 20px; border-radius: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .approval-info { flex: 1; min-width: 200px; }
+        .approval-info h4 { color: var(--text-main); margin-bottom: 5px; }
+        .approval-info p { color: var(--text-muted); font-size: 0.85rem; }
+        .approval-actions { display: flex; gap: 10px; }
+        .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 99; }
+        .overlay.active { display: block; }
+        footer { padding: 20px; text-align: center; font-size: 0.8rem; color: var(--text-muted); border-top: 1px solid var(--border); background: var(--bg-panel); }
+        
+        /* ID Card Styles */
+        .id-card-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .id-card {
+            width: 320px;
+            height: 500px;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            position: relative;
+            border: 3px solid #008080;
+        }
+        
+        .id-card-front {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        .id-card-header {
+            background: linear-gradient(135deg, #008080 0%, #004d4d 100%);
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .id-card-logo {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 10px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .id-card-logo img {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+        }
+        
+        .id-card-header h3 {
+            font-size: 1.2rem;
+            margin-bottom: 3px;
+        }
+        
+        .id-card-header p {
+            font-size: 0.75rem;
+            opacity: 0.9;
+        }
+        
+        .id-card-body {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .id-card-photo {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 3px solid #008080;
+            margin-bottom: 15px;
+            overflow: hidden;
+            background: #f0f0f0;
+        }
+        
+        .id-card-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .id-card-info {
+            width: 100%;
+            text-align: center;
+        }
+        
+        .id-card-info-item {
+            margin-bottom: 12px;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 3px solid #008080;
+        }
+        
+        .id-card-info-label {
+            font-size: 0.7rem;
+            color: #666;
+            text-transform: uppercase;
+            margin-bottom: 3px;
+        }
+        
+        .id-card-info-value {
+            font-size: 0.9rem;
+            color: #000;
+            font-weight: 600;
+            word-break: break-word;
+        }
+        
+        .id-card-footer {
+            padding: 15px;
+            background: #f8f9fa;
+            text-align: center;
+            border-top: 2px solid #008080;
+        }
+        
+        .id-card-qr {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 10px;
+            background: white;
+            padding: 5px;
+            border-radius: 8px;
+        }
+        
+        .id-card-qr img {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .id-card-footer p {
+            font-size: 0.7rem;
+            color: #666;
+            margin: 5px 0;
+        }
+        
+        .id-card-back {
+            background: white;
+            padding: 20px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .id-card-back-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #008080;
+        }
+        
+        .id-card-back-header h3 {
+            color: #008080;
+            font-size: 1.1rem;
+        }
+        
+        .id-card-terms {
+            flex: 1;
+            font-size: 0.75rem;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .id-card-terms h4 {
+            color: #008080;
+            margin-bottom: 10px;
+            font-size: 0.85rem;
+        }
+        
+        .id-card-terms ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .id-card-terms li {
+            margin-bottom: 8px;
+            padding-left: 15px;
+            position: relative;
+        }
+        
+        .id-card-terms li:before {
+            content: "•";
+            color: #008080;
+            position: absolute;
+            left: 0;
+        }
+        
+        .id-card-contact {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid #008080;
+            text-align: center;
+            font-size: 0.75rem;
+            color: #666;
+        }
+        
+        .id-card-contact p {
+            margin: 5px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.active { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+            .menu-toggle { display: block; }
+            .top-bar { padding: 0 15px; }
+            .filter-bar { flex-direction: column; }
+            .filter-bar select, .filter-bar input { width: 100%; }
+            .panel { padding: 15px; }
+            .user-profile span { display: none; }
+            .hub-badge { display: none; }
+            .notification-dropdown { width: calc(100vw - 40px); right: 20px; left: 20px; }
+            .approval-card { flex-direction: column; align-items: flex-start; }
+            .id-card { width: 280px; height: 450px; }
+        }
+        @media (max-width: 480px) {
+            .theme-toggle span { display: none; }
+            .notification-dropdown { width: calc(100vw - 30px); }
+            .id-card { width: 260px; height: 420px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+    <aside class="sidebar" id="sidebar">
+        <div class="brand"><i class="fas fa-cube"></i> TBOS v3.0</div>
+        <div class="nav-scroll">
+            <div class="nav-section">Core Operations</div>
+            <a href="dashboard.html" class="nav-item"><i class="fas fa-home"></i> Dashboard</a>
+            <a href="jobs.html" class="nav-item"><i class="fas fa-briefcase"></i> Jobs & Routing <span class="nav-badge" id="job-badge">0</span></a>
+            <a href="staff.html" class="nav-item active"><i class="fas fa-users"></i> Staff & ID Cards</a>
+            <a href="inventory.html" class="nav-item"><i class="fas fa-boxes"></i> Inventory</a>
+            <a href="clients.html" class="nav-item"><i class="fas fa-user-friends"></i> Client Portal</a>
+            <div class="nav-section">Knowledge</div>
+            <a href="knowledge.html" class="nav-item"><i class="fas fa-book"></i> Knowledge Center</a>
+            <a href="reports.html" class="nav-item"><i class="fas fa-chart-line"></i> Reports</a>
+            <div class="nav-section">Administration</div>
+            <a href="admin.html" class="nav-item"><i class="fas fa-cog"></i> Admin Panel</a>
+            <a href="staff.html#approvals" class="nav-item"><i class="fas fa-user-check"></i> Staff Approvals</a>
+            <a href="#" class="nav-item" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </aside>
+    <main class="main-content">
+        <header class="top-bar">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <i class="fas fa-bars menu-toggle" onclick="toggleSidebar()"></i>
+                <h2>Staff Directory</h2>
+            </div>
+            <div class="user-profile">
+                <button class="theme-toggle" onclick="toggleTheme()">
+                    <i class="fas fa-moon" id="theme-icon"></i>
+                    <span id="theme-text">Dark</span>
+                </button>
+                <button class="notification-btn" onclick="toggleNotifications()">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge" id="notif-badge">0</span>
+                </button>
+                <span id="user-name">User</span>
+                <span id="user-hub" class="hub-badge">Hub</span>
+            </div>
+        </header>
+        <div class="notification-dropdown" id="notification-dropdown">
+            <div class="notification-header">
+                <h4><i class="fas fa-bell"></i> Notifications</h4>
+                <button class="clear-notifications" onclick="clearNotifications()">Clear All</button>
+            </div>
+            <div class="notification-list" id="notification-list">
+                <div class="no-notifications">
+                    <i class="fas fa-bell-slash" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                    <p>No new notifications</p>
+                </div>
+            </div>
+        </div>
+        <div class="content-scroll">
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title"><i class="fas fa-users"></i> Staff Directory</div>
+                    <button class="btn-primary" onclick="openRegisterModal()">
+                        <i class="fas fa-plus"></i> Register Staff
+                    </button>
+                </div>
+                <div class="filter-bar">
+                    <select id="staff-filter-hub" onchange="filterStaff()">
+                        <option value="">All Hubs</option>
+                        <option value="Online Shop">Online Shop</option>
+                        <option value="Graphics Design">Graphics Design</option>
+                        <option value="Printing">Printing</option>
+                        <option value="Photography">Photography</option>
+                        <option value="CBT Center">CBT Center</option>
+                        <option value="Tech Lab">Tech Lab</option>
+                        <option value="Tech Academy">Tech Academy</option>
+                        <option value="Gadgets">Gadgets</option>
+                        <option value="Other Services">Other Services</option>
+                    </select>
+                    <select id="staff-filter-status" onchange="filterStaff()">
+                        <option value="">All Status</option>
+                        <option value="Pending Approval">Pending Approval</option>
+                        <option value="Active">Active</option>
+                        <option value="Suspended">Suspended</option>
+                        <option value="Rejected">Rejected</option>
+                    </select>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Hub</th>
+                                <th>Status</th>
+                                <th>Score</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="staff-table-body">
+                            <tr><td colspan="7" style="text-align: center; padding: 40px;">
+                                <i class="fas fa-spinner fa-spin" style="margin-right: 10px;"></i> Loading staff...
+                            </td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="panel" id="approvals">
+                <div class="panel-header">
+                    <div class="panel-title"><i class="fas fa-user-check"></i> Pending Approvals</div>
+                    <button class="btn-sm btn-success" onclick="approveAllStaff()">
+                        <i class="fas fa-check-double"></i> Approve All
+                    </button>
+                </div>
+                <div id="pending-approvals">
+                    <p style="color: var(--text-muted); text-align: center; padding: 40px;">
+                        <i class="fas fa-check-circle" style="font-size: 3rem; margin-bottom: 20px; color: var(--success);"></i><br>
+                        No pending staff approvals at this time.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <footer>
+            TBOS v3.0 | Tomstudio BizHub Operations System<br>
+            Track • Record • Route • Report • Improve<br>
+            Built by Tomstudio Tech Academy | Contact: +234 818 550 4382
+        </footer>
+    </main>
+    <div class="modal" id="register-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-user-plus"></i> Register New Staff</h3>
+                <button class="modal-close" onclick="toggleModal('register-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="staff-reg-form" class="form-grid">
+                    <input type="hidden" id="edit-staff-id">
+                    <div class="photo-upload form-full">
+                        <div class="photo-preview" id="photo-preview" onclick="document.getElementById('reg-photo').click()">
+                            <i class="fas fa-camera"></i>
+                            <img id="photo-img" src="" alt="Profile Photo">
+                        </div>
+                        <p class="photo-label">Click to upload passport photo (Max 2MB)</p>
+                        <input type="file" id="reg-photo" accept="image/*" style="display: none;" onchange="previewPhoto(this)">
+                    </div>
+                    <div class="form-group form-full">
+                        <label>Full Name *</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-user"></i>
+                            <input type="text" id="reg-name" required placeholder="Enter full name">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Email *</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-envelope"></i>
+                            <input type="email" id="reg-email" required placeholder="staff@tbos.com">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Phone *</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-phone"></i>
+                            <input type="tel" id="reg-phone" required placeholder="+234...">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Hub *</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-building"></i>
+                            <select id="reg-hub" required>
+                                <option value="">Select Hub...</option>
+                                <option value="Online Shop">Online Shop</option>
+                                <option value="Graphics Design">Graphics Design</option>
+                                <option value="Printing">Printing</option>
+                                <option value="Photography">Photography</option>
+                                <option value="CBT Center">CBT Center</option>
+                                <option value="Tech Lab">Tech Lab</option>
+                                <option value="Tech Academy">Tech Academy</option>
+                                <option value="Gadgets">Gadgets</option>
+                                <option value="Other Services">Other Services</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Role *</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-id-badge"></i>
+                            <select id="reg-role" required>
+                                <option value="Staff">Staff</option>
+                                <option value="Administrator">Administrator</option>
+                                <option value="Executive Director">Executive Director</option>
+                                <option value="Branch Manager">Branch Manager</option>
+                                <option value="Secretary">Secretary</option>
+                                <option value="Apprentice">Apprentice</option>
+                                <option value="Intern">Intern</option>
+                                <option value="IT">IT</option>
+                                <option value="HOD">HOD</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group form-full">
+                        <label>Address</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <input type="text" id="reg-address" placeholder="Full address">
+                        </div>
+                    </div>
+                    <div class="form-group form-full">
+                        <label>Location</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-map"></i>
+                            <input type="text" id="reg-location" placeholder="City, State">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Password *</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="reg-password" required minlength="6" placeholder="Min 6 characters">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Confirm Password *</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="reg-confirm" required minlength="6" placeholder="Confirm password">
+                        </div>
+                    </div>
+                    <div class="form-actions form-full">
+                        <button type="submit" class="btn-primary" id="btn-register" style="flex: 1;">
+                            <i class="fas fa-save"></i>
+                            <span>Register (Pending Approval)</span>
+                        </button>
+                        <button type="button" class="btn-sm btn-outline" onclick="toggleModal('register-modal')">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="modal" id="idcard-modal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-id-card"></i> Digital Staff ID Card</h3>
+                <button class="modal-close" onclick="toggleModal('idcard-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="id-card-container">
+                    <div class="id-card" id="id-card-front">
+                        <div class="id-card-front">
+                            <div class="id-card-header">
+                                <div class="id-card-logo">
+                                    <img src="assets/logo-192.png" alt="TBOS Logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'%3E%3Ccircle cx=\'50\' cy=\'50\' r=\'45\' fill=\'%23008080\'/%3E%3Ctext x=\'50\' y=\'60\' font-size=\'40\' text-anchor=\'middle\' fill=\'white\'%3ET%3C/text%3E%3C/svg%3E'">
+                                </div>
+                                <h3>TBOS v3.0</h3>
+                                <p>STAFF ID CARD</p>
+                            </div>
+                            <div class="id-card-body">
+                                <div class="id-card-photo">
+                                    <img id="idcard-photo" src="" alt="Staff Photo">
+                                </div>
+                                <div class="id-card-info">
+                                    <div class="id-card-info-item">
+                                        <div class="id-card-info-label">Staff Name</div>
+                                        <div class="id-card-info-value" id="idcard-name">-</div>
+                                    </div>
+                                    <div class="id-card-info-item">
+                                        <div class="id-card-info-label">Role</div>
+                                        <div class="id-card-info-value" id="idcard-role">-</div>
+                                    </div>
+                                    <div class="id-card-info-item">
+                                        <div class="id-card-info-label">Hub/Department</div>
+                                        <div class="id-card-info-value" id="idcard-hub">-</div>
+                                    </div>
+                                    <div class="id-card-info-item">
+                                        <div class="id-card-info-label">ID Number</div>
+                                        <div class="id-card-info-value" id="idcard-id">-</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="id-card-footer">
+                                <div class="id-card-qr">
+                                    <img id="idcard-qr" src="" alt="QR Code">
+                                </div>
+                                <p><strong>Tomstudio BizHub</strong></p>
+                                <p>265, Isawo Road, Agric Ikorodu, Lagos</p>
+                                <p style="font-size: 0.65rem; margin-top: 8px;">Scan QR to verify staff identity</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="id-card" id="id-card-back">
+                        <div class="id-card-back">
+                            <div class="id-card-back-header">
+                                <h3>TERMS & CONDITIONS</h3>
+                            </div>
+                            <div class="id-card-terms">
+                                <h4>This card is property of Tomstudio BizHub</h4>
+                                <ul>
+                                    <li>Must be worn visibly at all times while on duty</li>
+                                    <li>Non-transferable - For named staff only</li>
+                                    <li>Report loss immediately to admin</li>
+                                    <li>Return upon termination of employment</li>
+                                    <li>Misuse may result in disciplinary action</li>
+                                    <li>Valid only with staff signature</li>
+                                </ul>
+                            </div>
+                            <div class="id-card-contact">
+                                <p><strong>Contact:</strong> +234 818 550 4382</p>
+                                <p><strong>Email:</strong> info@tbos.com</p>
+                                <p style="margin-top: 10px; font-size: 0.65rem;">"Consistency builds trust. Trust builds growth."</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-actions" style="justify-content: center; margin-top: 20px;">
+                    <button class="btn-primary" onclick="downloadIDCard()">
+                        <i class="fas fa-download"></i> Download PDF
+                    </button>
+                    <button class="btn-sm btn-info" onclick="window.print()">
+                        <i class="fas fa-print"></i> Print
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+        const SUPABASE_URL = 'https://wbmshbmfrteutglydiay.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndibXNoYm1mcnRldXRnbHlkaWF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMjk5OTIsImV4cCI6MjA5MjkwNTk5Mn0.UiV0Uaxv0fXb_sHuoIOJ2AGJKenUmfmFAzaifPY0A6Y';
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        let currentUser = null;
+        let staffMembers = [];
+        let notifications = [];
+        let currentStaffForID = null;
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'cool' ? 'dark' : 'cool';
+            const icon = document.getElementById('theme-icon');
+            const text = document.getElementById('theme-text');
+            if (newTheme === 'cool') {
+                document.documentElement.setAttribute('data-theme', 'cool');
+                icon.className = 'fas fa-sun';
+                text.textContent = 'Cool';
+                localStorage.setItem('tbos_theme', 'cool');
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                text.textContent = 'Dark';
+                localStorage.setItem('tbos_theme', 'dark');
+            }
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('overlay').classList.toggle('active');
+        }
+
+        function toggleModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.toggle('active');
+        }
+
+        function toggleNotifications() {
+            const dropdown = document.getElementById('notification-dropdown');
+            dropdown.classList.toggle('active');
+            if (dropdown.classList.contains('active')) {
+                notifications.forEach(n => n.unread = false);
+                updateNotificationBadge();
+                saveNotifications();
+            }
+        }
+
+        function addNotification(type, title, message) {
+            const notification = { id: Date.now(), type: type, title: title, message: message, time: new Date().toLocaleString(), unread: true };
+            notifications.unshift(notification);
+            if (notifications.length > 20) notifications = notifications.slice(0, 20);
+            updateNotificationBadge();
+            renderNotifications();
+            saveNotifications();
+        }
+
+        function updateNotificationBadge() {
+            const unreadCount = notifications.filter(n => n.unread).length;
+            const badge = document.getElementById('notif-badge');
+            badge.textContent = unreadCount;
+            badge.style.display = unreadCount > 0 ? 'block' : 'none';
+        }
+
+        function renderNotifications() {
+            const list = document.getElementById('notification-list');
+            if (notifications.length === 0) {
+                list.innerHTML = '<div class="no-notifications"><i class="fas fa-bell-slash" style="font-size: 2rem; margin-bottom: 10px;"></i><p>No new notifications</p></div>';
+                return;
+            }
+            list.innerHTML = notifications.map(n => `
+                <div class="notification-item ${n.unread ? 'unread' : ''}" onclick="viewNotification('${n.id}')">
+                    <div class="title">${n.title}</div>
+                    <div class="message">${n.message}</div>
+                    <div class="time">${n.time}</div>
+                </div>
+            `).join('');
+        }
+
+        function clearNotifications() {
+            notifications = [];
+            updateNotificationBadge();
+            renderNotifications();
+            saveNotifications();
+        }
+
+        function viewNotification(id) {
+            const notification = notifications.find(n => n.id == id);
+            if (notification) {
+                notification.unread = false;
+                updateNotificationBadge();
+                saveNotifications();
+                document.getElementById('notification-dropdown').classList.remove('active');
+                alert(`${notification.title}\n\n${notification.message}\n\n${notification.time}`);
+            }
+        }
+
+        function saveNotifications() {
+            localStorage.setItem('tbos_notifications', JSON.stringify(notifications));
+        }
+
+        function loadNotifications() {
+            const saved = localStorage.getItem('tbos_notifications');
+            if (saved) {
+                notifications = JSON.parse(saved);
+                updateNotificationBadge();
+                renderNotifications();
+            }
+        }
+
+        function openRegisterModal() {
+            document.getElementById('staff-reg-form').reset();
+            document.getElementById('photo-preview').classList.remove('has-image');
+            toggleModal('register-modal');
+        }
+
+        function previewPhoto(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                if (file.size > 2097152) {
+                    alert('File size must be less than 2MB');
+                    input.value = '';
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('photo-img').src = e.target.result;
+                    document.getElementById('photo-preview').classList.add('has-image');
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', async function() {
+            const savedTheme = localStorage.getItem('tbos_theme');
+            if (savedTheme === 'cool') {
+                document.documentElement.setAttribute('data-theme', 'cool');
+                document.getElementById('theme-icon').className = 'fas fa-sun';
+                document.getElementById('theme-text').textContent = 'Cool';
+            }
+            loadNotifications();
+            const savedUser = localStorage.getItem('currentUser');
+            if (!savedUser) {
+                window.location.href = 'index.html';
+                return;
+            }
+            currentUser = JSON.parse(savedUser);
+            document.getElementById('user-name').textContent = currentUser.name || currentUser.email;
+            document.getElementById('user-hub').textContent = currentUser.hub || 'N/A';
+            await loadStaff();
+        });
+
+        async function loadStaff() {
+            try {
+                console.log('📊 Loading staff from Supabase...');
+                const {  items, error } = await supabase.from('users').select('*');
+                if (error) throw error;
+                staffMembers = items || [];
+                console.log('✅ Staff loaded:', staffMembers.length, 'members');
+                const tbody = document.getElementById('staff-table-body');
+                if (staffMembers.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--text-muted);">No staff members found.</td></tr>';
+                    return;
+                }
+                renderStaff(staffMembers);
+                const pendingStaff = staffMembers.filter(s => s.status === 'Pending Approval');
+                if (pendingStaff.length > 0) {
+                    let html = '';
+                    pendingStaff.forEach(s => {
+                        html += `
+                            <div class="approval-card">
+                                <div class="approval-info">
+                                    <h4>${s.name || s.email}</h4>
+                                    <p>${s.email} | ${s.hub} | ${s.role}</p>
+                                    <p>Phone: ${s.phone || 'N/A'}</p>
+                                </div>
+                                <div class="approval-actions">
+                                    <button class="btn-sm btn-success" onclick="approveStaff('${s.id}')">
+                                        <i class="fas fa-check"></i> Approve
+                                    </button>
+                                    <button class="btn-sm btn-danger" onclick="rejectStaff('${s.id}')">
+                                        <i class="fas fa-times"></i> Reject
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    document.getElementById('pending-approvals').innerHTML = html;
+                }
+            } catch (error) {
+                console.error('❌ Load staff error:', error);
+                document.getElementById('staff-table-body').innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--danger);">Error: ' + error.message + '</td></tr>';
+            }
+        }
+
+        function renderStaff(staff) {
+            const tbody = document.getElementById('staff-table-body');
+            if (staff.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--text-muted);">No staff members match your filters.</td></tr>';
+                return;
+            }
+            let html = '';
+            staff.forEach(function(s) {
+                const statusClass = s.status === 'Active' ? 'status-active' : 
+                                   s.status === 'Pending Approval' ? 'status-pending' :
+                                   s.status === 'Suspended' ? 'status-suspended' : 'status-rejected';
+                html += '<tr>' +
+                    '<td>' + (s.name || s.email) + '</td>' +
+                    '<td>' + s.email + '</td>' +
+                    '<td>' + s.role + '</td>' +
+                    '<td>' + s.hub + '</td>' +
+                    '<td><span class="status-badge ' + statusClass + '">' + s.status + '</span></td>' +
+                    '<td><span class="status-badge status-active">' + (s.score || 0) + '</span></td>' +
+                    '<td>' +
+                    '<button class="btn-sm btn-info" onclick="showStaffID(\'' + s.id + '\', \'' + (s.name || s.email) + '\', \'' + s.role + '\', \'' + s.hub + '\', \'' + (s.photo || '') + '\')"><i class="fas fa-id-card"></i> ID Card</button> ' +
+                    '<button class="btn-sm btn-whatsapp" onclick="sendStaffWhatsApp(\'' + (s.name || s.email) + '\', \'' + (s.phone || '') + '\')"><i class="fab fa-whatsapp"></i></button>' +
+                    '</td></tr>';
+            });
+            tbody.innerHTML = html;
+        }
+
+        function filterStaff() {
+            const hubFilter = document.getElementById('staff-filter-hub').value;
+            const statusFilter = document.getElementById('staff-filter-status').value;
+            let filtered = staffMembers;
+            if (hubFilter) filtered = filtered.filter(s => s.hub === hubFilter);
+            if (statusFilter) filtered = filtered.filter(s => s.status === statusFilter);
+            renderStaff(filtered);
+        }
+
+        async function approveStaff(staffId) {
+            try {
+                const { data: result, error } = await supabase
+                    .from('users')
+                    .update({ status: 'Active' })
+                    .eq('id', staffId)
+                    .select();
+                if (error) throw error;
+                addNotification('approval', 'Staff Approved', 'Staff member has been approved and can now login');
+                alert('Staff approved successfully!');
+                loadStaff();
+            } catch (error) {
+                alert('Error approving staff: ' + error.message);
+            }
+        }
+
+        async function rejectStaff(staffId) {
+            if (confirm('Are you sure you want to reject this staff member?')) {
+                try {
+                    const {  result, error } = await supabase
+                        .from('users')
+                        .update({ status: 'Rejected' })
+                        .eq('id', staffId)
+                        .select();
+                    if (error) throw error;
+                    alert('Staff rejected.');
+                    loadStaff();
+                } catch (error) {
+                    alert('Error rejecting staff: ' + error.message);
+                }
+            }
+        }
+
+        async function approveAllStaff() {
+            if (confirm('Approve all pending staff members?')) {
+                try {
+                    const pendingStaff = staffMembers.filter(s => s.status === 'Pending Approval');
+                    for (const staff of pendingStaff) {
+                        await supabase.from('users').update({ status: 'Active' }).eq('id', staff.id);
+                    }
+                    addNotification('approval', 'Bulk Approval', `${pendingStaff.length} staff members approved`);
+                    alert('All staff approved successfully!');
+                    loadStaff();
+                } catch (error) {
+                    alert('Error approving staff: ' + error.message);
+                }
+            }
+        }
+
+        function showStaffID(staffId, name, role, hub, photo) {
+            currentStaffForID = staffMembers.find(s => s.id === staffId);
+            if (!currentStaffForID) {
+                alert('Staff member not found');
+                return;
+            }
+            document.getElementById('idcard-name').textContent = name;
+            document.getElementById('idcard-role').textContent = role;
+            document.getElementById('idcard-hub').textContent = hub;
+            document.getElementById('idcard-id').textContent = 'TBOS-' + staffId.substring(0, 8).toUpperCase();
+            
+            const photoImg = document.getElementById('idcard-photo');
+            if (photo) {
+                photoImg.src = photo;
+            } else {
+                photoImg.src = 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'%3E%3Crect fill=\'%23f0f0f0\' width=\'100\' height=\'100\'/%3E%3Ctext x=\'50\' y=\'55\' font-size=\'40\' text-anchor=\'middle\' fill=\'%23999\'%3E👤%3C/text%3E%3C/svg%3E';
+            }
+            
+            const qrData = 'TBOS-Verify-' + staffId + '-' + name + '-' + role;
+            document.getElementById('idcard-qr').src = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + encodeURIComponent(qrData);
+            
+            toggleModal('idcard-modal');
+        }
+
+        function downloadIDCard() {
+            const element = document.querySelector('.id-card-container');
+            const opt = {
+                margin: 10,
+                filename: 'TBOS_ID_Card_' + (currentStaffForID ? currentStaffForID.name.replace(/\s+/g, '_') : 'Staff') + '.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save().then(() => {
+                alert('ID card downloaded successfully!');
+            }).catch(err => {
+                console.error('PDF error:', err);
+                alert('Error generating PDF: ' + err.message);
+            });
+        }
+
+        function sendStaffWhatsApp(name, phone) {
+            if (!phone) {
+                alert('No phone number available');
+                return;
+            }
+            const cleanPhone = phone.replace(/[^0-9]/g, '');
+            const message = `Hello ${name},\n\nThis is a message from TBOS (Tomstudio BizHub Operations System).\n\nContact: +234 818 550 4382`;
+            const url = `https://wa.me/234${cleanPhone.substring(3)}?text=${encodeURIComponent(message)}`;
+            window.open(url, '_blank');
+        }
+
+        document.getElementById('staff-reg-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const password = document.getElementById('reg-password').value;
+            const confirm = document.getElementById('reg-confirm').value;
+            const btnRegister = document.getElementById('btn-register');
+            if (password !== confirm) {
+                alert('Passwords do not match!');
+                return;
+            }
+            if (password.length < 6) {
+                alert('Password must be at least 6 characters');
+                return;
+            }
+            btnRegister.disabled = true;
+            btnRegister.innerHTML = '<div class="loading-spinner"></div> Registering...';
+            try {
+                const formData = {
+                    email: document.getElementById('reg-email').value,
+                    password: password,
+                    name: document.getElementById('reg-name').value,
+                    role: document.getElementById('reg-role').value,
+                    hub: document.getElementById('reg-hub').value,
+                    phone: document.getElementById('reg-phone').value,
+                    address: document.getElementById('reg-address').value,
+                    location: document.getElementById('reg-location').value,
+                    status: 'Pending Approval',
+                    score: 0,
+                    jobs_logged: 0,
+                    jobs_completed: 0,
+                    revenue_generated: 0,
+                    created_at: new Date().toISOString()
+                };
+                const {  result, error } = await supabase
+                    .from('users')
+                    .insert([formData])
+                    .select();
+                if (error) throw error;
+                alert('Registration successful! Account pending admin approval.');
+                toggleModal('register-modal');
+                this.reset();
+                document.getElementById('photo-preview').classList.remove('has-image');
+                loadStaff();
+            } catch (error) {
+                console.error('❌ Registration error:', error);
+                alert('Registration failed: ' + error.message);
+            }
+            btnRegister.disabled = false;
+            btnRegister.innerHTML = '<i class="fas fa-user-plus"></i> Register (Pending Approval)';
+        });
+
+        function logout() {
+            if (confirm('Log out?')) {
+                localStorage.removeItem('currentUser');
+                localStorage.removeItem('currentStaffId');
+                window.location.href = 'index.html';
+            }
+        }
+
+        document.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('notification-dropdown');
+            const btn = document.querySelector('.notification-btn');
+            if (dropdown && !dropdown.contains(e.target) && !btn.contains(e.target)) {
+                dropdown.classList.remove('active');
+            }
+        });
+
+        window.toggleTheme = toggleTheme;
+        window.toggleSidebar = toggleSidebar;
+        window.toggleModal = toggleModal;
+        window.toggleNotifications = toggleNotifications;
+        window.clearNotifications = clearNotifications;
+        window.openRegisterModal = openRegisterModal;
+        window.previewPhoto = previewPhoto;
+        window.filterStaff = filterStaff;
+        window.approveStaff = approveStaff;
+        window.rejectStaff = rejectStaff;
+        window.approveAllStaff = approveAllStaff;
+        window.showStaffID = showStaffID;
+        window.downloadIDCard = downloadIDCard;
+        window.sendStaffWhatsApp = sendStaffWhatsApp;
+        window.logout = logout;
+    </script>
+</body>
+</html>
             --primary: #008080;
             --primary-hover: #006666;
             --success: #00c851;
