@@ -90,9 +90,9 @@
         .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-muted); }
         .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
         .table-responsive { overflow-x: auto; }
-        .data-table { width: 100%; border-collapse: collapse; }
-        .data-table th { text-align: left; padding: 15px; color: var(--text-muted); border-bottom: 2px solid var(--border); font-size: 0.8rem; text-transform: uppercase; }
-        .data-table td { padding: 15px; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+        .data-table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        .data-table th { text-align: left; padding: 15px; color: var(--text-muted); border-bottom: 2px solid var(--border); font-size: 0.8rem; text-transform: uppercase; white-space: nowrap; }
+        .data-table td { padding: 15px; border-bottom: 1px solid var(--border); font-size: 0.9rem; white-space: nowrap; }
         .data-table tr:hover { background: rgba(255,255,255,0.02); }
         .status-badge { padding: 5px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; display: inline-block; }
         .status-active { background: rgba(0, 200, 81, 0.2); color: var(--success); }
@@ -132,6 +132,34 @@
         .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 99; }
         .overlay.active { display: block; }
         footer { padding: 20px; text-align: center; font-size: 0.8rem; color: var(--text-muted); border-top: 1px solid var(--border); background: var(--bg-panel); }
+        
+        /* Registration Success Alert */
+        .registration-alert {
+            background: rgba(0, 128, 128, 0.15);
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .registration-alert i {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+        .registration-alert h3 {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        .registration-alert p {
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        .registration-alert .status-badge {
+            font-size: 0.9rem;
+            padding: 8px 16px;
+        }
         
         /* ID Card Styles */
         .id-card-container {
@@ -334,6 +362,7 @@
             margin: 5px 0;
         }
         
+        /* Mobile Responsive */
         @media (max-width: 768px) {
             .sidebar { transform: translateX(-100%); }
             .sidebar.active { transform: translateX(0); }
@@ -348,11 +377,14 @@
             .notification-dropdown { width: calc(100vw - 40px); right: 20px; left: 20px; }
             .approval-card { flex-direction: column; align-items: flex-start; }
             .id-card { width: 280px; height: 450px; }
+            .data-table { font-size: 0.85rem; }
+            .data-table th, .data-table td { padding: 10px 8px; }
         }
         @media (max-width: 480px) {
             .theme-toggle span { display: none; }
             .notification-dropdown { width: calc(100vw - 30px); }
             .id-card { width: 260px; height: 420px; }
+            .form-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -591,6 +623,46 @@
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Registration Success Modal -->
+    <div class="modal" id="registration-success-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-check-circle"></i> Registration Successful</h3>
+                <button class="modal-close" onclick="toggleModal('registration-success-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="registration-alert">
+                    <i class="fas fa-user-clock"></i>
+                    <h3>Account Created Successfully!</h3>
+                    <p>Your registration has been submitted and is currently <strong>awaiting admin approval</strong>.</p>
+                    <p>You will receive a notification once your account is activated.</p>
+                    <p style="margin-top: 15px;">
+                        <span class="status-badge status-pending">
+                            <i class="fas fa-clock"></i> Status: Pending Approval
+                        </span>
+                    </p>
+                    <div style="margin-top: 20px; padding: 15px; background: rgba(255, 187, 51, 0.1); border: 1px solid var(--warning); border-radius: 8px; text-align: left;">
+                        <p style="font-size: 0.85rem; margin-bottom: 10px;"><strong>📋 Next Steps:</strong></p>
+                        <ol style="font-size: 0.85rem; line-height: 1.8; margin-left: 20px;">
+                            <li>Admin will review your registration</li>
+                            <li>You'll be notified via email when approved</li>
+                            <li>Once approved, you can login with your credentials</li>
+                            <li>Contact admin for urgent approval: <strong>+234 818 550 4382</strong></li>
+                        </ol>
+                    </div>
+                </div>
+                <div class="form-actions" style="justify-content: center; margin-top: 20px;">
+                    <button class="btn-primary" onclick="window.location.href='index.html'">
+                        <i class="fas fa-sign-in-alt"></i> Go to Login
+                    </button>
+                    <button class="btn-sm btn-outline" onclick="toggleModal('registration-success-modal')">
+                        Close
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -1063,6 +1135,7 @@
             const password = document.getElementById('reg-password').value;
             const confirm = document.getElementById('reg-confirm').value;
             const btnRegister = document.getElementById('btn-register');
+            
             if (password !== confirm) {
                 alert('Passwords do not match!');
                 return;
@@ -1071,8 +1144,10 @@
                 alert('Password must be at least 6 characters');
                 return;
             }
+            
             btnRegister.disabled = true;
             btnRegister.innerHTML = '<div class="loading-spinner"></div> Registering...';
+            
             try {
                 if (!supabaseClient) {
                     throw new Error('Supabase client not initialized');
@@ -1087,7 +1162,7 @@
                     phone: document.getElementById('reg-phone').value,
                     address: document.getElementById('reg-address').value,
                     location: document.getElementById('reg-location').value,
-                    status: 'Pending Approval',
+                    status: 'Pending Approval',  // ✅ Set to Pending Approval
                     score: 0,
                     jobs_logged: 0,
                     jobs_completed: 0,
@@ -1102,15 +1177,21 @@
                 
                 if (error) throw error;
                 
-                alert('Registration successful! Account pending admin approval.');
+                // Close registration modal
                 toggleModal('register-modal');
+                
+                // Show success modal with approval status alert
+                toggleModal('registration-success-modal');
+                
                 this.reset();
                 document.getElementById('photo-preview').classList.remove('has-image');
                 loadStaff();
+                
             } catch (error) {
                 console.error('❌ Registration error:', error);
                 alert('Registration failed: ' + error.message);
             }
+            
             btnRegister.disabled = false;
             btnRegister.innerHTML = '<i class="fas fa-user-plus"></i> Register (Pending Approval)';
         });
