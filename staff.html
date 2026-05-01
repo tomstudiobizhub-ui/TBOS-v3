@@ -6,8 +6,13 @@
     <title>Staff & ID Cards | TBOS v3.0</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <!-- Load Supabase FIRST -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Then load config -->
     <script src="config.js"></script>
+    
     <style>
         :root {
             --bg-body: #0a0a0a;
@@ -446,7 +451,7 @@
                         </thead>
                         <tbody id="staff-table-body">
                             <tr><td colspan="7" style="text-align: center; padding: 40px;">
-                                <i class="fas fa-spinner fa-spin" style="margin-right: 10px;"></i> Loading staff...
+                                <i class="fas fa-spinner fa-spin" style="margin-right: 10px;"></i> Loading staff from Supabase...
                             </td></tr>
                         </tbody>
                     </table>
@@ -473,6 +478,8 @@
             Built by Tomstudio Tech Academy | Contact: +234 818 550 4382
         </footer>
     </main>
+
+    <!-- Register Modal -->
     <div class="modal" id="register-modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -587,6 +594,8 @@
             </div>
         </div>
     </div>
+
+    <!-- ID Card Modal -->
     <div class="modal" id="idcard-modal">
         <div class="modal-content" style="max-width: 700px;">
             <div class="modal-header">
@@ -672,15 +681,29 @@
             </div>
         </div>
     </div>
-    <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+
+    <script>
+        // Supabase Configuration
         const SUPABASE_URL = 'https://wbmshbmfrteutglydiay.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndibXNoYm1mcnRldXRnbHlkaWF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMjk5OTIsImV4cCI6MjA5MjkwNTk5Mn0.UiV0Uaxv0fXb_sHuoIOJ2AGJKenUmfmFAzaifPY0A6Y';
-        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndibXNoYm1mcnRldXRnbHlkaWF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMjk5OTIsImV4cCI6MjA5MjkwNTk5Mn0.UiV0Uaxv0fXb_sHuoIOJ2AGJKenUmfmFAzaifPY0A6Y';
+        
+        let supabaseClient = null;
         let currentUser = null;
         let staffMembers = [];
         let notifications = [];
         let currentStaffForID = null;
+
+        // Initialize Supabase
+        function initSupabase() {
+            if (typeof window.supabase !== 'undefined') {
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                console.log('✅ Supabase initialized');
+                return true;
+            } else {
+                console.error('❌ Supabase library not loaded!');
+                return false;
+            }
+        }
 
         function toggleTheme() {
             const currentTheme = document.documentElement.getAttribute('data-theme');
@@ -812,6 +835,13 @@
                 document.getElementById('theme-icon').className = 'fas fa-sun';
                 document.getElementById('theme-text').textContent = 'Cool';
             }
+            
+            // Initialize Supabase
+            if (!initSupabase()) {
+                alert('Supabase not loaded. Please refresh the page.');
+                return;
+            }
+            
             loadNotifications();
             const savedUser = localStorage.getItem('currentUser');
             if (!savedUser) {
@@ -821,22 +851,35 @@
             currentUser = JSON.parse(savedUser);
             document.getElementById('user-name').textContent = currentUser.name || currentUser.email;
             document.getElementById('user-hub').textContent = currentUser.hub || 'N/A';
+            
+            // Load staff from Supabase
             await loadStaff();
         });
 
         async function loadStaff() {
             try {
                 console.log('📊 Loading staff from Supabase...');
-                const {  items, error } = await supabase.from('users').select('*');
+                
+                if (!supabaseClient) {
+                    throw new Error('Supabase client not initialized');
+                }
+                
+                const { data: items, error } = await supabaseClient.from('users').select('*');
+                
                 if (error) throw error;
+                
                 staffMembers = items || [];
                 console.log('✅ Staff loaded:', staffMembers.length, 'members');
+                
                 const tbody = document.getElementById('staff-table-body');
                 if (staffMembers.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--text-muted);">No staff members found.</td></tr>';
                     return;
                 }
+                
                 renderStaff(staffMembers);
+                
+                // Load pending approvals
                 const pendingStaff = staffMembers.filter(s => s.status === 'Pending Approval');
                 if (pendingStaff.length > 0) {
                     let html = '';
@@ -904,12 +947,18 @@
 
         async function approveStaff(staffId) {
             try {
-                const { data: result, error } = await supabase
+                if (!supabaseClient) {
+                    throw new Error('Supabase client not initialized');
+                }
+                
+                const { data: result, error } = await supabaseClient
                     .from('users')
                     .update({ status: 'Active' })
                     .eq('id', staffId)
                     .select();
+                
                 if (error) throw error;
+                
                 addNotification('approval', 'Staff Approved', 'Staff member has been approved and can now login');
                 alert('Staff approved successfully!');
                 loadStaff();
@@ -921,12 +970,18 @@
         async function rejectStaff(staffId) {
             if (confirm('Are you sure you want to reject this staff member?')) {
                 try {
-                    const {  result, error } = await supabase
+                    if (!supabaseClient) {
+                        throw new Error('Supabase client not initialized');
+                    }
+                    
+                    const { data: result, error } = await supabaseClient
                         .from('users')
                         .update({ status: 'Rejected' })
                         .eq('id', staffId)
                         .select();
+                    
                     if (error) throw error;
+                    
                     alert('Staff rejected.');
                     loadStaff();
                 } catch (error) {
@@ -940,7 +995,7 @@
                 try {
                     const pendingStaff = staffMembers.filter(s => s.status === 'Pending Approval');
                     for (const staff of pendingStaff) {
-                        await supabase.from('users').update({ status: 'Active' }).eq('id', staff.id);
+                        await supabaseClient.from('users').update({ status: 'Active' }).eq('id', staff.id);
                     }
                     addNotification('approval', 'Bulk Approval', `${pendingStaff.length} staff members approved`);
                     alert('All staff approved successfully!');
@@ -1019,6 +1074,10 @@
             btnRegister.disabled = true;
             btnRegister.innerHTML = '<div class="loading-spinner"></div> Registering...';
             try {
+                if (!supabaseClient) {
+                    throw new Error('Supabase client not initialized');
+                }
+                
                 const formData = {
                     email: document.getElementById('reg-email').value,
                     password: password,
@@ -1035,11 +1094,14 @@
                     revenue_generated: 0,
                     created_at: new Date().toISOString()
                 };
-                const {  result, error } = await supabase
+                
+                const { data: result, error } = await supabaseClient
                     .from('users')
                     .insert([formData])
                     .select();
+                
                 if (error) throw error;
+                
                 alert('Registration successful! Account pending admin approval.');
                 toggleModal('register-modal');
                 this.reset();
