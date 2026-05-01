@@ -5,8 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reports & Analytics | TBOS v3.0</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <!-- Load Supabase FIRST -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Then load config -->
     <script src="config.js"></script>
+    
     <style>
         :root {
             --bg-body: #0a0a0a;
@@ -64,7 +70,7 @@
         .input-wrapper i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
         .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 12px 12px 40px; background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px; color: var(--text-main); font-size: 0.95rem; }
         .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(0, 128, 128, 0.2); }
-        .form-group textarea { resize: vertical; min-height: 100px; }
+        .form-group textarea { resize: vertical; min-height: 80px; }
         .btn-primary { padding: 14px 25px; background: var(--primary); color: white; border-radius: 8px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; }
         .btn-primary:hover { background: var(--primary-hover); transform: translateY(-2px); }
         .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
@@ -73,15 +79,9 @@
         .btn-info { background: var(--info); color: white; }
         .btn-whatsapp { background: #25D366; color: white; }
         .btn-warning { background: var(--warning); color: #000; }
-        .btn-danger { background: var(--danger); color: white; }
         .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-muted); }
         .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
         .form-actions { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
-        .table-responsive { overflow-x: auto; }
-        .data-table { width: 100%; border-collapse: collapse; }
-        .data-table th { text-align: left; padding: 15px; color: var(--text-muted); border-bottom: 2px solid var(--border); font-size: 0.8rem; text-transform: uppercase; }
-        .data-table td { padding: 15px; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
-        .data-table tr:hover { background: rgba(255,255,255,0.02); }
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 25px; }
         .stat-box { background: var(--bg-panel); padding: 20px; border-radius: var(--radius); text-align: center; border: 1px solid var(--border); }
         .stat-box strong { display: block; font-size: 2rem; color: var(--primary); margin-bottom: 5px; }
@@ -89,6 +89,11 @@
         .analytics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 25px; }
         .analytics-card { background: var(--bg-panel); padding: 25px; border-radius: var(--radius); border: 1px solid var(--border); }
         .analytics-card h4 { color: var(--primary); margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+        .table-responsive { overflow-x: auto; }
+        .data-table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        .data-table th { text-align: left; padding: 15px; color: var(--text-muted); border-bottom: 2px solid var(--border); font-size: 0.8rem; text-transform: uppercase; white-space: nowrap; }
+        .data-table td { padding: 15px; border-bottom: 1px solid var(--border); font-size: 0.9rem; white-space: nowrap; }
+        .data-table tr:hover { background: rgba(255,255,255,0.02); }
         .pdf-preview { background: white; color: black; padding: 40px; border-radius: 12px; margin: 20px 0; display: none; }
         .pdf-preview.active { display: block; }
         .pdf-header { text-align: center; border-bottom: 3px solid var(--primary); padding-bottom: 20px; margin-bottom: 30px; }
@@ -107,8 +112,8 @@
         .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 99; }
         .overlay.active { display: block; }
         footer { padding: 20px; text-align: center; font-size: 0.8rem; color: var(--text-muted); border-top: 1px solid var(--border); background: var(--bg-panel); }
-        .loading-spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        /* Mobile Responsive */
         @media (max-width: 768px) {
             .sidebar { transform: translateX(-100%); }
             .sidebar.active { transform: translateX(0); }
@@ -119,12 +124,19 @@
             .panel { padding: 15px; }
             .user-profile span { display: none; }
             .hub-badge { display: none; }
+            .form-grid { grid-template-columns: 1fr; }
             .analytics-grid { grid-template-columns: 1fr; }
             .pdf-info { grid-template-columns: 1fr; }
+            .form-actions { flex-direction: column; }
+            .form-actions button { width: 100%; }
+            .data-table { font-size: 0.85rem; }
+            .data-table th, .data-table td { padding: 10px 8px; }
         }
         @media (max-width: 480px) {
             .stats-grid { grid-template-columns: 1fr; }
             .theme-toggle span { display: none; }
+            .panel-header { flex-direction: column; align-items: flex-start; }
+            .panel-header .btn-primary { width: 100%; justify-content: center; }
         }
     </style>
 </head>
@@ -299,6 +311,7 @@
                     <table class="data-table">
                         <thead>
                             <tr>
+                                <th>Report Number</th>
                                 <th>Date</th>
                                 <th>Hub</th>
                                 <th>Tasks</th>
@@ -308,7 +321,7 @@
                             </tr>
                         </thead>
                         <tbody id="my-reports-body">
-                            <tr><td colspan="6" style="text-align: center; padding: 40px;">
+                            <tr><td colspan="7" style="text-align: center; padding: 40px;">
                                 <i class="fas fa-spinner fa-spin" style="margin-right: 10px;"></i> Loading reports...
                             </td></tr>
                         </tbody>
@@ -326,6 +339,7 @@
                     <table class="data-table">
                         <thead>
                             <tr>
+                                <th>Report Number</th>
                                 <th>Date</th>
                                 <th>Staff</th>
                                 <th>Hub</th>
@@ -335,7 +349,7 @@
                             </tr>
                         </thead>
                         <tbody id="all-reports-body">
-                            <tr><td colspan="6" style="text-align: center; padding: 40px;">
+                            <tr><td colspan="7" style="text-align: center; padding: 40px;">
                                 <i class="fas fa-spinner fa-spin" style="margin-right: 10px;"></i> Loading all reports...
                             </td></tr>
                         </tbody>
@@ -421,15 +435,11 @@
             Built by Tomstudio Tech Academy | Contact: +234 818 550 4382
         </footer>
     </main>
-    <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
-        const SUPABASE_URL = 'https://wbmshbmfrteutglydiay.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndibXNoYm1mcnRldXRnbHlkaWF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMjk5OTIsImV4cCI6MjA5MjkwNTk5Mn0.UiV0Uaxv0fXb_sHuoIOJ2AGJKenUmfmFAzaifPY0A6Y';
-        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    <script>
         let currentUser = null;
+        let reports = [];
         let uploadedImages = [];
         let lastSubmittedReport = null;
-        const REVENUE_ROLES = ['Administrator', 'Secretary', 'Executive Director', 'Branch Manager', 'HOD'];
 
         function toggleTheme() {
             const currentTheme = document.documentElement.getAttribute('data-theme');
@@ -470,7 +480,7 @@
                         uploadedImages.push({ name: file.name, data: e.target.result, file: file });
                         const imgDiv = document.createElement('div');
                         imgDiv.className = 'image-preview-item';
-                        imgDiv.innerHTML = `<img src="${e.target.result}" alt="${file.name}"><button type="button" class="remove-img" onclick="removeImage(${uploadedImages.length - 1})">&times;</button>`;
+                        imgDiv.innerHTML = '<img src="' + e.target.result + '" alt="' + file.name + '"><button type="button" class="remove-img" onclick="removeImage(' + (uploadedImages.length - 1) + ')">&times;</button>';
                         preview.appendChild(imgDiv);
                     };
                     reader.readAsDataURL(file);
@@ -485,14 +495,9 @@
             uploadedImages.forEach((img, i) => {
                 const imgDiv = document.createElement('div');
                 imgDiv.className = 'image-preview-item';
-                imgDiv.innerHTML = `<img src="${img.data}" alt="${img.name}"><button type="button" class="remove-img" onclick="removeImage(${i})">&times;</button>`;
+                imgDiv.innerHTML = '<img src="' + img.data + '" alt="' + img.name + '"><button type="button" class="remove-img" onclick="removeImage(' + i + ')">&times;</button>';
                 preview.appendChild(imgDiv);
             });
-        }
-
-        function canViewRevenue() {
-            if (!currentUser) return false;
-            return REVENUE_ROLES.includes(currentUser.role);
         }
 
         window.addEventListener('DOMContentLoaded', async function() {
@@ -526,9 +531,28 @@
             btnSubmit.disabled = true;
             btnSubmit.innerHTML = '<div class="loading-spinner"></div> Submitting...';
             try {
-                const reportId = 'RPT-' + Date.now().toString().slice(-8);
+                // Get current user name (sanitize it for the report number)
+                const userName = (currentUser.name || currentUser.email || 'User')
+                    .replace(/\s+/g, '')  // Remove spaces
+                    .replace(/[^a-zA-Z0-9]/g, '');  // Remove special chars
+                
+                // Get today's date in YYYYMMDD format
+                const today = new Date();
+                const dateStr = today.toISOString().split('T')[0].replace(/-/g, '');
+                
+                // Get sequence number (count reports submitted today + 1)
+                const todayReports = reports.filter(r => {
+                    const rDate = r.submitted_at ? r.submitted_at.split('T')[0] : '';
+                    const tDate = today.toISOString().split('T')[0];
+                    return rDate === tDate;
+                });
+                const sequence = String(todayReports.length + 1).padStart(3, '0');
+                
+                // Generate custom report number: TBOS-RPT-{Name}-{YYYYMMDD}-{001}
+                const reportNumber = 'TBOS-RPT-' + userName + '-' + dateStr + '-' + sequence;
+                
                 const newReport = {
-                    id: reportId,
+                    report_number: reportNumber,  // ✅ Custom format
                     staff_id: currentUser.id || currentUser.email,
                     staff_name: currentUser.name || currentUser.email,
                     hub: document.getElementById('report-hub').value,
@@ -541,10 +565,11 @@
                     submitted_at: new Date().toISOString(),
                     images: uploadedImages.map(img => img.name)
                 };
-                const { data: result, error } = await supabase.from('daily_reports').insert([newReport]).select();
+                
+                const {  result, error } = await supabase.from('daily_reports').insert([newReport]).select();
                 if (error) throw error;
-                alert('Daily report submitted successfully! Report ID: ' + reportId);
-                showReportPDF(newReport);
+                
+                alert('Daily report submitted successfully!\n\nReport Number: ' + reportNumber);
                 document.getElementById('btn-whatsapp-report').style.display = 'inline-flex';
                 lastSubmittedReport = newReport;
                 this.reset();
@@ -562,93 +587,46 @@
             btnSubmit.innerHTML = '<i class="fas fa-save"></i> Submit Report';
         });
 
-        function showReportPDF(report) {
-            document.getElementById('preview-staff').textContent = report.staff_name;
-            document.getElementById('preview-hub').textContent = report.hub;
-            document.getElementById('preview-date').textContent = report.date;
-            document.getElementById('preview-hours').textContent = report.hours_worked + ' hours';
-            document.getElementById('preview-jobs').textContent = report.jobs_completed;
-            document.getElementById('preview-id').textContent = report.id;
-            document.getElementById('preview-generated').textContent = new Date().toLocaleString();
-            document.getElementById('preview-tasks').innerHTML = report.tasks.split('\n').filter(t => t.trim()).map(t => `<li>${t.trim().replace(/^[-•*]\s*/, '')}</li>`).join('');
-            document.getElementById('preview-challenges').innerHTML = report.challenges.split('\n').filter(t => t.trim()).map(t => `<li>${t.trim().replace(/^[-•*]\s*/, '')}</li>`).join('');
-            document.getElementById('preview-plans').innerHTML = report.plans.split('\n').filter(t => t.trim()).map(t => `<li>${t.trim().replace(/^[-•*]\s*/, '')}</li>`).join('');
-            document.getElementById('pdf-preview').classList.add('active');
-            document.getElementById('pdf-preview').scrollIntoView({ behavior: 'smooth' });
-        }
-
         function sendReportToWhatsApp() {
             if (!lastSubmittedReport) {
                 alert('Please submit a report first before sending to WhatsApp.');
                 return;
             }
             const report = lastSubmittedReport;
-            const message = `*DAILY REPORT - TBOS v3.0*%0A%0A` +
-                `📅 *Date:* ${report.date}%0A` +
-                `👤 *Staff:* ${report.staff_name}%0A` +
-                `🏢 *Hub:* ${report.hub}%0A` +
-                `⏱️ *Hours Worked:* ${report.hours_worked}%0A` +
-                `💼 *Jobs Completed:* ${report.jobs_completed}%0A%0A` +
-                `✅ *Tasks Completed:*%0A${report.tasks.replace(/\n/g, '%0A')}%0A%0A` +
-                `⚠️ *Challenges:*%0A${report.challenges.replace(/\n/g, '%0A')}%0A%0A` +
-                `📋 *Plans for Tomorrow:*%0A${report.plans.replace(/\n/g, '%0A')}%0A%0A` +
-                `━━━━━━━━━━━━━━━━━━%0A` +
-                `Report ID: ${report.id}%0A` +
-                `Generated: ${new Date().toLocaleString()}%0A%0A` +
-                `"Consistency builds trust. Trust builds growth."`;
+            const message = '*DAILY REPORT - TBOS v3.0*%0A%0A' +
+                '📅 *Date:* ' + report.date + '%0A' +
+                '👤 *Staff:* ' + report.staff_name + '%0A' +
+                '🏢 *Hub:* ' + report.hub + '%0A' +
+                '⏱️ *Hours Worked:* ' + report.hours_worked + '%0A' +
+                '💼 *Jobs Completed:* ' + report.jobs_completed + '%0A%0A' +
+                '✅ *Tasks Completed:*%0A' + report.tasks.replace(/\n/g, '%0A') + '%0A%0A' +
+                '⚠️ *Challenges:*%0A' + report.challenges.replace(/\n/g, '%0A') + '%0A%0A' +
+                '📋 *Plans for Tomorrow:*%0A' + report.plans.replace(/\n/g, '%0A') + '%0A%0A' +
+                '━━━━━━━━━━━━━━━━━━%0A' +
+                'Report Number: ' + report.report_number + '%0A' +
+                'Generated: ' + new Date().toLocaleString() + '%0A%0A' +
+                '"Consistency builds trust. Trust builds growth."';
             const whatsappNumber = '2348185504382';
-            const url = `https://wa.me/${whatsappNumber}?text=${message}`;
+            const url = 'https://wa.me/' + whatsappNumber + '?text=' + message;
             window.open(url, '_blank');
-        }
-
-        function generateReportPDF() {
-            const date = document.getElementById('report-date').value;
-            const hub = document.getElementById('report-hub').value;
-            const tasks = document.getElementById('report-tasks').value.trim();
-            if (!date || !hub || !tasks) {
-                alert('Please fill report first');
-                return;
-            }
-            const report = {
-                id: 'RPT-' + Date.now().toString().slice(-8),
-                staff_name: currentUser.name || currentUser.email,
-                hub: hub,
-                date: date,
-                tasks: tasks,
-                challenges: document.getElementById('report-challenges').value.trim() || 'None',
-                plans: document.getElementById('report-plans').value.trim() || 'Continue ongoing tasks',
-                hours_worked: parseInt(document.getElementById('report-hours').value) || 8,
-                jobs_completed: parseInt(document.getElementById('report-jobs').value) || 0
-            };
-            showReportPDF(report);
-            const element = document.getElementById('pdf-preview');
-            const opt = {
-                margin: 10,
-                filename: `TBOS_Report_${currentUser.name || currentUser.email}_${date}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-            html2pdf().set(opt).from(element).save().then(() => {
-                alert('PDF downloaded!');
-            }).catch(err => {
-                alert('PDF error: ' + err.message);
-            });
         }
 
         async function loadMyReports() {
             try {
-                const { data: reports, error } = await supabase.from('daily_reports').select('*').eq('staff_id', currentUser.id || currentUser.email);
+                const {  reportsData, error } = await supabase.from('daily_reports').select('*').eq('staff_id', currentUser.id || currentUser.email);
                 if (error) throw error;
+                reports = reportsData || [];
                 const tbody = document.getElementById('my-reports-body');
                 if (!reports || reports.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: var(--text-muted);">No reports submitted yet. Create your first daily report!</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--text-muted);">No reports submitted yet. Create your first daily report!</td></tr>';
                     return;
                 }
                 let html = '';
                 reports.sort((a, b) => new Date(b.submitted_at) - new Date(a.submitted_at)).forEach(report => {
                     const taskCount = report.tasks ? report.tasks.split('\n').filter(t => t.trim()).length : 0;
+                    const reportNum = report.report_number || report.id.substring(0, 8);
                     html += '<tr>' +
+                        '<td>' + reportNum + '</td>' +
                         '<td>' + new Date(report.date).toLocaleDateString() + '</td>' +
                         '<td>' + report.hub + '</td>' +
                         '<td>' + taskCount + ' tasks</td>' +
@@ -662,23 +640,26 @@
                 tbody.innerHTML = html;
             } catch (error) {
                 console.error('Load reports error:', error);
-                document.getElementById('my-reports-body').innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: var(--danger);">Error loading reports: ' + error.message + '</td></tr>';
+                document.getElementById('my-reports-body').innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--danger);">Error loading reports: ' + error.message + '</td></tr>';
             }
         }
 
         async function loadAllReports() {
             try {
-                const { data: reports, error } = await supabase.from('daily_reports').select('*');
+                const {  reportsData, error } = await supabase.from('daily_reports').select('*');
                 if (error) throw error;
+                reports = reportsData || [];
                 const tbody = document.getElementById('all-reports-body');
                 if (!reports || reports.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: var(--text-muted);">No reports submitted yet.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--text-muted);">No reports submitted yet.</td></tr>';
                     return;
                 }
                 let html = '';
                 reports.sort((a, b) => new Date(b.submitted_at) - new Date(a.submitted_at)).forEach(report => {
                     const taskCount = report.tasks ? report.tasks.split('\n').filter(t => t.trim()).length : 0;
+                    const reportNum = report.report_number || report.id.substring(0, 8);
                     html += '<tr>' +
+                        '<td>' + reportNum + '</td>' +
                         '<td>' + new Date(report.date).toLocaleDateString() + '</td>' +
                         '<td>' + report.staff_name + '</td>' +
                         '<td>' + report.hub + '</td>' +
@@ -692,7 +673,7 @@
                 tbody.innerHTML = html;
             } catch (error) {
                 console.error('Load all reports error:', error);
-                document.getElementById('all-reports-body').innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: var(--danger);">Error loading reports: ' + error.message + '</td></tr>';
+                document.getElementById('all-reports-body').innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--danger);">Error loading reports: ' + error.message + '</td></tr>';
             }
         }
 
@@ -702,8 +683,8 @@
 
         async function loadAnalytics() {
             try {
-                const { data: jobs } = await supabase.from('jobs').select('*');
-                const { data: reports } = await supabase.from('daily_reports').select('*');
+                const {  jobs } = await supabase.from('jobs').select('*');
+                const {  reportsData } = await supabase.from('daily_reports').select('*');
                 const totalJobs = jobs?.length || 0;
                 const completedJobs = jobs?.filter(j => j.status === 'Completed').length || 0;
                 const activeJobs = jobs?.filter(j => j.status === 'In Progress' || j.status === 'Pending').length || 0;
@@ -728,19 +709,12 @@
                 const today = now.toISOString().split('T')[0];
                 const dailyJobs = jobs?.filter(j => (j.date || j.created_at || '').startsWith(today)) || [];
                 const dailyRevenue = dailyJobs.reduce((sum, j) => sum + (parseFloat(j.paid) || 0), 0);
-                if (canViewRevenue()) {
-                    document.getElementById('stat-total-revenue').textContent = '₦' + totalRevenue.toLocaleString();
-                    document.getElementById('stat-monthly-revenue').textContent = '₦' + monthlyRevenue.toLocaleString();
-                    document.getElementById('stat-weekly-revenue').textContent = '₦' + weeklyRevenue.toLocaleString();
-                    document.getElementById('stat-daily-revenue').textContent = '₦' + dailyRevenue.toLocaleString();
-                } else {
-                    document.getElementById('stat-total-revenue').textContent = '🔒';
-                    document.getElementById('stat-monthly-revenue').textContent = '🔒';
-                    document.getElementById('stat-weekly-revenue').textContent = '🔒';
-                    document.getElementById('stat-daily-revenue').textContent = '🔒';
-                }
+                document.getElementById('stat-total-revenue').textContent = '₦' + totalRevenue.toLocaleString();
+                document.getElementById('stat-monthly-revenue').textContent = '₦' + monthlyRevenue.toLocaleString();
+                document.getElementById('stat-weekly-revenue').textContent = '₦' + weeklyRevenue.toLocaleString();
+                document.getElementById('stat-daily-revenue').textContent = '₦' + dailyRevenue.toLocaleString();
                 const staffPerformance = {};
-                reports?.forEach(report => {
+                reportsData?.forEach(report => {
                     const staffId = report.staff_id;
                     if (!staffPerformance[staffId]) {
                         staffPerformance[staffId] = { name: report.staff_name, hub: report.hub, reportsSubmitted: 0, jobsCompleted: 0 };
@@ -798,7 +772,6 @@
         window.previewImages = previewImages;
         window.removeImage = removeImage;
         window.sendReportToWhatsApp = sendReportToWhatsApp;
-        window.generateReportPDF = generateReportPDF;
         window.loadMyReports = loadMyReports;
         window.loadAllReports = loadAllReports;
         window.viewReport = viewReport;
