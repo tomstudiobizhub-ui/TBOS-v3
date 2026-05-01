@@ -6,7 +6,22 @@
     <title>Reports & Analytics | TBOS v3.0</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <!-- Load Supabase FIRST -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Initialize Supabase -->
+    <script>
+        const SUPABASE_URL = 'https://wbmshbmfrteutglyydiay.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndibXNoYm1mcnRldXRnbHlkaWF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMjk5OTIsImV4cCI6MjA5MjkwNTk5Mn0.UiV0Uaxv0fXb_sHuoIOJ2AGJKenUmfmFAzaifPY0A6Y';
+        
+        // Initialize Supabase client globally
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        console.log('✅ TBOS v3.0 - Supabase Connected');
+        console.log('📊 Project URL:', SUPABASE_URL);
+    </script>
+    
+    <!-- Then load config -->
     <script src="config.js"></script>
     
     <style>
@@ -274,7 +289,7 @@
                     <div><strong>Report Date:</strong><span id="preview-date">-</span></div>
                     <div><strong>Hours Worked:</strong><span id="preview-hours">-</span></div>
                     <div><strong>Jobs Completed:</strong><span id="preview-jobs">-</span></div>
-                    <div><strong>Report ID:</strong><span id="preview-id">-</span></div>
+                    <div><strong>Report Number:</strong><span id="preview-id">-</span></div>
                 </div>
                 <div class="pdf-section">
                     <h3><i class="fas fa-check-circle"></i> Tasks Completed Today</h3>
@@ -562,7 +577,7 @@
                     images: uploadedImages.map(img => img.name)
                 };
                 
-                const {  result, error } = await supabase.from('daily_reports').insert([newReport]).select();
+                const { data: result, error } = await supabase.from('daily_reports').insert([newReport]).select();
                 if (error) throw error;
                 
                 alert('Daily report submitted successfully!\n\nReport Number: ' + reportNumber);
@@ -609,7 +624,7 @@
 
         async function loadMyReports() {
             try {
-                const {  reportsData, error } = await supabase.from('daily_reports').select('*').eq('staff_id', currentUser.id || currentUser.email);
+                const { data: reportsData, error } = await supabase.from('daily_reports').select('*').eq('staff_id', currentUser.id || currentUser.email).order('submitted_at', { ascending: false });
                 if (error) throw error;
                 reports = reportsData || [];
                 const tbody = document.getElementById('my-reports-body');
@@ -618,7 +633,7 @@
                     return;
                 }
                 let html = '';
-                reports.sort((a, b) => new Date(b.submitted_at) - new Date(a.submitted_at)).forEach(report => {
+                reports.forEach(report => {
                     const taskCount = report.tasks ? report.tasks.split('\n').filter(t => t.trim()).length : 0;
                     const reportNum = report.report_number || report.id.substring(0, 8);
                     html += '<tr>' +
@@ -642,7 +657,7 @@
 
         async function loadAllReports() {
             try {
-                const {  reportsData, error } = await supabase.from('daily_reports').select('*');
+                const { data: reportsData, error } = await supabase.from('daily_reports').select('*').order('submitted_at', { ascending: false });
                 if (error) throw error;
                 reports = reportsData || [];
                 const tbody = document.getElementById('all-reports-body');
@@ -651,7 +666,7 @@
                     return;
                 }
                 let html = '';
-                reports.sort((a, b) => new Date(b.submitted_at) - new Date(a.submitted_at)).forEach(report => {
+                reports.forEach(report => {
                     const taskCount = report.tasks ? report.tasks.split('\n').filter(t => t.trim()).length : 0;
                     const reportNum = report.report_number || report.id.substring(0, 8);
                     html += '<tr>' +
@@ -679,8 +694,8 @@
 
         async function loadAnalytics() {
             try {
-                const {  jobs } = await supabase.from('jobs').select('*');
-                const {  reportsData } = await supabase.from('daily_reports').select('*');
+                const { data: jobs } = await supabase.from('jobs').select('*');
+                const { data: reportsData } = await supabase.from('daily_reports').select('*');
                 const totalJobs = jobs?.length || 0;
                 const completedJobs = jobs?.filter(j => j.status === 'Completed').length || 0;
                 const activeJobs = jobs?.filter(j => j.status === 'In Progress' || j.status === 'Pending').length || 0;
