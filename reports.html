@@ -992,8 +992,8 @@
                     const reader = new FileReader();
                     reader.onload = function(e) {
                         uploadedImages.push({ 
-                            name: file.name,  
-                            e.target.result, 
+                            name: file.name,
+                            data: e.target.result, 
                             file: file 
                     });
                         const imgDiv = document.createElement('div');
