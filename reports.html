@@ -7,21 +7,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
-    <!-- Load Supabase FIRST -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
-    <!-- Initialize Supabase -->
-    <script>
-        const SUPABASE_URL = 'https://wbmshbmfrteutglyydiay.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndibXNoYm1mcnRldXRnbHlkaWF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMjk5OTIsImV4cCI6MjA5MjkwNTk5Mn0.UiV0Uaxv0fXb_sHuoIOJ2AGJKenUmfmFAzaifPY0A6Y';
-        
-        // Initialize Supabase client globally
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        console.log('✅ TBOS v3.0 - Supabase Connected');
-        console.log('📊 Project URL:', SUPABASE_URL);
-    </script>
-    
-    <!-- Then load config -->
+    <!-- Load config.js (contains Supabase initialization) -->
     <script src="config.js"></script>
     
     <style>
@@ -105,15 +91,115 @@
         .data-table th { text-align: left; padding: 15px; color: var(--text-muted); border-bottom: 2px solid var(--border); font-size: 0.8rem; text-transform: uppercase; white-space: nowrap; }
         .data-table td { padding: 15px; border-bottom: 1px solid var(--border); font-size: 0.9rem; white-space: nowrap; }
         .data-table tr:hover { background: rgba(255,255,255,0.02); }
-        .pdf-preview { background: white; color: black; padding: 40px; border-radius: 12px; margin: 20px 0; display: none; }
+        
+        /* PDF Preview Styles - Beautiful Layout */
+        .pdf-preview { 
+            background: white; 
+            color: black; 
+            padding: 50px; 
+            border-radius: 16px; 
+            margin: 20px 0; 
+            display: none; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
         .pdf-preview.active { display: block; }
-        .pdf-header { text-align: center; border-bottom: 3px solid var(--primary); padding-bottom: 20px; margin-bottom: 30px; }
-        .pdf-header h1 { color: var(--primary); font-size: 1.8rem; margin-bottom: 10px; }
-        .pdf-info { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 30px; padding: 20px; background: #f5f6fa; border-radius: 10px; }
-        .pdf-section { margin-bottom: 25px; }
-        .pdf-section h3 { color: var(--primary); border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 15px; }
-        .pdf-section ul { list-style: disc; margin-left: 20px; line-height: 1.8; }
-        .pdf-footer { margin-top: 40px; padding-top: 20px; border-top: 2px solid var(--border); text-align: center; color: #666; font-size: 0.85rem; }
+        .pdf-header { 
+            text-align: center; 
+            border-bottom: 4px solid var(--primary); 
+            padding-bottom: 25px; 
+            margin-bottom: 35px; 
+        }
+        .pdf-header h1 { 
+            color: var(--primary); 
+            font-size: 2rem; 
+            margin-bottom: 10px; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+        .pdf-header .subtitle {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+            margin-top: 8px;
+        }
+        .pdf-info { 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 20px; 
+            margin-bottom: 35px; 
+            padding: 25px; 
+            background: #f8f9fa; 
+            border-radius: 12px;
+            border-left: 5px solid var(--primary);
+        }
+        .pdf-info div {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .pdf-info strong {
+            font-size: 0.85rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .pdf-info span {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #000;
+        }
+        .pdf-section { 
+            margin-bottom: 30px; 
+            padding: 20px;
+            background: #fafafa;
+            border-radius: 10px;
+            border: 1px solid #eee;
+        }
+        .pdf-section h3 { 
+            color: var(--primary); 
+            border-bottom: 2px solid var(--primary); 
+            padding-bottom: 12px; 
+            margin-bottom: 18px;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .pdf-section ul { 
+            list-style: disc; 
+            margin-left: 25px; 
+            line-height: 2; 
+            color: #333;
+        }
+        .pdf-section ul li {
+            margin-bottom: 5px;
+        }
+        .pdf-footer { 
+            margin-top: 50px; 
+            padding-top: 25px; 
+            border-top: 3px solid var(--primary); 
+            text-align: center; 
+            color: #555; 
+            font-size: 0.9rem; 
+        }
+        .pdf-footer .company-name {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+        .pdf-footer .quote {
+            font-style: italic;
+            margin-top: 15px;
+            color: var(--primary);
+            font-weight: 500;
+        }
+        
         .image-upload-container { margin: 15px 0; padding: 20px; background: var(--bg-input); border-radius: 8px; border: 2px dashed var(--border); text-align: center; }
         .image-upload-container:hover { border-color: var(--primary); }
         .image-preview { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; }
@@ -142,12 +228,15 @@
             .form-actions button { width: 100%; }
             .data-table { font-size: 0.85rem; }
             .data-table th, .data-table td { padding: 10px 8px; }
+            .pdf-preview { padding: 30px 20px; }
+            .pdf-header h1 { font-size: 1.5rem; }
         }
         @media (max-width: 480px) {
             .stats-grid { grid-template-columns: 1fr; }
             .theme-toggle span { display: none; }
             .panel-header { flex-direction: column; align-items: flex-start; }
             .panel-header .btn-primary { width: 100%; justify-content: center; }
+            .pdf-info { gap: 15px; padding: 20px; }
         }
     </style>
 </head>
@@ -277,19 +366,20 @@
                     </div>
                 </form>
             </div>
+            
+            <!-- Beautiful PDF Preview -->
             <div id="pdf-preview" class="pdf-preview">
                 <div class="pdf-header">
                     <h1><i class="fas fa-cube"></i> TBOS v3.0</h1>
-                    <p>Tomstudio BizHub Operations System</p>
-                    <p style="font-size: 1.1rem; font-weight: 600; margin-top: 10px;">Daily Staff Report</p>
+                    <p class="subtitle">Daily Staff Report</p>
                 </div>
                 <div class="pdf-info">
-                    <div><strong>Staff Name:</strong><span id="preview-staff">-</span></div>
-                    <div><strong>Hub/Department:</strong><span id="preview-hub">-</span></div>
-                    <div><strong>Report Date:</strong><span id="preview-date">-</span></div>
-                    <div><strong>Hours Worked:</strong><span id="preview-hours">-</span></div>
-                    <div><strong>Jobs Completed:</strong><span id="preview-jobs">-</span></div>
-                    <div><strong>Report Number:</strong><span id="preview-id">-</span></div>
+                    <div><strong>Staff Name</strong><span id="preview-staff">-</span></div>
+                    <div><strong>Hub/Department</strong><span id="preview-hub">-</span></div>
+                    <div><strong>Report Date</strong><span id="preview-date">-</span></div>
+                    <div><strong>Hours Worked</strong><span id="preview-hours">-</span></div>
+                    <div><strong>Jobs Completed</strong><span id="preview-jobs">-</span></div>
+                    <div><strong>Report Number</strong><span id="preview-id" style="color: var(--primary);">-</span></div>
                 </div>
                 <div class="pdf-section">
                     <h3><i class="fas fa-check-circle"></i> Tasks Completed Today</h3>
@@ -304,13 +394,14 @@
                     <ul id="preview-plans"></ul>
                 </div>
                 <div class="pdf-footer">
-                    <p><strong>Tomstudio BizHub</strong></p>
+                    <p class="company-name">Tomstudio BizHub</p>
                     <p>265, Isawo Road, Between Oluwakemi and Santos Bustop, Agric Ikorodu, Lagos</p>
                     <p>Phone: +234 818 550 4382 | Email: info@tbos.com</p>
                     <p style="margin-top: 15px;">Generated on: <span id="preview-generated"></span></p>
-                    <p style="font-size: 0.75rem; margin-top: 10px;">"Consistency builds trust. Trust builds growth."</p>
+                    <p class="quote">"Consistency builds trust. Trust builds growth."</p>
                 </div>
             </div>
+            
             <div class="panel">
                 <div class="panel-header">
                     <div class="panel-title"><i class="fas fa-history"></i> My Reports History</div>
@@ -577,12 +668,17 @@
                     images: uploadedImages.map(img => img.name)
                 };
                 
+                // Use supabase from config.js (no duplicate keys needed)
                 const { data: result, error } = await supabase.from('daily_reports').insert([newReport]).select();
                 if (error) throw error;
                 
                 alert('Daily report submitted successfully!\n\nReport Number: ' + reportNumber);
                 document.getElementById('btn-whatsapp-report').style.display = 'inline-flex';
                 lastSubmittedReport = newReport;
+                
+                // Update PDF preview with new data
+                updatePDFPreview(newReport, reportNumber);
+                
                 this.reset();
                 document.getElementById('report-date').valueAsDate = new Date();
                 document.getElementById('report-hub').value = currentUser.hub || '';
@@ -597,6 +693,26 @@
             btnSubmit.disabled = false;
             btnSubmit.innerHTML = '<i class="fas fa-save"></i> Submit Report';
         });
+
+        // Update PDF preview with report data
+        function updatePDFPreview(report, reportNumber) {
+            document.getElementById('preview-staff').textContent = report.staff_name;
+            document.getElementById('preview-hub').textContent = report.hub;
+            document.getElementById('preview-date').textContent = report.date;
+            document.getElementById('preview-hours').textContent = report.hours_worked + ' hrs';
+            document.getElementById('preview-jobs').textContent = report.jobs_completed;
+            document.getElementById('preview-id').textContent = reportNumber;
+            document.getElementById('preview-generated').textContent = new Date().toLocaleString();
+            
+            // Update task lists
+            document.getElementById('preview-tasks').innerHTML = report.tasks.split('\n').filter(t => t.trim()).map(t => '<li>' + t.replace('•', '').trim() + '</li>').join('') || '<li>No tasks listed</li>';
+            document.getElementById('preview-challenges').innerHTML = report.challenges.split('\n').filter(c => c.trim()).map(c => '<li>' + c.replace('•', '').trim() + '</li>').join('') || '<li>No challenges reported</li>';
+            document.getElementById('preview-plans').innerHTML = report.plans.split('\n').filter(p => p.trim()).map(p => '<li>' + p.replace('•', '').trim() + '</li>').join('') || '<li>No plans listed</li>';
+            
+            // Show PDF preview
+            document.getElementById('pdf-preview').classList.add('active');
+            document.getElementById('pdf-preview').scrollIntoView({ behavior: 'smooth' });
+        }
 
         function sendReportToWhatsApp() {
             if (!lastSubmittedReport) {
