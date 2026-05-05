@@ -162,6 +162,13 @@
         .share-dropdown-content a:hover { background: rgba(0, 128, 128, 0.1); color: var(--primary); }
         .share-dropdown:hover .share-dropdown-content { display: block; }
         
+        /* Animation for WhatsApp button */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
         /* Mobile Responsive */
         @media (max-width: 768px) {
             .sidebar { transform: translateX(-100%); }
@@ -523,7 +530,7 @@
         let lastSubmittedReport = null;
         let currentViewReport = null;
 
-        // Initialize page
+        // Initialize page - SAME AS WORKING VERSION
         window.addEventListener('DOMContentLoaded', async function() {
             const savedUser = localStorage.getItem('currentUser');
             if (!savedUser) {
@@ -546,7 +553,7 @@
             await loadAnalytics();
         });
 
-        // Submit Report - Uses API.create()
+        // Submit Report - Uses API.create() - SAME AS WORKING VERSION
         document.getElementById('report-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             const btnSubmit = document.getElementById('btn-submit-report');
@@ -574,7 +581,7 @@
                     submitted_at: new Date().toISOString()
                 };
                 
-                // ✅ USE API.create() - NOT direct supabase call
+                // ✅ USE API.create() - NOT direct supabase call (MAINTAINS WORKING ARCHITECTURE)
                 const result = await API.create('daily_reports', newReport);
                 
                 if (!result.success) {
@@ -583,9 +590,10 @@
                 
                 alert('Daily report submitted successfully!\n\nReport Number: ' + reportNumber);
                 
-                // ✅ Show styled WhatsApp button after submission
-                document.getElementById('btn-whatsapp-report').style.display = 'inline-flex';
-                document.getElementById('btn-whatsapp-report').style.animation = 'pulse 1s ease-in-out';
+                // ✅ Show styled WhatsApp button after submission WITH ANIMATION
+                const whatsappBtn = document.getElementById('btn-whatsapp-report');
+                whatsappBtn.style.display = 'inline-flex';
+                whatsappBtn.style.animation = 'pulse 1s ease-in-out';
                 
                 lastSubmittedReport = newReport;
                 
@@ -607,7 +615,7 @@
             btnSubmit.innerHTML = '<i class="fas fa-save"></i> Submit Report';
         });
 
-        // Update PDF Preview
+        // Update PDF Preview - SAME AS WORKING VERSION
         function updatePDFPreview(report, reportNumber) {
             document.getElementById('preview-staff').textContent = report.staff_name;
             document.getElementById('preview-hub').textContent = report.hub;
@@ -625,10 +633,10 @@
             document.getElementById('pdf-preview').scrollIntoView({ behavior: 'smooth' });
         }
 
-        // Load My Reports - Uses API.get()
+        // Load My Reports - Uses API.get() - SAME AS WORKING VERSION
         async function loadMyReports() {
             try {
-                // ✅ USE API.get() - NOT direct supabase call
+                // ✅ USE API.get() - NOT direct supabase call (MAINTAINS WORKING ARCHITECTURE)
                 const reportsData = await API.get('daily_reports');
                 
                 // Filter for current user
@@ -654,8 +662,11 @@
                         '<td>' + (report.hours_worked || 8) + ' hrs</td>' +
                         '<td>' + (report.jobs_completed || 0) + '</td>' +
                         '<td>' +
+                        // ✅ EYE ICON - View Report Details
                         '<button class="btn-sm btn-info" onclick="viewReport(\'' + report.id + '\')" title="View Report"><i class="fas fa-eye"></i></button> ' +
+                        // ✅ SHARE ICON - Share Report as PDF
                         '<button class="btn-sm btn-success" onclick="shareReport(\'' + report.id + '\')" title="Share Report"><i class="fas fa-share-alt"></i></button> ' +
+                        // ✅ WHATSAPP ICON - Send via WhatsApp
                         '<button class="btn-sm btn-whatsapp" onclick="sendReportToWhatsApp(\'' + report.id + '\')" title="WhatsApp"><i class="fab fa-whatsapp"></i></button>' +
                         '</td></tr>';
                 });
@@ -666,10 +677,10 @@
             }
         }
 
-        // Load All Reports (Admin) - Uses API.get()
+        // Load All Reports (Admin) - Uses API.get() - SAME AS WORKING VERSION
         async function loadAllReports() {
             try {
-                // ✅ USE API.get() - NOT direct supabase call
+                // ✅ USE API.get() - NOT direct supabase call (MAINTAINS WORKING ARCHITECTURE)
                 const reportsData = await API.get('daily_reports');
                 
                 reports = (reportsData || []).sort((a, b) => new Date(b.submitted_at) - new Date(a.submitted_at));
@@ -692,8 +703,11 @@
                         '<td>' + taskCount + ' tasks</td>' +
                         '<td>' + (report.hours_worked || 8) + ' hrs</td>' +
                         '<td>' +
+                        // ✅ EYE ICON - View Report Details
                         '<button class="btn-sm btn-info" onclick="viewReport(\'' + report.id + '\')" title="View Report"><i class="fas fa-eye"></i></button> ' +
+                        // ✅ SHARE ICON - Share Report as PDF
                         '<button class="btn-sm btn-success" onclick="shareReport(\'' + report.id + '\')" title="Share Report"><i class="fas fa-share-alt"></i></button> ' +
+                        // ✅ WHATSAPP ICON - Send via WhatsApp
                         '<button class="btn-sm btn-whatsapp" onclick="sendReportToWhatsApp(\'' + report.id + '\')" title="WhatsApp"><i class="fab fa-whatsapp"></i></button>' +
                         '</td></tr>';
                 });
@@ -704,7 +718,7 @@
             }
         }
 
-        // View Report Details - Eye Icon Functionality
+        // ✅ NEW: View Report Details - Eye Icon Functionality
         function viewReport(reportId) {
             const report = reports.find(r => r.id === reportId);
             if (!report) {
@@ -714,7 +728,7 @@
             
             currentViewReport = report;
             
-            // Populate modal content
+            // Populate modal content with report details
             document.getElementById('report-detail-content').innerHTML = 
                 '<div class="report-detail-item"><label>Report Number</label><div class="value" style="color: var(--primary);">' + (report.report_number || report.id) + '</div></div>' +
                 '<div class="report-detail-item"><label>Staff Name</label><div class="value">' + report.staff_name + '</div></div>' +
@@ -730,13 +744,13 @@
             document.getElementById('report-modal').classList.add('active');
         }
 
-        // Close Report Modal
+        // ✅ NEW: Close Report Modal
         function closeReportModal() {
             document.getElementById('report-modal').classList.remove('active');
             currentViewReport = null;
         }
 
-        // Share Report - Share Icon Functionality
+        // ✅ NEW: Share Report - Share Icon Functionality (Generates PDF)
         function shareReport(reportId) {
             const report = reports.find(r => r.id === reportId);
             if (!report) {
@@ -766,7 +780,7 @@
             });
         }
 
-        // Download PDF from Blob
+        // ✅ NEW: Download PDF from Blob
         function downloadPDFBlob(blob, filename) {
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -779,7 +793,7 @@
             alert('PDF downloaded: ' + filename + '.pdf');
         }
 
-        // Generate Report PDF
+        // ✅ NEW: Generate Report PDF
         function generateReportPDF(report, callback) {
             const element = document.getElementById('pdf-preview');
             
@@ -813,7 +827,7 @@
             });
         }
 
-        // Download Report PDF
+        // ✅ NEW: Download Report PDF from Modal
         function downloadReportPDF() {
             if (!currentViewReport) {
                 alert('No report selected');
@@ -824,7 +838,7 @@
             });
         }
 
-        // Share Report via WhatsApp
+        // ✅ NEW: Share Report via WhatsApp from Modal
         function shareReportWhatsApp() {
             if (!currentViewReport) {
                 alert('No report selected');
@@ -833,7 +847,7 @@
             sendReportToWhatsApp(currentViewReport.id);
         }
 
-        // Send Report to WhatsApp
+        // Send Report to WhatsApp - SAME AS WORKING VERSION
         function sendReportToWhatsApp(reportId) {
             const report = reportId ? reports.find(r => r.id === reportId) : lastSubmittedReport;
             if (!report) {
@@ -860,10 +874,10 @@
             window.open(url, '_blank');
         }
 
-        // Load Analytics - Uses API.get()
+        // Load Analytics - Uses API.get() - SAME AS WORKING VERSION
         async function loadAnalytics() {
             try {
-                // ✅ USE API.get() - NOT direct supabase call
+                // ✅ USE API.get() - NOT direct supabase call (MAINTAINS WORKING ARCHITECTURE)
                 const jobs = await API.get('jobs');
                 const reportsData = await API.get('daily_reports');
                 
@@ -938,10 +952,6 @@
             } catch (error) {
                 console.error('Load analytics error:', error);
             }
-        }
-
-        function viewReport(reportId) {
-            alert('View report: ' + reportId + '\n\n(Full report view feature coming soon)');
         }
 
         function resetReportForm() {
