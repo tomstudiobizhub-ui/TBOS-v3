@@ -6,7 +6,10 @@
     <title>Reports & Analytics | TBOS v3.0</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
-    <!-- Load config.js FIRST (contains Supabase initialization) -->
+    <!-- Load Supabase Library FIRST -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Load config.js SECOND (initializes API wrapper) -->
     <script src="config.js"></script>
     
     <style>
@@ -488,7 +491,7 @@
             await loadAnalytics();
         });
 
-        // Submit Report
+        // Submit Report - Uses API.create()
         document.getElementById('report-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             const btnSubmit = document.getElementById('btn-submit-report');
@@ -516,9 +519,12 @@
                     submitted_at: new Date().toISOString()
                 };
                 
-                // Use supabase from config.js
-                const {  result, error } = await supabase.from('daily_reports').insert([newReport]).select();
-                if (error) throw error;
+                // ✅ USE API.create() - NOT direct supabase call
+                const result = await API.create('daily_reports', newReport);
+                
+                if (!result.success) {
+                    throw new Error(result.error || 'Failed to submit report');
+                }
                 
                 alert('Daily report submitted successfully!\n\nReport Number: ' + reportNumber);
                 document.getElementById('btn-whatsapp-report').style.display = 'inline-flex';
@@ -560,17 +566,16 @@
             document.getElementById('pdf-preview').scrollIntoView({ behavior: 'smooth' });
         }
 
-        // Load My Reports
+        // Load My Reports - Uses API.get()
         async function loadMyReports() {
             try {
-                const {  reportsData, error } = await supabase
-                    .from('daily_reports')
-                    .select('*')
-                    .eq('staff_id', currentUser.id || currentUser.email)
-                    .order('submitted_at', { ascending: false });
+                // ✅ USE API.get() - NOT direct supabase call
+                const reportsData = await API.get('daily_reports');
                 
-                if (error) throw error;
-                reports = reportsData || [];
+                // Filter for current user
+                reports = (reportsData || []).filter(r => 
+                    r.staff_id === currentUser.id || r.staff_id === currentUser.email
+                ).sort((a, b) => new Date(b.submitted_at) - new Date(a.submitted_at));
                 
                 const tbody = document.getElementById('my-reports-body');
                 if (!reports || reports.length === 0) {
@@ -601,16 +606,13 @@
             }
         }
 
-        // Load All Reports (Admin)
+        // Load All Reports (Admin) - Uses API.get()
         async function loadAllReports() {
             try {
-                const { data: reportsData, error } = await supabase
-                    .from('daily_reports')
-                    .select('*')
-                    .order('submitted_at', { ascending: false });
+                // ✅ USE API.get() - NOT direct supabase call
+                const reportsData = await API.get('daily_reports');
                 
-                if (error) throw error;
-                reports = reportsData || [];
+                reports = (reportsData || []).sort((a, b) => new Date(b.submitted_at) - new Date(a.submitted_at));
                 
                 const tbody = document.getElementById('all-reports-body');
                 if (!reports || reports.length === 0) {
@@ -641,11 +643,12 @@
             }
         }
 
-        // Load Analytics
+        // Load Analytics - Uses API.get()
         async function loadAnalytics() {
             try {
-                const { data: jobs } = await supabase.from('jobs').select('*');
-                const { data: reportsData } = await supabase.from('daily_reports').select('*');
+                // ✅ USE API.get() - NOT direct supabase call
+                const jobs = await API.get('jobs');
+                const reportsData = await API.get('daily_reports');
                 
                 const totalJobs = jobs?.length || 0;
                 const completedJobs = jobs?.filter(j => j.status === 'Completed').length || 0;
@@ -785,7 +788,7 @@
                     }
                     const reader = new FileReader();
                     reader.onload = function(e) {
-                        uploadedImages.push({ name: file.name,  e.target.result, file: file });
+                        uploadedImages.push({ name: file.name, data: e.target.result, file: file });
                         const imgDiv = document.createElement('div');
                         imgDiv.className = 'image-preview-item';
                         imgDiv.innerHTML = '<img src="' + e.target.result + '" alt="' + file.name + '"><button type="button" class="remove-img" onclick="removeImage(' + (uploadedImages.length - 1) + ')">&times;</button>';
