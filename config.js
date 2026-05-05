@@ -1,12 +1,12 @@
 // config.js - TBOS v3.0 Supabase Configuration
 // ============================================
-// IMPORTANT:
-// Load scripts in this exact order:
+// IMPORTANT: Load scripts in this exact order in ALL HTML files:
 //
-// <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-// <script src="config.js"></script>
+// 1. <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+// 2. <script src="config.js"></script>
+// ============================================
 
-(function () {
+(function() {
     'use strict';
 
     // ============================================
@@ -18,28 +18,24 @@
     let supabaseClient = null;
     let initialized = false;
 
-    supabaseClient = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-);
-
-// ✅ ADD THIS LINE
-window.supabaseClient = supabaseClient;
-
     // ============================================
     // LOCAL STORAGE HELPERS
     // ============================================
     function getLocalData(collection) {
-        return JSON.parse(
-            localStorage.getItem(`local_${collection}`) || '[]'
-        );
+        try {
+            return JSON.parse(localStorage.getItem(`local_${collection}`) || '[]');
+        } catch (error) {
+            console.error('Error reading localStorage:', error);
+            return [];
+        }
     }
 
     function saveLocalData(collection, data) {
-        localStorage.setItem(
-            `local_${collection}`,
-            JSON.stringify(data)
-        );
+        try {
+            localStorage.setItem(`local_${collection}`, JSON.stringify(data));
+        } catch (error) {
+            console.error('Error saving to localStorage:', error);
+        }
     }
 
     // ============================================
@@ -48,10 +44,7 @@ window.supabaseClient = supabaseClient;
     function initSupabase() {
         if (initialized) return true;
 
-        if (
-            typeof window.supabase === 'undefined' ||
-            typeof window.supabase.createClient !== 'function'
-        ) {
+        if (typeof window.supabase === 'undefined' || typeof window.supabase.createClient !== 'function') {
             console.error(
                 '❌ Supabase library not loaded.\n' +
                 'Make sure this script appears BEFORE config.js:\n' +
@@ -61,11 +54,7 @@ window.supabaseClient = supabaseClient;
         }
 
         try {
-            supabaseClient = window.supabase.createClient(
-                SUPABASE_URL,
-                SUPABASE_KEY
-            );
-
+            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
             initialized = true;
 
             console.log('✅ TBOS v3.0 - Supabase Connected');
@@ -85,12 +74,11 @@ window.supabaseClient = supabaseClient;
         if (!initialized) {
             initSupabase();
         }
-
         return initialized;
     }
 
     // ============================================
-    // API
+    // API WRAPPER - PRO ARCHITECTURE
     // ============================================
     const API = {
         async get(collection, id = null) {
@@ -101,9 +89,7 @@ window.supabaseClient = supabaseClient;
                     throw new Error('Supabase not initialized');
                 }
 
-                let query = supabaseClient
-                    .from(collection)
-                    .select('*');
+                let query = supabaseClient.from(collection).select('*');
 
                 if (id !== null) {
                     query = query.eq('id', id).single();
@@ -153,12 +139,12 @@ window.supabaseClient = supabaseClient;
 
                 return {
                     success: true,
-                    data
+                    data: data
                 };
             } catch (error) {
                 console.error('❌ CREATE Error:', error);
 
-                payload.id = Date.now();
+                payload.id = Date.now().toString();
 
                 const localData = getLocalData(collection);
                 localData.push(payload);
@@ -190,9 +176,7 @@ window.supabaseClient = supabaseClient;
                 if (error) throw error;
 
                 const localData = getLocalData(collection);
-                const index = localData.findIndex(
-                    item => item.id == payload.id
-                );
+                const index = localData.findIndex(item => item.id == payload.id);
 
                 if (index !== -1) {
                     localData[index] = data;
@@ -201,15 +185,13 @@ window.supabaseClient = supabaseClient;
 
                 return {
                     success: true,
-                    data
+                    data: data
                 };
             } catch (error) {
                 console.error('❌ UPDATE Error:', error);
 
                 const localData = getLocalData(collection);
-                const index = localData.findIndex(
-                    item => item.id == payload.id
-                );
+                const index = localData.findIndex(item => item.id == payload.id);
 
                 if (index !== -1) {
                     localData[index] = payload;
@@ -241,9 +223,7 @@ window.supabaseClient = supabaseClient;
             }
 
             const localData = getLocalData(collection);
-            const filtered = localData.filter(
-                item => item.id != id
-            );
+            const filtered = localData.filter(item => item.id != id);
 
             saveLocalData(collection, filtered);
 
@@ -258,9 +238,16 @@ window.supabaseClient = supabaseClient;
     // ============================================
     window.API = API;
     window.initSupabase = initSupabase;
+    window.supabaseClient = supabaseClient;
 
     // ============================================
     // AUTO INITIALIZE
     // ============================================
-    window.addEventListener('load', initSupabase);
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initSupabase);
+    } else {
+        initSupabase();
+    }
+
+    console.log(' TBOS v3.0 API Ready - Use API.get(), API.create(), API.update(), API.delete()');
 })();
