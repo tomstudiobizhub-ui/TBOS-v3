@@ -18,6 +18,14 @@
     let supabaseClient = null;
     let initialized = false;
 
+    supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+// ✅ ADD THIS LINE
+window.supabaseClient = supabaseClient;
+
     // ============================================
     // LOCAL STORAGE HELPERS
     // ============================================
