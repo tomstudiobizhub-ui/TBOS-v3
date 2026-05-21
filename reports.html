@@ -108,16 +108,61 @@
         .stat-box strong { display: block; font-size: 2rem; color: var(--primary); margin-bottom: 5px; }
         .stat-box span { font-size: 0.85rem; color: var(--text-muted); }
         
-        /* PDF Preview */
-        .pdf-preview { background: white; color: black; padding: 40px; border-radius: 12px; margin: 20px 0; display: none; }
+        /* PDF Preview - Fixed for PDF Generation */
+        .pdf-preview { 
+            background: white; 
+            color: black; 
+            padding: 40px; 
+            border-radius: 12px; 
+            margin: 20px 0; 
+            display: none; 
+            font-family: Arial, sans-serif;
+        }
         .pdf-preview.active { display: block; }
-        .pdf-header { text-align: center; border-bottom: 3px solid var(--primary); padding-bottom: 20px; margin-bottom: 30px; }
-        .pdf-header h1 { color: var(--primary); font-size: 1.8rem; margin-bottom: 10px; }
-        .pdf-info { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 30px; padding: 20px; background: #f5f6fa; border-radius: 10px; }
+        .pdf-header { 
+            text-align: center; 
+            border-bottom: 3px solid #008080; 
+            padding-bottom: 20px; 
+            margin-bottom: 30px; 
+        }
+        .pdf-header h1 { 
+            color: #008080; 
+            font-size: 1.8rem; 
+            margin-bottom: 10px; 
+            font-family: Arial, sans-serif;
+        }
+        .pdf-info { 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 15px; 
+            margin-bottom: 30px; 
+            padding: 20px; 
+            background: #f5f6fa; 
+            border-radius: 10px; 
+        }
         .pdf-section { margin-bottom: 25px; }
-        .pdf-section h3 { color: var(--primary); border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 15px; }
-        .pdf-section ul { list-style: disc; margin-left: 20px; line-height: 1.8; }
-        .pdf-footer { margin-top: 40px; padding-top: 20px; border-top: 2px solid var(--border); text-align: center; color: #666; font-size: 0.85rem; }
+        .pdf-section h3 { 
+            color: #008080; 
+            border-bottom: 2px solid #008080; 
+            padding-bottom: 10px; 
+            margin-bottom: 15px;
+            font-family: Arial, sans-serif;
+        }
+        .pdf-section ul { 
+            list-style: disc; 
+            margin-left: 20px; 
+            line-height: 1.8; 
+            color: #000;
+        }
+        .pdf-footer { 
+            margin-top: 40px; 
+            padding-top: 20px; 
+            border-top: 2px solid #333; 
+            text-align: center; 
+            color: #333; 
+            font-size: 0.85rem;
+            font-family: Arial, sans-serif;
+        }
         
         /* Image Upload */
         .image-upload-container { margin: 15px 0; padding: 20px; background: var(--bg-input); border-radius: 8px; border: 2px dashed var(--border); text-align: center; }
@@ -154,14 +199,6 @@
         .report-detail-item label { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; }
         .report-detail-item .value { font-size: 1rem; color: var(--text-main); font-weight: 600; }
         
-        /* Share Dropdown */
-        .share-dropdown { position: relative; display: inline-block; }
-        .share-btn { padding: 8px 15px; background: var(--info); color: white; border-radius: 6px; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 5px; }
-        .share-dropdown-content { display: none; position: absolute; right: 0; top: 100%; background: var(--bg-panel); border: 1px solid var(--border); border-radius: 8px; min-width: 180px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 100; margin-top: 5px; }
-        .share-dropdown-content a { display: block; padding: 12px 15px; color: var(--text-main); text-decoration: none; font-size: 0.9rem; }
-        .share-dropdown-content a:hover { background: rgba(0, 128, 128, 0.1); color: var(--primary); }
-        .share-dropdown:hover .share-dropdown-content { display: block; }
-        
         /* Animation for WhatsApp button */
         @keyframes pulse {
             0% { transform: scale(1); }
@@ -184,7 +221,6 @@
             .data-table { font-size: 0.85rem; }
             .data-table th, .data-table td { padding: 10px 8px; }
             .report-detail-grid { grid-template-columns: 1fr; }
-            .share-dropdown-content { right: -50px; }
         }
         @media (max-width: 480px) {
             .stats-grid { grid-template-columns: 1fr; }
@@ -322,7 +358,7 @@
                 </form>
             </div>
             
-            <!-- PDF Preview -->
+            <!-- PDF Preview - Hidden by default, shown after submit -->
             <div id="pdf-preview" class="pdf-preview">
                 <div class="pdf-header">
                     <h1><i class="fas fa-cube"></i> TBOS v3.0</h1>
@@ -508,9 +544,10 @@
             </div>
             <div class="modal-body">
                 <div class="report-detail-grid" id="report-detail-content"></div>
-                <div class="form-actions" style="justify-content: center; margin-top: 20px;">
-                    <button class="btn-primary" onclick="downloadReportPDF()">
-                        <i class="fas fa-download"></i> Download PDF
+                <div class="form-actions" style="justify-content: center; margin-top: 20px; gap: 10px;">
+                    <!-- ✅ EASY PDF SHARING BUTTON -->
+                    <button class="btn-primary" onclick="downloadAndSharePDF()">
+                        <i class="fas fa-file-pdf"></i> Download & Share PDF
                     </button>
                     <button class="btn-whatsapp" onclick="shareReportWhatsApp()">
                         <i class="fab fa-whatsapp"></i> Share via WhatsApp
@@ -750,37 +787,106 @@
             currentViewReport = null;
         }
 
-        // ✅ NEW: Share Report - Share Icon Functionality (Generates PDF)
-        function shareReport(reportId) {
-            const report = reports.find(r => r.id === reportId);
-            if (!report) {
-                alert('Report not found');
-                return;
-            }
+        // ✅ FIXED: Generate Report PDF - Creates visible temp container for html2pdf
+        function generateReportPDF(report, callback) {
+            // Create a temporary container that's visible to html2pdf
+            const tempContainer = document.createElement('div');
+            tempContainer.id = 'pdf-temp-container';
+            tempContainer.style.cssText = `
+                position: fixed;
+                left: -9999px;
+                top: 0;
+                width: 800px;
+                padding: 40px;
+                background: white;
+                color: black;
+                font-family: Arial, sans-serif;
+                z-index: -1;
+            `;
             
-            // Generate PDF and offer share options
-            generateReportPDF(report, function(pdfBlob) {
-                // Create share options
-                const shareOptions = {
-                    title: 'TBOS Report - ' + report.report_number,
-                    text: 'Daily report from ' + report.staff_name,
-                    url: window.location.href
+            // Build the PDF content with inline styles for reliability
+            const content = `
+                <div style="text-align: center; margin-bottom: 30px; border-bottom: 3px solid #008080; padding-bottom: 20px;">
+                    <h1 style="color: #008080; margin: 0; font-size: 24px; font-family: Arial, sans-serif;"><i class="fas fa-cube"></i> TBOS v3.0</h1>
+                    <p style="color: #666; margin: 5px 0; font-family: Arial, sans-serif;">Tomstudio BizHub Operations System</p>
+                    <p style="font-size: 16px; font-weight: 600; margin: 10px 0 0 0; color: #000; font-family: Arial, sans-serif;">Daily Staff Report</p>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px; padding: 20px; background: #f5f6fa; border-radius: 10px; font-family: Arial, sans-serif;">
+                    <div><strong style="font-size: 12px; color: #666;">Staff Name:</strong><div style="font-size: 14px; font-weight: 600; color: #000;">${report.staff_name}</div></div>
+                    <div><strong style="font-size: 12px; color: #666;">Hub/Department:</strong><div style="font-size: 14px; font-weight: 600; color: #000;">${report.hub}</div></div>
+                    <div><strong style="font-size: 12px; color: #666;">Report Date:</strong><div style="font-size: 14px; font-weight: 600; color: #000;">${report.date}</div></div>
+                    <div><strong style="font-size: 12px; color: #666;">Hours Worked:</strong><div style="font-size: 14px; font-weight: 600; color: #000;">${report.hours_worked} hrs</div></div>
+                    <div><strong style="font-size: 12px; color: #666;">Jobs Completed:</strong><div style="font-size: 14px; font-weight: 600; color: #000;">${report.jobs_completed}</div></div>
+                    <div><strong style="font-size: 12px; color: #666;">Report Number:</strong><div style="font-size: 14px; font-weight: 600; color: #008080;">${report.report_number || report.id}</div></div>
+                </div>
+                <div style="margin-bottom: 25px; font-family: Arial, sans-serif;">
+                    <h3 style="color: #008080; border-bottom: 2px solid #008080; padding-bottom: 10px; margin-bottom: 15px; font-size: 16px;"><i class="fas fa-check-circle"></i> Tasks Completed Today</h3>
+                    <ul style="list-style: disc; margin-left: 20px; line-height: 1.8; color: #000;">
+                        ${report.tasks.split('\n').filter(t => t.trim()).map(t => '<li>' + t.replace('•', '').trim() + '</li>').join('') || '<li>No tasks listed</li>'}
+                    </ul>
+                </div>
+                <div style="margin-bottom: 25px; font-family: Arial, sans-serif;">
+                    <h3 style="color: #008080; border-bottom: 2px solid #008080; padding-bottom: 10px; margin-bottom: 15px; font-size: 16px;"><i class="fas fa-exclamation-triangle"></i> Challenges/Issues Faced</h3>
+                    <ul style="list-style: disc; margin-left: 20px; line-height: 1.8; color: #000;">
+                        ${(report.challenges || 'None').split('\n').filter(c => c.trim()).map(c => '<li>' + c.replace('•', '').trim() + '</li>').join('') || '<li>No challenges reported</li>'}
+                    </ul>
+                </div>
+                <div style="margin-bottom: 25px; font-family: Arial, sans-serif;">
+                    <h3 style="color: #008080; border-bottom: 2px solid #008080; padding-bottom: 10px; margin-bottom: 15px; font-size: 16px;"><i class="fas fa-calendar-day"></i> Plans for Tomorrow</h3>
+                    <ul style="list-style: disc; margin-left: 20px; line-height: 1.8; color: #000;">
+                        ${report.plans.split('\n').filter(p => p.trim()).map(p => '<li>' + p.replace('•', '').trim() + '</li>').join('') || '<li>No plans listed</li>'}
+                    </ul>
+                </div>
+                <div style="margin-top: 40px; padding-top: 20px; border-top: 2px solid #333; text-align: center; color: #333; font-size: 12px; font-family: Arial, sans-serif;">
+                    <p style="margin: 5px 0;"><strong>Tomstudio BizHub</strong></p>
+                    <p style="margin: 5px 0;">265, Isawo Road, Between Oluwakemi and Santos Bustop, Agric Ikorodu, Lagos</p>
+                    <p style="margin: 5px 0;">Phone: +234 818 550 4382 | Email: info@tbos.com</p>
+                    <p style="margin: 15px 0 5px 0;">Generated on: ${new Date().toLocaleString()}</p>
+                    <p style="font-size: 11px; margin-top: 10px; font-style: italic;">"Consistency builds trust. Trust builds growth."</p>
+                </div>
+            `;
+            
+            tempContainer.innerHTML = content;
+            document.body.appendChild(tempContainer);
+            
+            // Wait for element to render
+            setTimeout(() => {
+                const opt = {
+                    margin: 10,
+                    filename: (report.report_number || 'TBOS-Report') + '.pdf',
+                    image: { type: 'jpeg', quality: 1 },
+                    html2canvas: { 
+                        scale: 2, 
+                        useCORS: true,
+                        logging: false,
+                        windowWidth: 800
+                    },
+                    jsPDF: { 
+                        unit: 'mm', 
+                        format: 'a4', 
+                        orientation: 'portrait',
+                        putOnlyUsedFonts: true
+                    }
                 };
                 
-                // Try Web Share API if available
-                if (navigator.share) {
-                    navigator.share(shareOptions).catch(err => {
-                        console.log('Share cancelled:', err);
-                        downloadPDFBlob(pdfBlob, report.report_number);
+                html2pdf()
+                    .set(opt)
+                    .from(tempContainer)
+                    .outputPdf('blob')
+                    .then(blob => {
+                        // Clean up
+                        document.body.removeChild(tempContainer);
+                        if (callback) callback(blob);
+                    })
+                    .catch(err => {
+                        console.error('PDF generation error:', err);
+                        document.body.removeChild(tempContainer);
+                        alert('Error generating PDF: ' + err.message);
                     });
-                } else {
-                    // Fallback to download
-                    downloadPDFBlob(pdfBlob, report.report_number);
-                }
-            });
+            }, 200);
         }
 
-        // ✅ NEW: Download PDF from Blob
+        // ✅ FIXED: Download PDF from Blob
         function downloadPDFBlob(blob, filename) {
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -790,51 +896,34 @@
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            alert('PDF downloaded: ' + filename + '.pdf');
+            alert('PDF downloaded: ' + filename + '.pdf\n\nYou can now share this PDF via WhatsApp or email!');
         }
 
-        // ✅ NEW: Generate Report PDF
-        function generateReportPDF(report, callback) {
-            const element = document.getElementById('pdf-preview');
-            
-            // Update preview with report data
-            document.getElementById('preview-staff').textContent = report.staff_name;
-            document.getElementById('preview-hub').textContent = report.hub;
-            document.getElementById('preview-date').textContent = report.date;
-            document.getElementById('preview-hours').textContent = report.hours_worked + ' hrs';
-            document.getElementById('preview-jobs').textContent = report.jobs_completed;
-            document.getElementById('preview-id').textContent = report.report_number || report.id;
-            document.getElementById('preview-generated').textContent = new Date().toLocaleString();
-            
-            document.getElementById('preview-tasks').innerHTML = report.tasks.split('\n').filter(t => t.trim()).map(t => '<li>' + t.replace('•', '').trim() + '</li>').join('') || '<li>No tasks listed</li>';
-            document.getElementById('preview-challenges').innerHTML = report.challenges.split('\n').filter(c => c.trim()).map(c => '<li>' + c.replace('•', '').trim() + '</li>').join('') || '<li>No challenges reported</li>';
-            document.getElementById('preview-plans').innerHTML = report.plans.split('\n').filter(p => p.trim()).map(p => '<li>' + p.replace('•', '').trim() + '</li>').join('') || '<li>No plans listed</li>';
-            
-            // Generate PDF
-            const opt = {
-                margin: 10,
-                filename: report.report_number || 'TBOS-Report',
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-            
-            html2pdf().set(opt).from(element).outputPdf('blob').then(blob => {
-                if (callback) callback(blob);
-            }).catch(err => {
-                console.error('PDF generation error:', err);
-                alert('Error generating PDF: ' + err.message);
-            });
-        }
-
-        // ✅ NEW: Download Report PDF from Modal
-        function downloadReportPDF() {
+        // ✅ NEW: Easy Download & Share PDF - One-click for staff
+        function downloadAndSharePDF() {
             if (!currentViewReport) {
                 alert('No report selected');
                 return;
             }
+            
+            // Show loading state
+            const btn = document.querySelector('.btn-primary');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating PDF...';
+            btn.disabled = true;
+            
             generateReportPDF(currentViewReport, function(blob) {
+                // Restore button
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                
+                // Download the PDF
                 downloadPDFBlob(blob, currentViewReport.report_number || 'TBOS-Report');
+                
+                // Show helpful message
+                setTimeout(() => {
+                    alert('✅ PDF downloaded!\n\nTo share via WhatsApp:\n1. Open WhatsApp\n2. Select contact or group\n3. Tap 📎 (attach)\n4. Select "Document"\n5. Choose the downloaded PDF');
+                }, 500);
             });
         }
 
@@ -845,6 +934,19 @@
                 return;
             }
             sendReportToWhatsApp(currentViewReport.id);
+        }
+
+        // ✅ NEW: Share Report - Share Icon Functionality (Generates PDF)
+        function shareReport(reportId) {
+            const report = reports.find(r => r.id === reportId);
+            if (!report) {
+                alert('Report not found');
+                return;
+            }
+            
+            // Set as current view report and open modal
+            currentViewReport = report;
+            document.getElementById('report-modal').classList.add('active');
         }
 
         // Send Report to WhatsApp - SAME AS WORKING VERSION
@@ -995,7 +1097,7 @@
                             name: file.name,
                             data: e.target.result, 
                             file: file 
-                    });
+                        });
                         const imgDiv = document.createElement('div');
                         imgDiv.className = 'image-preview-item';
                         imgDiv.innerHTML = '<img src="' + e.target.result + '" alt="' + file.name + '"><button type="button" class="remove-img" onclick="removeImage(' + (uploadedImages.length - 1) + ')">&times;</button>';
@@ -1037,7 +1139,7 @@
         window.viewReport = viewReport;
         window.closeReportModal = closeReportModal;
         window.shareReport = shareReport;
-        window.downloadReportPDF = downloadReportPDF;
+        window.downloadAndSharePDF = downloadAndSharePDF;
         window.shareReportWhatsApp = shareReportWhatsApp;
         window.resetReportForm = resetReportForm;
         window.logout = logout;
