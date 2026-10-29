@@ -319,131 +319,97 @@
         </div>
     </div>
     <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
         const SUPABASE_URL = 'https://wbmshbmfrteutglydiay.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndibXNoYm1mcnRldXRnbHlkaWF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMjk5OTIsImV4cCI6MjA5MjkwNTk5Mn0.UiV0Uaxv0fXb_sHuoIOJ2AGJKenUmfmFAzaifPY0A6Y';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbiIsInJlZiI6IndibXNoYm1mcnRldXRnbHlkaWF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMjk5OTIsImV4cCI6MjA5MjkwNTk5Mn0.UiV0Uaxv0fXb_sHuoIOJ2AGJKenUmfmFAzaifPY0A6Y';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Registration is handled only after the user submits the form below.
-        // Never insert a profile or password automatically on page load.
-
         function toggleTheme() {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            const newTheme = currentTheme === 'cool' ? 'dark' : 'cool';
+            const next = document.documentElement.getAttribute('data-theme') === 'cool' ? 'dark' : 'cool';
             const icon = document.getElementById('theme-icon');
             const text = document.getElementById('theme-text');
-            if (newTheme === 'cool') {
+            if (next === 'cool') {
                 document.documentElement.setAttribute('data-theme', 'cool');
-                icon.className = 'fas fa-sun';
-                text.textContent = 'Cool';
-                localStorage.setItem('tbos_theme', 'cool');
+                icon.className = 'fas fa-sun'; text.textContent = 'Cool';
             } else {
                 document.documentElement.removeAttribute('data-theme');
-                icon.className = 'fas fa-moon';
-                text.textContent = 'Dark';
-                localStorage.setItem('tbos_theme', 'dark');
+                icon.className = 'fas fa-moon'; text.textContent = 'Dark';
             }
+            localStorage.setItem('tbos_theme', next);
         }
-
         function togglePassword(inputId, eyeId) {
-            const passwordInput = document.getElementById(inputId);
-            const passwordEye = document.getElementById(eyeId);
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                passwordEye.classList.remove('fa-eye');
-                passwordEye.classList.add('fa-eye-slash');
-            } else {
-                passwordInput.type = 'password';
-                passwordEye.classList.remove('fa-eye-slash');
-                passwordEye.classList.add('fa-eye');
-            }
+            const input = document.getElementById(inputId);
+            const eye = document.getElementById(eyeId);
+            input.type = input.type === 'password' ? 'text' : 'password';
+            eye.classList.toggle('fa-eye', input.type === 'password');
+            eye.classList.toggle('fa-eye-slash', input.type === 'text');
         }
-
         function previewPhoto(input) {
             if (input.files && input.files[0]) {
                 const file = input.files[0];
                 if (file.size > 2097152) {
-                    alert('File size must be less than 2MB');
-                    input.value = '';
-                    return;
+                    alert('File size must be less than 2MB'); input.value = ''; return;
                 }
                 const reader = new FileReader();
-                reader.onload = function(e) {
+                reader.onload = e => {
                     document.getElementById('photo-img').src = e.target.result;
                     document.getElementById('photo-preview').classList.add('has-image');
-                }
+                };
                 reader.readAsDataURL(file);
             }
         }
-
         window.addEventListener('DOMContentLoaded', function() {
-            const savedTheme = localStorage.getItem('tbos_theme');
-            if (savedTheme === 'cool') {
+            if (localStorage.getItem('tbos_theme') === 'cool') {
                 document.documentElement.setAttribute('data-theme', 'cool');
                 document.getElementById('theme-icon').className = 'fas fa-sun';
                 document.getElementById('theme-text').textContent = 'Cool';
             }
+            // Public registration is a request only: role, password and photo are not collected.
+            document.querySelector('.photo-upload')?.remove();
+            ['reg-role', 'reg-password', 'reg-confirm'].forEach(id => {
+                const field = document.getElementById(id);
+                if (field) {
+                    field.required = false;
+                    const group = field.closest('.form-group');
+                    if (group) group.remove();
+                }
+            });
+            const submitLabel = document.querySelector('#btn-submit span');
+            if (submitLabel) submitLabel.textContent = 'Submit Registration Request';
         });
-
         document.getElementById('register-form').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const password = document.getElementById('reg-password').value;
-            const confirm = document.getElementById('reg-confirm').value;
-            const btnSubmit = document.getElementById('btn-submit');
-            const errorMessage = document.getElementById('error-message');
+            const button = document.getElementById('btn-submit');
+            const errorBox = document.getElementById('error-message');
             const errorText = document.getElementById('error-text');
-            const successMessage = document.getElementById('success-message');
-            if (password !== confirm) {
-                errorMessage.style.display = 'flex';
-                errorText.textContent = 'Passwords do not match!';
-                return;
-            }
-            if (password.length < 6) {
-                errorMessage.style.display = 'flex';
-                errorText.textContent = 'Password must be at least 6 characters';
-                return;
-            }
-            btnSubmit.disabled = true;
-            btnSubmit.innerHTML = '<div class="loading-spinner"></div> Registering...';
-            errorMessage.style.display = 'none';
-            successMessage.style.display = 'none';
+            const successBox = document.getElementById('success-message');
+            button.disabled = true;
+            button.innerHTML = '<div class="loading-spinner"></div> Submitting Request...';
+            errorBox.style.display = 'none'; successBox.style.display = 'none';
             try {
-                const formData = {
-                    email: document.getElementById('reg-email').value,
-                    password: password,
-                    name: document.getElementById('reg-name').value,
-                    role: document.getElementById('reg-role').value,
-                    hub: document.getElementById('reg-hub').value,
-                    phone: document.getElementById('reg-phone').value,
-                    address: document.getElementById('reg-address').value,
-                    location: document.getElementById('reg-location').value,
-                    status: 'Pending Approval',
-                    score: 0,
-                    jobs_logged: 0,
-                    jobs_completed: 0,
-                    revenue_generated: 0,
-                    created_at: new Date().toISOString()
+                const request = {
+                    name: document.getElementById('reg-name').value.trim(),
+                    email: document.getElementById('reg-email').value.trim().toLowerCase(),
+                    phone: document.getElementById('reg-phone').value.trim(),
+                    requested_hub: document.getElementById('reg-hub').value,
+                    address: document.getElementById('reg-address').value.trim() || null,
+                    location: document.getElementById('reg-location').value.trim() || null
                 };
-                const { data: result, error } = await supabase
-                    .from('users')
-                    .insert([formData])
-                    .select();
-                if (error) throw error;
-                successMessage.style.display = 'flex';
-                document.getElementById('success-text').textContent = 'Registration successful! Your account is pending admin approval.';
-                setTimeout(() => {
-                    window.location.href = 'index.html';
-                }, 3000);
-            } catch (error) {
-                console.error('❌ Registration error:', error);
-                errorMessage.style.display = 'flex';
-                let errorMsg = 'Registration failed: ' + error.message;
-                if (error.message?.includes('duplicate')) {
-                    errorMsg = 'Email already exists. Please use a different email.';
+                if (!request.name || !request.email || !request.phone || !request.requested_hub) {
+                    throw new Error('Please complete all required fields.');
                 }
-                errorText.textContent = errorMsg;
-                btnSubmit.disabled = false;
-                btnSubmit.innerHTML = '<i class="fas fa-user-plus"></i> Register (Pending Approval)';
+                const { error } = await supabase.from('registration_requests').insert([request]);
+                if (error) throw error;
+                successBox.style.display = 'flex';
+                document.getElementById('success-text').textContent = 'Your registration request has been submitted for admin review. No account is active until approved.';
+                document.getElementById('register-form').reset();
+                button.innerHTML = '<i class="fas fa-check"></i> Request Submitted';
+            } catch (error) {
+                console.error('Registration request error:', error);
+                errorBox.style.display = 'flex';
+                errorText.textContent = error.message || 'Could not submit your request. Please try again.';
+                button.disabled = false;
+                button.innerHTML = '<i class="fas fa-user-plus"></i> Submit Registration Request';
             }
         });
         window.toggleTheme = toggleTheme;
