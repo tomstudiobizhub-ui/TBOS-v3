@@ -91,3 +91,27 @@ SELECT schemaname, tablename, policyname, permissive, roles, cmd,
 FROM pg_policies
 WHERE schemaname = 'public'
 ORDER BY tablename, policyname;
+
+-- 12. Read-only column/type inventory needed before routing RPC implementation.
+-- Returns schema metadata only; no business records or personal values.
+SELECT table_name, ordinal_position, column_name, data_type, udt_name,
+       is_nullable, column_default
+FROM information_schema.columns
+WHERE table_schema = 'public'
+  AND table_name IN ('jobs', 'users', 'daily_reports', 'announcements')
+ORDER BY table_name, ordinal_position;
+
+-- 13. Read-only constraints/indexes for jobs and users.
+SELECT tc.table_name, tc.constraint_name, tc.constraint_type,
+       kcu.column_name, ccu.table_name AS referenced_table,
+       ccu.column_name AS referenced_column
+FROM information_schema.table_constraints tc
+LEFT JOIN information_schema.key_column_usage kcu
+  ON tc.constraint_schema = kcu.constraint_schema
+ AND tc.constraint_name = kcu.constraint_name
+LEFT JOIN information_schema.constraint_column_usage ccu
+  ON tc.constraint_schema = ccu.constraint_schema
+ AND tc.constraint_name = ccu.constraint_name
+WHERE tc.table_schema = 'public'
+  AND tc.table_name IN ('jobs', 'users')
+ORDER BY tc.table_name, tc.constraint_type, tc.constraint_name, kcu.ordinal_position;
