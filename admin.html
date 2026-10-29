@@ -562,11 +562,10 @@
 
         async function approveStaff(staffId) {
             try {
-                const { data: result, error } = await supabase
-                    .from('users')
-                    .update({ status: 'Active' })
-                    .eq('id', staffId)
-                    .select();
+                const { error } = await supabase.rpc('tbos_admin_set_profile_status', {
+                    target_profile_id: staffId,
+                    new_status: 'Active'
+                });
                 if (error) throw error;
                 addNotification('approval', 'Staff Approved', 'Staff member has been approved and can now login');
                 alert('Staff approved successfully!');
@@ -579,11 +578,10 @@
         async function rejectStaff(staffId) {
             if (confirm('Are you sure you want to reject this staff member?')) {
                 try {
-                    const { data: result, error } = await supabase
-                        .from('users')
-                        .update({ status: 'Rejected' })
-                        .eq('id', staffId)
-                        .select();
+                    const { error } = await supabase.rpc('tbos_admin_set_profile_status', {
+                        target_profile_id: staffId,
+                        new_status: 'Rejected'
+                    });
                     if (error) throw error;
                     alert('Staff rejected.');
                     loadAdminData();
@@ -599,7 +597,11 @@
                     const users = await API.get('users');
                     const pendingStaff = users.filter(u => u.status === 'Pending Approval');
                     for (const user of pendingStaff) {
-                        await supabase.from('users').update({ status: 'Active' }).eq('id', user.id);
+                        const { error } = await supabase.rpc('tbos_admin_set_profile_status', {
+                            target_profile_id: user.id,
+                            new_status: 'Active'
+                        });
+                        if (error) throw error;
                     }
                     addNotification('approval', 'Bulk Approval', `${pendingStaff.length} staff members approved`);
                     alert('All staff approved successfully!');
