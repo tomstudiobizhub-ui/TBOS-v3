@@ -55,6 +55,8 @@
 
         try {
             supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            // Expose the existing client for authenticated modules; never expose a service-role key.
+            window.TBOS_SUPABASE = supabaseClient;
             initialized = true;
 
             console.log('✅ TBOS v3.0 - Supabase Connected');

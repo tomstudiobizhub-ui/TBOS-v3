@@ -99,6 +99,7 @@
             <a href="staff.html" class="nav-item"><i class="fas fa-users"></i> Staff & ID Cards</a>
             <a href="inventory.html" class="nav-item"><i class="fas fa-boxes"></i> Inventory</a>
             <a href="clients.html" class="nav-item"><i class="fas fa-user-friends"></i> Client Portal</a>
+            <a href="tech-in-schools.html" class="nav-item"><i class="fas fa-school"></i> Tech in Schools</a>
             <div class="nav-section">Knowledge</div>
             <a href="knowledge.html" class="nav-item"><i class="fas fa-book"></i> Knowledge Center</a>
             <a href="reports.html" class="nav-item"><i class="fas fa-chart-line"></i> Reports</a>
@@ -130,7 +131,7 @@
                     <div class="stat-value text-warning" id="stat-pending">0</div>
                     <div class="stat-label">Pending Approval</div>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card" id="revenue-card">
                     <div class="stat-value text-success" id="stat-revenue">₦0</div>
                     <div class="stat-label">Monthly Revenue</div>
                 </div>
@@ -147,7 +148,7 @@
                     <p style="color: var(--text-muted);">Loading announcements...</p>
                 </div>
             </div>
-            <div class="panel">
+            <div class="panel" id="leaderboard-panel">
                 <div class="panel-header">
                     <div class="panel-title"><i class="fas fa-trophy"></i> Top Performers This Month</div>
                 </div>
@@ -179,6 +180,11 @@
     </main>
     <script>
         let currentUser = null;
+
+        function isDashboardAdmin(user) {
+            const role = String(user?.role || user?.user_role || '').trim().toLowerCase();
+            return role === 'admin' || role === 'administrator';
+        }
 
         function toggleTheme() {
             const currentTheme = document.documentElement.getAttribute('data-theme');
@@ -218,6 +224,12 @@
             }
             
             currentUser = JSON.parse(savedUser);
+            // UI privacy only: the underlying jobs API still needs verified server-side RLS.
+            const adminView = isDashboardAdmin(currentUser);
+            const revenueCard = document.getElementById('revenue-card');
+            if (revenueCard && !adminView) revenueCard.style.display = 'none';
+            const leaderboardPanel = document.getElementById('leaderboard-panel');
+            if (leaderboardPanel && !adminView) leaderboardPanel.style.display = 'none';
             document.getElementById('user-name').textContent = currentUser.name || currentUser.email;
             document.getElementById('user-hub').textContent = currentUser.hub || 'N/A';
             
