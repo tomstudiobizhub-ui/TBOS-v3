@@ -84,154 +84,43 @@
     // ============================================
     const API = {
         async get(collection, id = null) {
-            console.log(`📥 GET: ${collection}`, id || 'all');
-
-            try {
-                if (!ensureSupabase()) {
-                    throw new Error('Supabase not initialized');
-                }
-
-                let query = supabaseClient.from(collection).select('*');
-
-                if (id !== null) {
-                    query = query.eq('id', id).single();
-                }
-
-                const { data, error } = await query;
-
-                if (error) throw error;
-
-                if (!id && Array.isArray(data)) {
-                    saveLocalData(collection, data);
-                }
-
-                return data || [];
-            } catch (error) {
-                console.error('❌ GET Error:', error);
-
-                const localData = getLocalData(collection);
-
-                if (id !== null) {
-                    return localData.find(item => item.id == id) || null;
-                }
-
-                return localData;
+            if (!ensureSupabase()) throw new Error('Supabase is unavailable; no cached data was used.');
+            let query = supabaseClient.from(collection).select('*');
+            if (id !== null) query = query.eq('id', id).single();
+            const { data, error } = await query;
+            if (error) {
+                console.error('GET failed:', collection, error);
+                throw error;
             }
+            return data ?? (id !== null ? null : []);
         },
-
         async create(collection, payload) {
-            console.log(`📝 CREATE: ${collection}`, payload);
-
-            try {
-                if (!ensureSupabase()) {
-                    throw new Error('Supabase not initialized');
-                }
-
-                const { data, error } = await supabaseClient
-                    .from(collection)
-                    .insert([payload])
-                    .select()
-                    .single();
-
-                if (error) throw error;
-
-                const localData = getLocalData(collection);
-                localData.push(data);
-                saveLocalData(collection, localData);
-
-                return {
-                    success: true,
-                    data: data
-                };
-            } catch (error) {
-                console.error('❌ CREATE Error:', error);
-
-                payload.id = Date.now().toString();
-
-                const localData = getLocalData(collection);
-                localData.push(payload);
-                saveLocalData(collection, localData);
-
-                return {
-                    success: true,
-                    data: payload,
-                    offline: true
-                };
+            if (!ensureSupabase()) return { success: false, error: 'Supabase is unavailable.' };
+            const { data, error } = await supabaseClient.from(collection).insert([payload]).select().single();
+            if (error) {
+                console.error('CREATE failed:', collection, error);
+                return { success: false, error: error.message };
             }
+            return { success: true, data };
         },
-
         async update(collection, payload) {
-            console.log(`🔄 UPDATE: ${collection}`, payload);
-
-            try {
-                if (!ensureSupabase()) {
-                    throw new Error('Supabase not initialized');
-                }
-
-                const { data, error } = await supabaseClient
-                    .from(collection)
-                    .update(payload)
-                    .eq('id', payload.id)
-                    .select()
-                    .single();
-
-                if (error) throw error;
-
-                const localData = getLocalData(collection);
-                const index = localData.findIndex(item => item.id == payload.id);
-
-                if (index !== -1) {
-                    localData[index] = data;
-                    saveLocalData(collection, localData);
-                }
-
-                return {
-                    success: true,
-                    data: data
-                };
-            } catch (error) {
-                console.error('❌ UPDATE Error:', error);
-
-                const localData = getLocalData(collection);
-                const index = localData.findIndex(item => item.id == payload.id);
-
-                if (index !== -1) {
-                    localData[index] = payload;
-                    saveLocalData(collection, localData);
-                }
-
-                return {
-                    success: true,
-                    data: payload,
-                    offline: true
-                };
+            if (!ensureSupabase()) return { success: false, error: 'Supabase is unavailable.' };
+            if (!payload || payload.id == null) return { success: false, error: 'A record id is required.' };
+            const { data, error } = await supabaseClient.from(collection).update(payload).eq('id', payload.id).select().single();
+            if (error) {
+                console.error('UPDATE failed:', collection, error);
+                return { success: false, error: error.message };
             }
+            return { success: true, data };
         },
-
         async delete(collection, id) {
-            console.log(`🗑️ DELETE: ${collection}`, id);
-
-            try {
-                if (ensureSupabase()) {
-                    const { error } = await supabaseClient
-                        .from(collection)
-                        .delete()
-                        .eq('id', id);
-
-                    if (error) throw error;
-                }
-            } catch (error) {
-                console.error('❌ DELETE Error:', error);
+            if (!ensureSupabase()) return { success: false, error: 'Supabase is unavailable.' };
+            const { error, count } = await supabaseClient.from(collection).delete({ count: 'exact' }).eq('id', id);
+            if (error) {
+                console.error('DELETE failed:', collection, error);
+                return { success: false, error: error.message };
             }
-
-            const localData = getLocalData(collection);
-            const filtered = localData.filter(item => item.id != id);
-
-            saveLocalData(collection, filtered);
-
-            return {
-                success: true
-            };
+            return { success: true, count };
         }
     };
 
