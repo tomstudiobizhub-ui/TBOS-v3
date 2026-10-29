@@ -237,130 +237,96 @@
         </div>
     </div>
     <script>
-        // Theme Toggle
         function toggleTheme() {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            const newTheme = currentTheme === 'cool' ? 'dark' : 'cool';
+            const next = document.documentElement.getAttribute('data-theme') === 'cool' ? 'dark' : 'cool';
             const icon = document.getElementById('theme-icon');
             const text = document.getElementById('theme-text');
-            if (newTheme === 'cool') {
+            if (next === 'cool') {
                 document.documentElement.setAttribute('data-theme', 'cool');
-                icon.className = 'fas fa-sun';
-                text.textContent = 'Cool';
-                localStorage.setItem('tbos_theme', 'cool');
+                icon.className = 'fas fa-sun'; text.textContent = 'Cool';
             } else {
                 document.documentElement.removeAttribute('data-theme');
-                icon.className = 'fas fa-moon';
-                text.textContent = 'Dark';
-                localStorage.setItem('tbos_theme', 'dark');
+                icon.className = 'fas fa-moon'; text.textContent = 'Dark';
             }
+            localStorage.setItem('tbos_theme', next);
         }
-
-        // Password Toggle
         function togglePassword() {
-            const passwordInput = document.getElementById('login-password');
-            const passwordEye = document.getElementById('password-eye');
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                passwordEye.classList.remove('fa-eye');
-                passwordEye.classList.add('fa-eye-slash');
-            } else {
-                passwordInput.type = 'password';
-                passwordEye.classList.remove('fa-eye-slash');
-                passwordEye.classList.add('fa-eye');
-            }
+            const input = document.getElementById('login-password');
+            const eye = document.getElementById('password-eye');
+            input.type = input.type === 'password' ? 'text' : 'password';
+            eye.classList.toggle('fa-eye', input.type === 'password');
+            eye.classList.toggle('fa-eye-slash', input.type === 'text');
         }
-
-        // Check if already logged in
-        window.addEventListener('DOMContentLoaded', function() {
+        async function getSafeProfile(client) {
+            const { data, error } = await client.rpc('tbos_my_safe_profile');
+            if (error) throw error;
+            if (!data || !data.id || String(data.status).toLowerCase() !== 'active') {
+                throw new Error('No active TBOS profile is linked to this login. Contact an administrator.');
+            }
+            return data;
+        }
+        window.addEventListener('DOMContentLoaded', async function() {
             const savedTheme = localStorage.getItem('tbos_theme');
             if (savedTheme === 'cool') {
                 document.documentElement.setAttribute('data-theme', 'cool');
                 document.getElementById('theme-icon').className = 'fas fa-sun';
                 document.getElementById('theme-text').textContent = 'Cool';
             }
-            const savedUser = localStorage.getItem('currentUser');
-            if (savedUser) {
-                const user = JSON.parse(savedUser);
-                setTimeout(() => {
-                    if (user.role === 'Administrator') {
-                        window.location.href = 'admin.html';
-                    } else {
-                        window.location.href = 'dashboard.html';
-                    }
-                }, 500);
+            const client = window.TBOS_SUPABASE;
+            if (!client) return;
+            try {
+                const { data: { session }, error } = await client.auth.getSession();
+                if (error) throw error;
+                if (session) {
+                    const profile = await getSafeProfile(client);
+                    localStorage.setItem('currentUser', JSON.stringify(profile));
+                    localStorage.setItem('currentStaffId', profile.id);
+                    window.location.replace(profile.role === 'Administrator' ? 'admin.html' : 'dashboard.html');
+                } else {
+                    localStorage.removeItem('currentUser');
+                    localStorage.removeItem('currentStaffId');
+                }
+            } catch (error) {
+                console.warn('Existing session could not be validated:', error.message);
+                localStorage.removeItem('currentUser');
+                localStorage.removeItem('currentStaffId');
             }
         });
-
-        // Login Form
         document.getElementById('login-form').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const email = document.getElementById('login-email').value;
+            const email = document.getElementById('login-email').value.trim().toLowerCase();
             const password = document.getElementById('login-password').value;
-            const btnSubmit = document.getElementById('btn-submit');
-            const errorMessage = document.getElementById('error-message');
+            const button = document.getElementById('btn-submit');
+            const errorBox = document.getElementById('error-message');
             const errorText = document.getElementById('error-text');
-            const successMessage = document.getElementById('success-message');
-
-            btnSubmit.disabled = true;
-            btnSubmit.innerHTML = '<div class="loading-spinner"></div> Signing In...';
-            errorMessage.style.display = 'none';
-            successMessage.style.display = 'none';
-
+            const successBox = document.getElementById('success-message');
+            button.disabled = true;
+            button.innerHTML = '<div class="loading-spinner"></div> Signing In...';
+            errorBox.style.display = 'none'; successBox.style.display = 'none';
             try {
-                // Check if API is available
-                if (typeof API === 'undefined') {
-                    throw new Error('API not loaded. Please refresh the page.');
-                }
-
-                // Get users from Google Sheets
-                const users = await API.get('users');
-                console.log('Users loaded:', users.length);
-
-                // Find user by email
-                const user = users.find(u => u.email === email);
-                console.log('User found:', user);
-
-                if (!user) {
-                    throw new Error('User not found. Please check your email or register first.');
-                }
-
-                // Check password
-                if (user.password !== password) {
-                    throw new Error('Incorrect password. Please try again.');
-                }
-
-                // Check status
-                if (user.status !== 'Active') {
-                    throw new Error('Account not active. Contact admin for approval.');
-                }
-
-                // Save user session
-                localStorage.setItem('currentUser', JSON.stringify(user));
-                localStorage.setItem('currentStaffId', user.id || email);
-
-                successMessage.style.display = 'flex';
-                document.getElementById('success-text').textContent = 'Login successful! Redirecting...';
-
-                setTimeout(() => {
-                    if (user.role === 'Administrator') {
-                        window.location.href = 'admin.html';
-                    } else {
-                        window.location.href = 'dashboard.html';
-                    }
-                }, 1000);
-
+                const client = window.TBOS_SUPABASE;
+                if (!client) throw new Error('Authentication service is unavailable. Refresh and try again.');
+                const { error: signInError } = await client.auth.signInWithPassword({ email, password });
+                if (signInError) throw signInError;
+                const profile = await getSafeProfile(client);
+                localStorage.setItem('currentUser', JSON.stringify(profile));
+                localStorage.setItem('currentStaffId', profile.id);
+                successBox.style.display = 'flex';
+                document.getElementById('success-text').textContent = 'Login successful. Redirecting...';
+                window.location.replace(profile.role === 'Administrator' ? 'admin.html' : 'dashboard.html');
             } catch (error) {
                 console.error('Login error:', error);
-                errorMessage.style.display = 'flex';
-                errorText.textContent = 'Login failed: ' + error.message;
-                btnSubmit.disabled = false;
-                btnSubmit.innerHTML = '<i class="fas fa-sign-in-alt"></i> Secure Sign In';
+                errorBox.style.display = 'flex';
+                errorText.textContent = error.message || 'Sign-in failed. Check your details or contact an administrator.';
+                const client = window.TBOS_SUPABASE;
+                if (client) await client.auth.signOut().catch(() => {});
+                localStorage.removeItem('currentUser');
+                localStorage.removeItem('currentStaffId');
+                button.disabled = false;
+                button.innerHTML = '<i class="fas fa-sign-in-alt"></i> Secure Sign In';
                 document.getElementById('login-password').value = '';
             }
         });
-
-        // Make functions global
         window.toggleTheme = toggleTheme;
         window.togglePassword = togglePassword;
     </script>
