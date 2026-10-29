@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tbos-v3-cache-v1';
+const CACHE_NAME = 'tbos-v3-cache-v2';
 const OFFLINE_URL = './offline.html';
 
 const urlsToCache = [
@@ -15,6 +15,7 @@ const urlsToCache = [
     './register.html',
     './admin-gate.html',
     './config.js',
+    './assets/tbos-responsive.css',
     './app.js',
     './manifest.json',
     './offline.html',
