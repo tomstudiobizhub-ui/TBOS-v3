@@ -16,6 +16,7 @@ const urlsToCache = [
     './admin-gate.html',
     './config.js',
     './assets/tbos-responsive.css',
+    './assets/tbos-responsive.css?v=1',
     './app.js',
     './manifest.json',
     './offline.html',
