@@ -1093,53 +1093,7 @@
 
         // Update Job Stage - Only updates stage, preserves all data
         function updateJobStage() {
-            if (!currentJob || !selectedStage) {
-                alert('Please select a stage first');
-                return;
-            }
-            if (selectedStage === currentJob.stage) {
-                alert('Job is already at this stage');
-                return;
-            }
-            if (confirm('Move job from "' + currentJob.stage + '" to "' + selectedStage + '"?')) {
-                // ✅ FIX: Only update the stage field, preserve ALL other data
-                const updateData = {
-                    id: currentJob.id,
-                    stage: selectedStage,
-                    // Preserve all other fields
-                    tracking_id: currentJob.tracking_id || currentJob.trackingId,
-                    client_name: currentJob.client_name || currentJob.client,
-                    client_phone: currentJob.client_phone || currentJob.phone,
-                    client_email: currentJob.client_email || currentJob.email,
-                    hub: currentJob.hub,
-                    description: currentJob.description,
-                    amount: currentJob.amount,
-                    paid: currentJob.paid,
-                    balance: currentJob.balance,
-                    payment_status: currentJob.payment_status,
-                    status: currentJob.status,
-                    delivery_date: currentJob.delivery_date,
-                    // ✅ Preserve expense fields
-                    exp_materials: currentJob.exp_materials,
-                    exp_labor: currentJob.exp_labor,
-                    exp_other: currentJob.exp_other,
-                    total_expenses: currentJob.total_expenses,
-                    profit: currentJob.profit
-                };
-                
-                API.update('jobs', updateData).then(result => {
-                    if (result.success) {
-                        alert('Job stage updated successfully!');
-                        currentJob.stage = selectedStage;
-                        renderRoutingStages(selectedStage);
-                        loadJobs();
-                    } else {
-                        alert('Error updating stage: ' + (result.error || 'Unknown error'));
-                    }
-                }).catch(error => {
-                    alert('Error: ' + error.message);
-                });
-            }
+            alert('Direct stage changes have been disabled for security. The secure hub-routing workflow must be used to request a handoff, obtain destination approval, and record receiving-hub acceptance. No job data was changed.');
         }
 
         // Show Invoice
