@@ -60,7 +60,7 @@ CREATE OR REPLACE FUNCTION public.tbos_admin_list_profiles()
 RETURNS jsonb
 LANGUAGE plpgsql STABLE SECURITY DEFINER
 SET search_path = ''
-AS $
+AS $$
 DECLARE result jsonb;
 BEGIN
   IF NOT coalesce(public.tbos_is_admin(), false) THEN
@@ -77,7 +77,7 @@ BEGIN
   FROM public.users AS u;
   RETURN result;
 END
-$;
+$$;
 
 CREATE OR REPLACE FUNCTION public.tbos_admin_set_profile_status(
   target_profile_id uuid,
@@ -86,7 +86,7 @@ CREATE OR REPLACE FUNCTION public.tbos_admin_set_profile_status(
 RETURNS boolean
 LANGUAGE plpgsql SECURITY DEFINER
 SET search_path = ''
-AS $
+AS $$
 BEGIN
   IF NOT coalesce(public.tbos_is_admin(), false) THEN
     RAISE EXCEPTION 'Administrator permission required' USING ERRCODE = '42501';
@@ -100,7 +100,7 @@ BEGIN
   END IF;
   RETURN true;
 END
-$;
+$$;
 
 REVOKE ALL ON FUNCTION public.tbos_admin_list_profiles() FROM PUBLIC, anon;
 REVOKE ALL ON FUNCTION public.tbos_admin_set_profile_status(uuid, text) FROM PUBLIC, anon;
