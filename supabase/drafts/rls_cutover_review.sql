@@ -55,6 +55,58 @@ GRANT EXECUTE ON FUNCTION public.tbos_my_role() TO authenticated;
 GRANT EXECUTE ON FUNCTION public.tbos_can_manage_hub(text) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.tbos_can_access_profile(uuid) TO authenticated;
 
+-- Safe admin profile operations; never return the legacy password or auth_user_id.
+CREATE OR REPLACE FUNCTION public.tbos_admin_list_profiles()
+RETURNS jsonb
+LANGUAGE plpgsql STABLE SECURITY DEFINER
+SET search_path = ''
+AS $
+DECLARE result jsonb;
+BEGIN
+  IF NOT coalesce(public.tbos_is_admin(), false) THEN
+    RAISE EXCEPTION 'Administrator permission required' USING ERRCODE = '42501';
+  END IF;
+  SELECT coalesce(jsonb_agg(jsonb_build_object(
+    'id', u.id, 'email', u.email, 'name', u.name, 'role', u.role,
+    'hub', u.hub, 'phone', u.phone, 'address', u.address, 'location', u.location,
+    'status', u.status, 'score', u.score, 'jobs_logged', u.jobs_logged,
+    'jobs_completed', u.jobs_completed, 'revenue_generated', u.revenue_generated,
+    'photo', u.photo, 'created_at', u.created_at
+  ) ORDER BY u.created_at DESC), '[]'::jsonb)
+  INTO result
+  FROM public.users AS u;
+  RETURN result;
+END
+$;
+
+CREATE OR REPLACE FUNCTION public.tbos_admin_set_profile_status(
+  target_profile_id uuid,
+  new_status text
+)
+RETURNS boolean
+LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = ''
+AS $
+BEGIN
+  IF NOT coalesce(public.tbos_is_admin(), false) THEN
+    RAISE EXCEPTION 'Administrator permission required' USING ERRCODE = '42501';
+  END IF;
+  IF new_status NOT IN ('Active', 'Rejected', 'Pending Approval') THEN
+    RAISE EXCEPTION 'Invalid profile status';
+  END IF;
+  UPDATE public.users SET status = new_status WHERE id = target_profile_id;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Profile not found';
+  END IF;
+  RETURN true;
+END
+$;
+
+REVOKE ALL ON FUNCTION public.tbos_admin_list_profiles() FROM PUBLIC, anon;
+REVOKE ALL ON FUNCTION public.tbos_admin_set_profile_status(uuid, text) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.tbos_admin_list_profiles() TO authenticated;
+GRANT EXECUTE ON FUNCTION public.tbos_admin_set_profile_status(uuid, text) TO authenticated;
+
 -- Remove every existing policy on these tables, including broad policies with USING (true).
 DO $$
 DECLARE p record;
