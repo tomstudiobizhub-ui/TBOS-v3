@@ -172,7 +172,8 @@ CREATE POLICY daily_reports_update_scope ON public.daily_reports
     OR public.tbos_can_manage_hub(hub)
   )
   WITH CHECK (
-    staff_id = public.tbos_my_profile_id()
+    (staff_id = public.tbos_my_profile_id()
+      AND lower(trim(hub)) = lower(trim(coalesce(public.tbos_my_hub(), ''))))
     OR coalesce(public.tbos_is_admin(), false)
     OR public.tbos_can_manage_hub(hub)
   );
