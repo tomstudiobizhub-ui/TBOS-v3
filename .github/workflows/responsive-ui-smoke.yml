@@ -1,0 +1,45 @@
+name: Responsive UI smoke tests
+
+on:
+  push:
+    branches: [main, test/responsive-browser-smoke-tests]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  responsive-ui:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install browser test dependency
+        run: npm install --no-save playwright
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Start static site
+        run: |
+          mkdir -p test-results
+          python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/tbos-http.log 2>&1 &
+          echo $! > /tmp/tbos-http.pid
+          for attempt in $(seq 1 30); do
+            if curl --silent --fail http://127.0.0.1:4173/index.html >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/tbos-http.log
+          exit 1
+      - name: Test all pages at mobile, tablet and desktop sizes
+        run: node tests/ui-smoke.js
+      - name: Upload screenshots and diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tbos-responsive-ui-test-results
+          path: test-results/
+          if-no-files-found: warn
+          retention-days: 14
