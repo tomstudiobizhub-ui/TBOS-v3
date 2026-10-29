@@ -85,6 +85,22 @@
     const API = {
         async get(collection, id = null) {
             if (!ensureSupabase()) throw new Error('Supabase is unavailable; no cached data was used.');
+            if (collection === 'users') {
+                if (id !== null) {
+                    const { data: profile, error: profileError } = await supabaseClient.rpc('tbos_my_safe_profile');
+                    if (profileError) throw profileError;
+                    return profile && profile.id === id ? profile : null;
+                }
+                const { data: profile, error: profileError } = await supabaseClient.rpc('tbos_my_safe_profile');
+                if (profileError) throw profileError;
+                if (!profile) return [];
+                if (profile.role === 'Administrator') {
+                    const { data, error } = await supabaseClient.rpc('tbos_admin_list_profiles');
+                    if (error) throw error;
+                    return Array.isArray(data) ? data : [];
+                }
+                return [profile];
+            }
             let query = supabaseClient.from(collection).select('*');
             if (id !== null) query = query.eq('id', id).single();
             const { data, error } = await query;
