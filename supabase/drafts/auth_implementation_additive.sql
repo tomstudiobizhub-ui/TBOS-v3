@@ -40,45 +40,31 @@ CREATE POLICY registration_requests_submit
     WITH CHECK (status = 'Pending Approval');
 
 -- Return only the signed-in user's safe profile fields. Never expose password or mapping ID.
+-- JSON avoids assuming legacy numeric column types in this draft.
 CREATE OR REPLACE FUNCTION public.tbos_my_safe_profile()
-RETURNS TABLE (
-    id uuid,
-    email text,
-    name text,
-    role text,
-    hub text,
-    phone text,
-    address text,
-    location text,
-    photo text,
-    status text,
-    score numeric,
-    jobs_logged numeric,
-    jobs_completed numeric,
-    revenue_generated numeric,
-    created_at timestamptz
-)
+RETURNS jsonb
 LANGUAGE sql
 STABLE
 SECURITY DEFINER
 SET search_path = ''
 AS $function$
-    SELECT
-        u.id,
-        u.email,
-        u.name,
-        u.role,
-        u.hub,
-        u.phone,
-        u.address,
-        u.location,
-        u.photo,
-        u.status,
-        u.score,
-        u.jobs_logged,
-        u.jobs_completed,
-        u.revenue_generated,
-        u.created_at
+    SELECT jsonb_build_object(
+        'id', u.id,
+        'email', u.email,
+        'name', u.name,
+        'role', u.role,
+        'hub', u.hub,
+        'phone', u.phone,
+        'address', u.address,
+        'location', u.location,
+        'photo', u.photo,
+        'status', u.status,
+        'score', u.score,
+        'jobs_logged', u.jobs_logged,
+        'jobs_completed', u.jobs_completed,
+        'revenue_generated', u.revenue_generated,
+        'created_at', u.created_at
+    )
     FROM public.users AS u
     WHERE u.auth_user_id = auth.uid()
       AND lower(trim(coalesce(u.status, ''))) = 'active'
