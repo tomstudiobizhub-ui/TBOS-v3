@@ -190,8 +190,12 @@ CREATE POLICY jobs_select_hub ON public.jobs
          OR lower(trim(hub)) = lower(trim(coalesce(public.tbos_my_hub(), ''))));
 CREATE POLICY jobs_insert_hub ON public.jobs
   FOR INSERT TO authenticated
-  WITH CHECK (coalesce(public.tbos_is_admin(), false)
-         OR lower(trim(hub)) = lower(trim(coalesce(public.tbos_my_hub(), ''))));
+  WITH CHECK (
+    (coalesce(public.tbos_is_admin(), false)
+      OR lower(trim(hub)) = lower(trim(coalesce(public.tbos_my_hub(), ''))))
+    AND (created_by IS NULL OR created_by = public.tbos_my_profile_id()
+      OR coalesce(public.tbos_is_admin(), false))
+  );
 CREATE POLICY jobs_update_hub ON public.jobs
   FOR UPDATE TO authenticated
   USING (coalesce(public.tbos_is_admin(), false)
@@ -219,7 +223,8 @@ CREATE POLICY daily_reports_insert_scope ON public.daily_reports
 CREATE POLICY daily_reports_update_scope ON public.daily_reports
   FOR UPDATE TO authenticated
   USING (
-    staff_id = public.tbos_my_profile_id()
+    (staff_id = public.tbos_my_profile_id()
+      AND lower(trim(hub)) = lower(trim(coalesce(public.tbos_my_hub(), ''))))
     OR coalesce(public.tbos_is_admin(), false)
     OR public.tbos_can_manage_hub(hub)
   )
