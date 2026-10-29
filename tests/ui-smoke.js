@@ -31,6 +31,14 @@ const viewports = [
         });
 
         try {
+          // Seed a non-sensitive demo profile so protected pages can render their UI
+          // during layout tests without using any real account or password.
+          if (!['index.html', 'register.html', 'offline.html'].includes(route)) {
+            await page.addInitScript(() => {
+              localStorage.setItem('currentUser', JSON.stringify({ id: 'ui-smoke-test', name: 'UI Test', email: 'ui-test@example.invalid', role: 'Administrator', hub: 'Test Hub', status: 'Active' }));
+              localStorage.setItem('currentStaffId', 'ui-smoke-test');
+            });
+          }
           await page.goto(`http://127.0.0.1:4173/${route}`, { waitUntil: 'domcontentloaded', timeout: 15000 });
           await page.waitForTimeout(700);
           const result = await page.evaluate(() => {
