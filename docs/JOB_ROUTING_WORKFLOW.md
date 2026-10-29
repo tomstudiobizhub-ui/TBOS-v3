@@ -11,7 +11,7 @@ Allow a job to move between hubs that perform the work. When a hub finishes its 
 1. **Create job.** A job is created with its originating/current hub and existing tracking ID. The job retains its existing UUID and creator reference.
 2. **Work at current hub.** Authorized staff in the current hub see the job in their work queue and update permitted work details.
 3. **Request handoff.** When the current hub finishes its stage, an authorized staff member chooses a destination hub from the allowed hub list, optionally chooses a next stage, adds a handoff note, and submits the request. The job is not silently moved just because a staff member edits the hub field.
-4. **Review handoff.** A secretary with the appropriate hub scope or an administrator reviews the request and approves or rejects it. An admin may override where needed; the action and reason are logged. Approval activates the handoff and makes the job visible in the receiving hub's queue.
+4. **Review handoff.** The destination hub's secretary, scoped to that hub, or any administrator reviews the request and approves or rejects it. An admin may override where needed; the action and reason are logged. Approval activates the handoff and makes the job visible in the receiving hub's queue.
 5. **Receiving hub performs work.** The receiving hub can acknowledge/accept the task, work on its stage, and request the next handoff when ready. If a route is designated in advance, the UI should suggest the configured next hub but allow an authorized override with a recorded reason.
 6. **Completion review.** When the final work is done, staff submit completion for review. A secretary or administrator approves final completion. Only then does the job enter its final completed state.
 7. **History.** The job detail view shows its route timeline: source hub, destination hub, stage, who requested the transfer, who approved/rejected it, timestamps, and notes.
@@ -56,7 +56,7 @@ This is a design sketch, not final SQL. Check the actual schema and app queries 
 - Active, Auth-mapped staff can request handoffs only for jobs they are permitted to work on in their current hub.
 - A request must derive requested_by from the authenticated identity/profile mapping, not trust a client-supplied staff ID.
 - The source hub must match the job's current authorized hub at request time.
-- Only an authorized secretary scoped to the relevant hub or an administrator may approve/reject a handoff. Define whether a source-hub secretary, destination-hub secretary, or both can approve; default proposal is destination-hub secretary or administrator.
+- Only the destination hub's secretary (scoped to that destination hub) or any administrator may approve/reject a handoff. A source-hub secretary cannot approve solely because they belong to the sending hub, unless they are also authorized for the destination hub. Administrators can approve across all hubs.
 - Receiving hub staff can see an approved incoming handoff only after approval; they cannot approve their own handoff unless explicitly allowed by policy.
 - Only authorized receiving-hub staff can accept and work on the incoming stage.
 - Final completion requires secretary/admin approval. Record the reviewer and timestamp.
@@ -88,8 +88,7 @@ The active label for the former CBT Center hub is Tech In Schools (TIS). Include
 - Existing job records, profile IDs, and foreign keys remain intact.
 - CBT Center legacy records remain understandable after the active hub label changes.
 
-## Decisions to confirm before implementation
+## Remaining decisions before implementation
 
-1. For handoff approval, should the approver be the destination hub's secretary or any secretary, with administrators able to approve all hubs? Recommended default: destination-hub secretary or administrator.
-2. Should the receiving hub explicitly click Accept, or should the approved handoff appear immediately in its active queue? Recommended default: show it in the incoming queue and require acceptance.
-3. Are hub routes usually predefined by job type, or should staff choose the next/designated hub per job with an admin/secretary override? Recommended default: support both route templates and per-job destination selection.
+1. Should the receiving hub explicitly click Accept, or should the approved handoff appear immediately in its active queue? Recommended default: show it in the incoming queue and require acceptance.
+2. Are hub routes usually predefined by job type, or should staff choose the next/designated hub per job with an admin/secretary override? Recommended default: support both route templates and per-job destination selection.
