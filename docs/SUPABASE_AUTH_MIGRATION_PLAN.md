@@ -69,6 +69,13 @@ Do not directly insert into auth.users with SQL. Use Supabase Auth invitation/pa
 - Compare pre/post counts and confirm original profile IDs and foreign-key relationships remain intact.
 - Only after verification, remove legacy password storage and old browser-based login logic in a separate migration.
 
+### Frontend cutover review
+
+- `docs/FRONTEND_AUTH_ROUTING_CUTOVER.md` records the frontend migration gates.
+- Current `index.html` still performs browser-side password comparison and stores the returned profile in `localStorage.currentUser`; this must be replaced by Supabase Auth and the safe-profile RPC.
+- Current `jobs.html` has a direct stage-update path. It must not be treated as secure routing; the frontend must use trusted handoff/review/acceptance/completion transitions.
+- The frontend changes are not yet implemented. Do not remove existing permissive database policies until the replacement frontend and policies are ready and tested together.
+
 ### Job-routing schema design draft
 
 - A schema-only draft now exists at `supabase/drafts/job_routing_schema.sql`.
