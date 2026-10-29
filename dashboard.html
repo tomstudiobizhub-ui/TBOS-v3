@@ -148,7 +148,7 @@
                     <p style="color: var(--text-muted);">Loading announcements...</p>
                 </div>
             </div>
-            <div class="panel">
+            <div class="panel" id="leaderboard-panel">
                 <div class="panel-header">
                     <div class="panel-title"><i class="fas fa-trophy"></i> Top Performers This Month</div>
                 </div>
@@ -228,7 +228,7 @@
             const adminView = isDashboardAdmin(currentUser);
             const revenueCard = document.getElementById('revenue-card');
             if (revenueCard && !adminView) revenueCard.style.display = 'none';
-            const leaderboardPanel = document.querySelector('.content-scroll .panel:nth-of-type(2)');
+            const leaderboardPanel = document.getElementById('leaderboard-panel');
             if (leaderboardPanel && !adminView) leaderboardPanel.style.display = 'none';
             document.getElementById('user-name').textContent = currentUser.name || currentUser.email;
             document.getElementById('user-hub').textContent = currentUser.hub || 'N/A';
