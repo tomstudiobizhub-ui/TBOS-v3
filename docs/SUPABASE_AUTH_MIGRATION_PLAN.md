@@ -69,6 +69,15 @@ Do not directly insert into auth.users with SQL. Use Supabase Auth invitation/pa
 - Compare pre/post counts and confirm original profile IDs and foreign-key relationships remain intact.
 - Only after verification, remove legacy password storage and old browser-based login logic in a separate migration.
 
+### Job-routing schema design draft
+
+- A schema-only draft now exists at `supabase/drafts/job_routing_schema.sql`.
+- It proposes route templates, ordered template steps, and per-handoff transfer history, including review, explicit receiving-hub acceptance, and completion-review fields.
+- The draft intentionally has no client grants or RLS policies and does not implement transition RPCs. It must not be run in production.
+- Next implementation work is to validate exact live column types and job-type semantics, then implement and test narrowly granted trusted RPCs for request, review, accept, stage completion, and final approval. Each transition must verify the mapped active profile and hub/role permissions server-side.
+- Acceptance must be an explicit step: approving a handoff does not change `jobs.hub`; only the trusted acceptance transition may move the job into the receiving hub's active queue.
+- Support both route templates and per-job destination selection; deviations from a configured route require authorization and a recorded reason.
+
 ## Mandatory acceptance tests
 
 - Anonymous clients cannot read staff profiles, jobs, reports, clients, inventory, announcements, or routing records.
