@@ -27,7 +27,7 @@ textarea { resize: vertical; }
 .content-scroll { padding: var(--tbos-gutter); }
 .panel { padding: clamp(12px, 2vw, 25px); }
 .sidebar { overscroll-behavior: contain; }
-@media (max-width: 900px) {
+@media (max-width: 768px) {
   .sidebar { z-index: 1000; }
   .main-content { margin-left: 0 !important; width: 100%; }
   .content-scroll { padding: 16px; }
