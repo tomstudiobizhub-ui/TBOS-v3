@@ -1,0 +1,54 @@
+/* TBOS v3.0 — responsive overflow and layout safeguards
+   Loaded after page-specific styles so these rules normalize all screens. */
+:root { --tbos-gutter: clamp(12px, 2.4vw, 28px); }
+*, *::before, *::after { box-sizing: border-box; }
+html { width: 100%; max-width: 100%; overflow-x: clip; scroll-padding-top: 88px; }
+body { width: 100%; max-width: 100%; min-width: 0; overflow-x: clip; }
+img, video, canvas, svg, iframe { max-width: 100%; }
+img, video { height: auto; }
+pre, code { max-width: 100%; overflow-wrap: anywhere; }
+pre { overflow-x: auto; }
+h1, h2, h3, h4, h5, h6, p, a, label, td, th, span, li { overflow-wrap: anywhere; }
+input, select, textarea, button { max-width: 100%; min-width: 0; }
+input, select, textarea { width: auto; }
+button, .btn, .btn-primary, .btn-secondary, .btn-sm { white-space: normal; }
+table { max-width: 100%; }
+.table-responsive, .table-container, .table-wrapper, .data-table-wrapper, .table-scroll, .overflow-table { display: block; width: 100%; max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; }
+.data-table, table { border-collapse: collapse; }
+.data-table { width: 100%; }
+.panel, .card, .stat-card, .modal-content, .form-container, .content-scroll, .main-content, main, section, article { min-width: 0; max-width: 100%; }
+.stats-grid, .admin-controls, .form-grid, .cards-grid, .dashboard-grid { min-width: 0; }
+input[type="text"], input[type="email"], input[type="password"], input[type="number"], input[type="date"], input[type="tel"], input[type="search"], input[type="url"], select, textarea { width: 100%; }
+textarea { resize: vertical; }
+.modal, .modal-overlay { padding: clamp(8px, 2vw, 20px); }
+.modal-content { width: min(100%, 760px); max-height: min(90dvh, 900px); overflow: auto; }
+.top-bar, .header, .panel-header, .form-actions, .filter-bar, .user-profile { min-width: 0; flex-wrap: wrap; }
+.top-bar { gap: 10px; }
+.content-scroll { padding: var(--tbos-gutter); }
+.panel { padding: clamp(12px, 2vw, 25px); }
+.sidebar { overscroll-behavior: contain; }
+@media (max-width: 900px) {
+  .sidebar { z-index: 1000; }
+  .main-content { margin-left: 0 !important; width: 100%; }
+  .content-scroll { padding: 16px; }
+  .top-bar { height: auto; min-height: 64px; padding: 12px 16px; }
+  .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 12px; }
+  .stat-card { padding: 16px; }
+  .stat-value { font-size: clamp(1.35rem, 4vw, 2.2rem); }
+  .panel-header { align-items: flex-start; }
+  .filter-bar > *, .form-actions > * { flex: 1 1 140px; }
+}
+@media (max-width: 560px) {
+  .stats-grid { grid-template-columns: minmax(0, 1fr) !important; }
+  .content-scroll { padding: 12px; }
+  .panel { padding: 14px; margin-bottom: 14px; }
+  .top-bar { padding: 10px 12px; }
+  .top-bar h1, .top-bar h2 { font-size: 1.15rem; }
+  .data-table { min-width: 620px; }
+  .notification-dropdown { width: min(94vw, 350px) !important; right: 3vw !important; }
+  .modal-content { max-height: 92dvh; }
+  .btn-primary, .btn-secondary { padding: 11px 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
+}
