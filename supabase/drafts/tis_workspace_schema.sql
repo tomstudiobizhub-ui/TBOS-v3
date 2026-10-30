@@ -42,14 +42,14 @@ CREATE OR REPLACE FUNCTION public.tbos_tis_can_access_school(target_school_id uu
 RETURNS boolean
 LANGUAGE sql STABLE SECURITY DEFINER
 SET search_path = public, pg_temp
-AS $
+AS $$
   SELECT public.tbos_tis_is_admin()
       OR EXISTS (
         SELECT 1 FROM public.tis_school_assignments a
         WHERE a.school_id = target_school_id
           AND a.facilitator_profile_id = public.tbos_my_profile_id()
           AND a.active = true
-      );$;
+      );$$;
 REVOKE ALL ON FUNCTION public.tbos_tis_can_access_school(uuid) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.tbos_tis_can_access_school(uuid) TO authenticated;
 
