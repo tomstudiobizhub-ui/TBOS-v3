@@ -879,9 +879,7 @@
         }
 
         function openRegisterModal() {
-            document.getElementById('staff-reg-form').reset();
-            document.getElementById('photo-preview').classList.remove('has-image');
-            toggleModal('register-modal');
+            alert('New staff registration is temporarily unavailable while the secure registration-review workflow is being completed. Existing staff profiles and ID cards remain available.');
         }
 
         function previewPhoto(input) {
@@ -937,11 +935,12 @@
                     throw new Error('Supabase client not initialized');
                 }
                 
-                const { data: items, error } = await supabaseClient.from('users').select('*');
-                
+                // The users table is intentionally not readable from the browser.
+                // This admin-only RPC returns safe profile fields only.
+                const { data: items, error } = await supabaseClient.rpc('tbos_admin_list_profiles');
                 if (error) throw error;
-                
-                staffMembers = items || [];
+                if (!Array.isArray(items)) throw new Error('The profile service returned an invalid response.');
+                staffMembers = items;
                 console.log('✅ Staff loaded:', staffMembers.length, 'members');
                 
                 const tbody = document.getElementById('staff-table-body');
@@ -1024,13 +1023,12 @@
                     throw new Error('Supabase client not initialized');
                 }
                 
-                const { data: result, error } = await supabaseClient
-                    .from('users')
-                    .update({ status: 'Active' })
-                    .eq('id', staffId)
-                    .select();
-                
+                const { data: result, error } = await supabaseClient.rpc('tbos_admin_set_profile_status', {
+                    target_profile_id: staffId,
+                    new_status: 'Active'
+                });
                 if (error) throw error;
+                if (result !== true) throw new Error('The profile status was not updated.');
                 
                 addNotification('approval', 'Staff Approved', 'Staff member has been approved and can now login');
                 alert('Staff approved successfully!');
@@ -1047,13 +1045,12 @@
                         throw new Error('Supabase client not initialized');
                     }
                     
-                    const { data: result, error } = await supabaseClient
-                        .from('users')
-                        .update({ status: 'Rejected' })
-                        .eq('id', staffId)
-                        .select();
-                    
+                    const { data: result, error } = await supabaseClient.rpc('tbos_admin_set_profile_status', {
+                        target_profile_id: staffId,
+                        new_status: 'Rejected'
+                    });
                     if (error) throw error;
+                    if (result !== true) throw new Error('The profile status was not updated.');
                     
                     alert('Staff rejected.');
                     loadStaff();
@@ -1068,7 +1065,12 @@
                 try {
                     const pendingStaff = staffMembers.filter(s => s.status === 'Pending Approval');
                     for (const staff of pendingStaff) {
-                        await supabaseClient.from('users').update({ status: 'Active' }).eq('id', staff.id);
+                        const { data, error } = await supabaseClient.rpc('tbos_admin_set_profile_status', {
+                            target_profile_id: staff.id,
+                            new_status: 'Active'
+                        });
+                        if (error) throw error;
+                        if (data !== true) throw new Error('Approval failed for ' + (staff.name || staff.email));
                     }
                     addNotification('approval', 'Bulk Approval', `${pendingStaff.length} staff members approved`);
                     alert('All staff approved successfully!');
@@ -1131,70 +1133,11 @@
             window.open(url, '_blank');
         }
 
-        document.getElementById('staff-reg-form').addEventListener('submit', async function(e) {
+        // Do not create users or store passwords from this legacy modal.
+        // Registration will be re-enabled when the dedicated request-review workflow is ready.
+        document.getElementById('staff-reg-form').addEventListener('submit', function(e) {
             e.preventDefault();
-            const password = document.getElementById('reg-password').value;
-            const confirm = document.getElementById('reg-confirm').value;
-            const btnRegister = document.getElementById('btn-register');
-            
-            if (password !== confirm) {
-                alert('Passwords do not match!');
-                return;
-            }
-            if (password.length < 6) {
-                alert('Password must be at least 6 characters');
-                return;
-            }
-            
-            btnRegister.disabled = true;
-            btnRegister.innerHTML = '<div class="loading-spinner"></div> Registering...';
-            
-            try {
-                if (!supabaseClient) {
-                    throw new Error('Supabase client not initialized');
-                }
-                
-                const formData = {
-                    email: document.getElementById('reg-email').value,
-                    password: password,
-                    name: document.getElementById('reg-name').value,
-                    role: document.getElementById('reg-role').value,
-                    hub: document.getElementById('reg-hub').value,
-                    phone: document.getElementById('reg-phone').value,
-                    address: document.getElementById('reg-address').value,
-                    location: document.getElementById('reg-location').value,
-                    status: 'Pending Approval',  // ✅ Set to Pending Approval
-                    score: 0,
-                    jobs_logged: 0,
-                    jobs_completed: 0,
-                    revenue_generated: 0,
-                    created_at: new Date().toISOString()
-                };
-                
-                const { data: result, error } = await supabaseClient
-                    .from('users')
-                    .insert([formData])
-                    .select();
-                
-                if (error) throw error;
-                
-                // Close registration modal
-                toggleModal('register-modal');
-                
-                // Show success modal with approval status alert
-                toggleModal('registration-success-modal');
-                
-                this.reset();
-                document.getElementById('photo-preview').classList.remove('has-image');
-                loadStaff();
-                
-            } catch (error) {
-                console.error('❌ Registration error:', error);
-                alert('Registration failed: ' + error.message);
-            }
-            
-            btnRegister.disabled = false;
-            btnRegister.innerHTML = '<i class="fas fa-user-plus"></i> Register (Pending Approval)';
+            alert('New staff registration is temporarily unavailable while the secure registration-review workflow is being completed. No information was submitted.');
         });
 
         function logout() {
