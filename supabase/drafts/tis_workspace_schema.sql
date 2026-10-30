@@ -41,8 +41,8 @@ CREATE TABLE IF NOT EXISTS public.tis_school_assignments (
 CREATE OR REPLACE FUNCTION public.tbos_tis_can_access_school(target_school_id uuid)
 RETURNS boolean
 LANGUAGE sql STABLE SECURITY DEFINER
-SET search_path = public
-AS $$
+SET search_path = public, pg_temp
+AS $
   SELECT public.tbos_tis_is_admin()
       OR EXISTS (
         SELECT 1 FROM public.tis_school_assignments a
