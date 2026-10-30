@@ -8,7 +8,7 @@ CREATE OR REPLACE FUNCTION public.tbos_tis_is_admin()
 RETURNS boolean
 LANGUAGE sql STABLE SECURITY DEFINER
 SET search_path = public, pg_temp
-AS $
+AS $$
   SELECT lower(coalesce(public.tbos_my_role(), '')) = 'administrator';
 $$;
 
@@ -42,7 +42,7 @@ CREATE OR REPLACE FUNCTION public.tbos_tis_can_access_school(target_school_id uu
 RETURNS boolean
 LANGUAGE sql STABLE SECURITY DEFINER
 SET search_path = public
-AS $
+AS $$
   SELECT public.tbos_tis_is_admin()
       OR EXISTS (
         SELECT 1 FROM public.tis_school_assignments a
