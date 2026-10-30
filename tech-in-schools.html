@@ -43,7 +43,7 @@
   <button class="btn mobile-menu" id="menuBtn" aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
   <div><h1 id="pageTitle">Tech in Schools Overview</h1><p id="pageSubtitle">School delivery, attendance and accountability</p></div>
  </div>
- <div class="top-actions"><button class="btn" id="installBtn" hidden><i class="fa-solid fa-download"></i><span class="btn-label">Install app</span></button><button class="btn" id="refreshBtn"><i class="fa-solid fa-rotate"></i><span class="btn-label">Refresh</span></button><a class="btn" href="dashboard.html"><i class="fa-solid fa-arrow-left"></i><span class="btn-label">TBOS</span></a></div>
+ <div class="top-actions"><button class="btn" id="installBtn"><i class="fa-solid fa-download"></i><span class="btn-label">Install app</span></button><button class="btn" id="refreshBtn"><i class="fa-solid fa-rotate"></i><span class="btn-label">Refresh</span></button><a class="btn" href="dashboard.html"><i class="fa-solid fa-arrow-left"></i><span class="btn-label">TBOS</span></a></div>
 </header>
 <div class="content">
 <section class="view active" id="view-overview">
@@ -203,7 +203,7 @@ $('menuBtn').addEventListener('click',()=>$('sidebar').classList.toggle('open'))
 $('refreshBtn').addEventListener('click',()=>{hideMsg();loadOverview();const v=document.querySelector('.view.active')?.id.replace('view-','');if(v&&v!=='overview')loadSection(v);});
 $('schoolSearch').addEventListener('input',e=>{const q=e.target.value.toLowerCase();const rows=schools.filter(s=>(s.name||'').toLowerCase().includes(q));$('schoolsTable').innerHTML=tableHtml(['School','Address','Contact','Phone','Status'],rows.map(x=>'<tr><td>'+esc(x.name)+'</td><td>'+esc(x.address)+'</td><td>'+esc(x.contact_person)+'</td><td>'+esc(x.contact_phone)+'</td><td>'+status(x.status)+'</td></tr>'));});
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstall=e;$('installBtn').hidden=false;});
-$('installBtn').addEventListener('click',async()=>{if(!deferredInstall)return;deferredInstall.prompt();await deferredInstall.userChoice;deferredInstall=null;$('installBtn').hidden=true;});
+$('installBtn').addEventListener('click',async()=>{if(!deferredInstall){alert('To install TBOS on your phone, open the browser menu and choose “Add to Home Screen” or “Install app”. On iPhone, use Safari → Share → Add to Home Screen.');return;}deferredInstall.prompt();await deferredInstall.userChoice;deferredInstall=null;$('installBtn').hidden=true;});
 if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(e=>console.warn('Service worker registration failed',e)));
 (async()=>{try{await auth();await loadOverview();const initial=location.hash.replace('#','');if(initial&&titles[initial])setView(initial);}catch(e){msg(e.message,true);$('recentActivity').textContent='Secure sign-in is required. No local or cached records are displayed.';$('side-user').textContent='Not authenticated';}})();
 })();
