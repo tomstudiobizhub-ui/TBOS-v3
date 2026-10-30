@@ -3,7 +3,7 @@ const { chromium } = require('playwright');
 const pages = [
   'index.html', 'dashboard.html', 'admin.html', 'admin-gate.html',
   'clients.html', 'inventory.html', 'jobs.html', 'knowledge.html',
-  'offline.html', 'register.html', 'reports.html', 'staff.html'
+  'offline.html', 'register.html', 'reports.html', 'staff.html', 'tech-in-schools.html'
 ];
 const viewports = [
   { name: 'mobile', width: 375, height: 812 },
