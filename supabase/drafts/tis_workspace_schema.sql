@@ -129,6 +129,7 @@ CREATE TABLE IF NOT EXISTS public.tis_visit_receipts (
   visit_date date NOT NULL,
   receipt_number text NOT NULL UNIQUE,
   student_count integer NOT NULL DEFAULT 0 CHECK (student_count >= 0),
+  commission_amount numeric(14,2) NOT NULL DEFAULT 0 CHECK (commission_amount >= 0),
   remarks text,
   facilitator_signature text NOT NULL,
   school_rep_signature text NOT NULL,
@@ -182,6 +183,7 @@ GRANT INSERT ON public.tis_attendance_sessions, public.tis_school_payments,
  public.tis_facilitator_remittances, public.tis_visit_receipts TO authenticated;
 GRANT UPDATE (approval_status, reviewed_by, reviewed_at) ON public.tis_school_payments TO authenticated;
 GRANT UPDATE (status, reviewed_by, reviewed_at) ON public.tis_facilitator_remittances TO authenticated;
+GRANT UPDATE (evidence_path) ON public.tis_facilitator_remittances, public.tis_visit_receipts TO authenticated;
 GRANT INSERT, UPDATE (status, reviewed_by, reviewed_at) ON public.tis_commission_entries TO authenticated;
 
 CREATE POLICY tis_schools_read_scope ON public.tis_schools
@@ -240,6 +242,9 @@ CREATE POLICY tis_remittances_insert_scope ON public.tis_facilitator_remittances
  );
 CREATE POLICY tis_remittances_admin_review ON public.tis_facilitator_remittances
  FOR UPDATE TO authenticated USING (public.tbos_tis_is_admin()) WITH CHECK (public.tbos_tis_is_admin());
+CREATE POLICY tis_remittances_attach_own_evidence ON public.tis_facilitator_remittances
+ FOR UPDATE TO authenticated USING (facilitator_profile_id = public.tbos_my_profile_id() AND status = 'Pending')
+ WITH CHECK (facilitator_profile_id = public.tbos_my_profile_id() AND status = 'Pending');
 
 CREATE POLICY tis_commissions_read_scope ON public.tis_commission_entries
  FOR SELECT TO authenticated USING (
@@ -257,6 +262,9 @@ CREATE POLICY tis_receipts_insert_scope ON public.tis_visit_receipts
    AND recorded_by = public.tbos_my_profile_id()
    AND public.tbos_tis_can_access_school(school_id)
  );
+CREATE POLICY tis_receipts_attach_own_evidence ON public.tis_visit_receipts
+ FOR UPDATE TO authenticated USING (facilitator_profile_id = public.tbos_my_profile_id() AND recorded_by = public.tbos_my_profile_id())
+ WITH CHECK (facilitator_profile_id = public.tbos_my_profile_id() AND recorded_by = public.tbos_my_profile_id());
 
 -- Private receipt bucket. Uploads are scoped to the authenticated profile's folder.
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
