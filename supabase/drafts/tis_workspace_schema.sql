@@ -7,8 +7,8 @@ BEGIN;
 CREATE OR REPLACE FUNCTION public.tbos_tis_is_admin()
 RETURNS boolean
 LANGUAGE sql STABLE SECURITY DEFINER
-SET search_path = public
-AS $$
+SET search_path = public, pg_temp
+AS $
   SELECT lower(coalesce(public.tbos_my_role(), '')) = 'administrator';
 $$;
 
@@ -60,6 +60,7 @@ CREATE TABLE IF NOT EXISTS public.tis_classes (
   name text NOT NULL,
   academic_year text NOT NULL,
   term text NOT NULL CHECK (term IN ('First','Second','Third')),
+  UNIQUE (id, school_id),
   student_count integer NOT NULL DEFAULT 0 CHECK (student_count >= 0),
   created_by uuid,
   created_at timestamptz NOT NULL DEFAULT now()
@@ -68,19 +69,20 @@ CREATE TABLE IF NOT EXISTS public.tis_classes (
 CREATE TABLE IF NOT EXISTS public.tis_students (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   school_id uuid NOT NULL REFERENCES public.tis_schools(id) ON DELETE RESTRICT,
-  class_id uuid NOT NULL REFERENCES public.tis_classes(id) ON DELETE RESTRICT,
+  class_id uuid NOT NULL,
   student_name text NOT NULL,
   student_code text,
   parent_contact text,
   status text NOT NULL DEFAULT 'Active' CHECK (status IN ('Active','Inactive','Transferred')),
   created_by uuid,
-  created_at timestamptz NOT NULL DEFAULT now()
+  created_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT tis_students_class_school_fk FOREIGN KEY (class_id, school_id) REFERENCES public.tis_classes(id, school_id) ON DELETE RESTRICT
 );
 
 CREATE TABLE IF NOT EXISTS public.tis_attendance_sessions (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   school_id uuid NOT NULL REFERENCES public.tis_schools(id) ON DELETE RESTRICT,
-  class_id uuid NOT NULL REFERENCES public.tis_classes(id) ON DELETE RESTRICT,
+  class_id uuid NOT NULL,
   facilitator_profile_id uuid NOT NULL REFERENCES public.users(id) ON DELETE RESTRICT,
   visit_date date NOT NULL,
   students_present integer NOT NULL CHECK (students_present >= 0),
@@ -88,7 +90,8 @@ CREATE TABLE IF NOT EXISTS public.tis_attendance_sessions (
   notes text,
   recorded_by uuid NOT NULL,
   created_at timestamptz NOT NULL DEFAULT now(),
-  CHECK (students_present <= students_total)
+  CHECK (students_present <= students_total),
+  CONSTRAINT tis_attendance_class_school_fk FOREIGN KEY (class_id, school_id) REFERENCES public.tis_classes(id, school_id) ON DELETE RESTRICT
 );
 
 CREATE TABLE IF NOT EXISTS public.tis_school_payments (
@@ -271,6 +274,7 @@ INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_typ
 VALUES ('tis-receipts','tis-receipts',false,10485760,ARRAY['image/jpeg','image/png','image/webp','application/pdf'])
 ON CONFLICT (id) DO NOTHING;
 
+DROP POLICY IF EXISTS tis_receipts_storage_read ON storage.objects;
 CREATE POLICY tis_receipts_storage_read ON storage.objects
  FOR SELECT TO authenticated USING (
    bucket_id = 'tis-receipts'
@@ -284,6 +288,7 @@ CREATE POLICY tis_receipts_storage_read ON storage.objects
      )
    )
  );
+DROP POLICY IF EXISTS tis_receipts_storage_insert ON storage.objects;
 CREATE POLICY tis_receipts_storage_insert ON storage.objects
  FOR INSERT TO authenticated WITH CHECK (
    bucket_id = 'tis-receipts'
