@@ -1,10 +1,11 @@
-const CACHE_NAME = 'tbos-v3-cache-v2';
+const CACHE_NAME = 'tbos-v3-cache-v3';
 const OFFLINE_URL = './offline.html';
 
 const urlsToCache = [
     './',
     './index.html',
     './dashboard.html',
+    './tech-in-schools.html',
     './jobs.html',
     './staff.html',
     './inventory.html',

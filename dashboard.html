@@ -88,6 +88,8 @@
         }
     </style>
     <link rel="stylesheet" href="assets/tbos-responsive.css?v=1">
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#25133d">
 </head>
 <body>
     <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
@@ -99,7 +101,8 @@
             <a href="jobs.html" class="nav-item"><i class="fas fa-briefcase"></i> Jobs & Routing <span class="nav-badge" id="job-badge">0</span></a>
             <a href="staff.html" class="nav-item"><i class="fas fa-users"></i> Staff & ID Cards</a>
             <a href="inventory.html" class="nav-item"><i class="fas fa-boxes"></i> Inventory</a>
-            <a href="clients.html" class="nav-item"><i class="fas fa-user-friends"></i> Client Portal</a>            <div class="nav-section">Knowledge</div>
+            <a href="clients.html" class="nav-item"><i class="fas fa-user-friends"></i> Client Portal</a>
+            <a href="tech-in-schools.html" class="nav-item"><i class="fas fa-school"></i> Tech in Schools</a>            <div class="nav-section">Knowledge</div>
             <a href="knowledge.html" class="nav-item"><i class="fas fa-book"></i> Knowledge Center</a>
             <a href="reports.html" class="nav-item"><i class="fas fa-chart-line"></i> Reports</a>
             <a href="#" class="nav-item" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
@@ -308,5 +311,20 @@
         window.toggleSidebar = toggleSidebar;
         window.logout = logout;
     </script>
+
+    <button id="tbos-install-button" type="button" style="position:fixed;right:16px;bottom:16px;z-index:9999;padding:12px 16px;border:0;border-radius:12px;background:#5b2d82;color:#fff;font-weight:700;box-shadow:0 8px 24px #21132e40;cursor:pointer">Install TBOS</button>
+    <script>
+    (function(){
+      var deferred=null,button=document.getElementById('tbos-install-button');
+      if(!button)return;
+      window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();deferred=e;button.hidden=false;});
+      button.addEventListener('click',async function(){
+        if(deferred){deferred.prompt();await deferred.userChoice;deferred=null;button.hidden=true;return;}
+        alert('To add TBOS to your phone: open this page in your browser menu, then choose “Add to Home Screen” or “Install app”. On iPhone, use Safari → Share → Add to Home Screen.');
+      });
+      if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('./sw.js').catch(function(e){console.warn('TBOS offline support unavailable',e);});});}
+    })();
+    </script>
+
 </body>
 </html>

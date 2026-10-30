@@ -1,5 +1,6 @@
 {
     "name": "TBOS v3.0 - Tomstudio BizHub Operations System",
+    "description": "Tomstudio BizHub operations and Tech in Schools workspace",
     "short_name": "TBOS",
     "description": "Track • Record • Route • Report • Improve",
     "start_url": "./index.html",
@@ -34,6 +35,7 @@
         }
     ],
     "shortcuts": [
+        {"name":"Tech in Schools","short_name":"TIS","description":"Open school operations workspace","url":"./tech-in-schools.html","icons":[{"src":"assets/logo-192.png","sizes":"192x192"}]},
         {
             "name": "Dashboard",
             "short_name": "Dashboard",
