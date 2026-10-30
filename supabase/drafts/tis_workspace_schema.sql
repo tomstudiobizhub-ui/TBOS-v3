@@ -296,7 +296,6 @@ VALUES ('tis-receipts','tis-receipts',false,10485760,ARRAY['image/jpeg','image/p
 ON CONFLICT (id) DO NOTHING;
 
 DROP POLICY IF EXISTS tis_receipts_storage_read ON storage.objects;
-DROP POLICY IF EXISTS tis_receipts_storage_read ON storage.objects;
 CREATE POLICY tis_receipts_storage_read ON storage.objects
  FOR SELECT TO authenticated USING (
    bucket_id = 'tis-receipts'
@@ -310,7 +309,6 @@ CREATE POLICY tis_receipts_storage_read ON storage.objects
      )
    )
  );
-DROP POLICY IF EXISTS tis_receipts_storage_insert ON storage.objects;
 DROP POLICY IF EXISTS tis_receipts_storage_insert ON storage.objects;
 CREATE POLICY tis_receipts_storage_insert ON storage.objects
  FOR INSERT TO authenticated WITH CHECK (
