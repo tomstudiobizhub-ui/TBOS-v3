@@ -49,8 +49,7 @@ AS $
         WHERE a.school_id = target_school_id
           AND a.facilitator_profile_id = public.tbos_my_profile_id()
           AND a.active = true
-      );
-$;
+      );$;
 REVOKE ALL ON FUNCTION public.tbos_tis_can_access_school(uuid) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.tbos_tis_can_access_school(uuid) TO authenticated;
 
@@ -189,30 +188,40 @@ GRANT UPDATE (status, reviewed_by, reviewed_at) ON public.tis_facilitator_remitt
 GRANT UPDATE (evidence_path) ON public.tis_facilitator_remittances, public.tis_visit_receipts TO authenticated;
 GRANT INSERT, UPDATE (status, reviewed_by, reviewed_at) ON public.tis_commission_entries TO authenticated;
 
+DROP POLICY IF EXISTS tis_schools_read_scope ON public.tis_schools;
 CREATE POLICY tis_schools_read_scope ON public.tis_schools
  FOR SELECT TO authenticated USING (public.tbos_tis_can_access_school(id));
+DROP POLICY IF EXISTS tis_schools_admin_manage ON public.tis_schools;
 CREATE POLICY tis_schools_admin_manage ON public.tis_schools
  FOR ALL TO authenticated USING (public.tbos_tis_is_admin()) WITH CHECK (public.tbos_tis_is_admin());
 
+DROP POLICY IF EXISTS tis_assignments_read_scope ON public.tis_school_assignments;
 CREATE POLICY tis_assignments_read_scope ON public.tis_school_assignments
  FOR SELECT TO authenticated USING (
    public.tbos_tis_is_admin() OR facilitator_profile_id = public.tbos_my_profile_id()
  );
+DROP POLICY IF EXISTS tis_assignments_admin_manage ON public.tis_school_assignments;
 CREATE POLICY tis_assignments_admin_manage ON public.tis_school_assignments
  FOR ALL TO authenticated USING (public.tbos_tis_is_admin()) WITH CHECK (public.tbos_tis_is_admin());
 
+DROP POLICY IF EXISTS tis_classes_read_scope ON public.tis_classes;
 CREATE POLICY tis_classes_read_scope ON public.tis_classes
  FOR SELECT TO authenticated USING (public.tbos_tis_can_access_school(school_id));
+DROP POLICY IF EXISTS tis_classes_admin_manage ON public.tis_classes;
 CREATE POLICY tis_classes_admin_manage ON public.tis_classes
  FOR ALL TO authenticated USING (public.tbos_tis_is_admin()) WITH CHECK (public.tbos_tis_is_admin());
 
+DROP POLICY IF EXISTS tis_students_read_scope ON public.tis_students;
 CREATE POLICY tis_students_read_scope ON public.tis_students
  FOR SELECT TO authenticated USING (public.tbos_tis_can_access_school(school_id));
+DROP POLICY IF EXISTS tis_students_admin_manage ON public.tis_students;
 CREATE POLICY tis_students_admin_manage ON public.tis_students
  FOR ALL TO authenticated USING (public.tbos_tis_is_admin()) WITH CHECK (public.tbos_tis_is_admin());
 
+DROP POLICY IF EXISTS tis_attendance_read_scope ON public.tis_attendance_sessions;
 CREATE POLICY tis_attendance_read_scope ON public.tis_attendance_sessions
  FOR SELECT TO authenticated USING (public.tbos_tis_can_access_school(school_id));
+DROP POLICY IF EXISTS tis_attendance_insert_scope ON public.tis_attendance_sessions;
 CREATE POLICY tis_attendance_insert_scope ON public.tis_attendance_sessions
  FOR INSERT TO authenticated WITH CHECK (
    facilitator_profile_id = public.tbos_my_profile_id()
@@ -220,51 +229,63 @@ CREATE POLICY tis_attendance_insert_scope ON public.tis_attendance_sessions
    AND public.tbos_tis_can_access_school(school_id)
  );
 
+DROP POLICY IF EXISTS tis_payments_read_scope ON public.tis_school_payments;
 CREATE POLICY tis_payments_read_scope ON public.tis_school_payments
  FOR SELECT TO authenticated USING (
    public.tbos_tis_is_admin()
    OR (recorded_by = public.tbos_my_profile_id() AND public.tbos_tis_can_access_school(school_id))
  );
+DROP POLICY IF EXISTS tis_payments_insert_scope ON public.tis_school_payments;
 CREATE POLICY tis_payments_insert_scope ON public.tis_school_payments
  FOR INSERT TO authenticated WITH CHECK (
    recorded_by = public.tbos_my_profile_id()
    AND public.tbos_tis_can_access_school(school_id)
  );
+DROP POLICY IF EXISTS tis_payments_admin_review ON public.tis_school_payments;
 CREATE POLICY tis_payments_admin_review ON public.tis_school_payments
  FOR UPDATE TO authenticated USING (public.tbos_tis_is_admin()) WITH CHECK (public.tbos_tis_is_admin());
 
+DROP POLICY IF EXISTS tis_remittances_read_scope ON public.tis_facilitator_remittances;
 CREATE POLICY tis_remittances_read_scope ON public.tis_facilitator_remittances
  FOR SELECT TO authenticated USING (
    public.tbos_tis_is_admin()
    OR (facilitator_profile_id = public.tbos_my_profile_id() AND public.tbos_tis_can_access_school(school_id))
  );
+DROP POLICY IF EXISTS tis_remittances_insert_scope ON public.tis_facilitator_remittances;
 CREATE POLICY tis_remittances_insert_scope ON public.tis_facilitator_remittances
  FOR INSERT TO authenticated WITH CHECK (
    facilitator_profile_id = public.tbos_my_profile_id()
    AND public.tbos_tis_can_access_school(school_id)
  );
+DROP POLICY IF EXISTS tis_remittances_admin_review ON public.tis_facilitator_remittances;
 CREATE POLICY tis_remittances_admin_review ON public.tis_facilitator_remittances
  FOR UPDATE TO authenticated USING (public.tbos_tis_is_admin()) WITH CHECK (public.tbos_tis_is_admin());
+DROP POLICY IF EXISTS tis_remittances_attach_own_evidence ON public.tis_facilitator_remittances;
 CREATE POLICY tis_remittances_attach_own_evidence ON public.tis_facilitator_remittances
  FOR UPDATE TO authenticated USING (facilitator_profile_id = public.tbos_my_profile_id() AND status = 'Pending')
  WITH CHECK (facilitator_profile_id = public.tbos_my_profile_id() AND status = 'Pending');
 
+DROP POLICY IF EXISTS tis_commissions_read_scope ON public.tis_commission_entries;
 CREATE POLICY tis_commissions_read_scope ON public.tis_commission_entries
  FOR SELECT TO authenticated USING (
    public.tbos_tis_is_admin()
    OR (facilitator_profile_id = public.tbos_my_profile_id() AND public.tbos_tis_can_access_school(school_id))
  );
+DROP POLICY IF EXISTS tis_commissions_admin_manage ON public.tis_commission_entries;
 CREATE POLICY tis_commissions_admin_manage ON public.tis_commission_entries
  FOR ALL TO authenticated USING (public.tbos_tis_is_admin()) WITH CHECK (public.tbos_tis_is_admin());
 
+DROP POLICY IF EXISTS tis_receipts_read_scope ON public.tis_visit_receipts;
 CREATE POLICY tis_receipts_read_scope ON public.tis_visit_receipts
  FOR SELECT TO authenticated USING (public.tbos_tis_can_access_school(school_id));
+DROP POLICY IF EXISTS tis_receipts_insert_scope ON public.tis_visit_receipts;
 CREATE POLICY tis_receipts_insert_scope ON public.tis_visit_receipts
  FOR INSERT TO authenticated WITH CHECK (
    facilitator_profile_id = public.tbos_my_profile_id()
    AND recorded_by = public.tbos_my_profile_id()
    AND public.tbos_tis_can_access_school(school_id)
  );
+DROP POLICY IF EXISTS tis_receipts_attach_own_evidence ON public.tis_visit_receipts;
 CREATE POLICY tis_receipts_attach_own_evidence ON public.tis_visit_receipts
  FOR UPDATE TO authenticated USING (facilitator_profile_id = public.tbos_my_profile_id() AND recorded_by = public.tbos_my_profile_id())
  WITH CHECK (facilitator_profile_id = public.tbos_my_profile_id() AND recorded_by = public.tbos_my_profile_id());
@@ -274,6 +295,7 @@ INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_typ
 VALUES ('tis-receipts','tis-receipts',false,10485760,ARRAY['image/jpeg','image/png','image/webp','application/pdf'])
 ON CONFLICT (id) DO NOTHING;
 
+DROP POLICY IF EXISTS tis_receipts_storage_read ON storage.objects;
 DROP POLICY IF EXISTS tis_receipts_storage_read ON storage.objects;
 CREATE POLICY tis_receipts_storage_read ON storage.objects
  FOR SELECT TO authenticated USING (
@@ -288,6 +310,7 @@ CREATE POLICY tis_receipts_storage_read ON storage.objects
      )
    )
  );
+DROP POLICY IF EXISTS tis_receipts_storage_insert ON storage.objects;
 DROP POLICY IF EXISTS tis_receipts_storage_insert ON storage.objects;
 CREATE POLICY tis_receipts_storage_insert ON storage.objects
  FOR INSERT TO authenticated WITH CHECK (
