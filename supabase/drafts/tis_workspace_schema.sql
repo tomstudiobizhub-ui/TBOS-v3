@@ -65,6 +65,18 @@ CREATE TABLE IF NOT EXISTS public.tis_classes (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
+CREATE TABLE IF NOT EXISTS public.tis_students (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  school_id uuid NOT NULL REFERENCES public.tis_schools(id) ON DELETE RESTRICT,
+  class_id uuid NOT NULL REFERENCES public.tis_classes(id) ON DELETE RESTRICT,
+  student_name text NOT NULL,
+  student_code text,
+  parent_contact text,
+  status text NOT NULL DEFAULT 'Active' CHECK (status IN ('Active','Inactive','Transferred')),
+  created_by uuid,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
 CREATE TABLE IF NOT EXISTS public.tis_attendance_sessions (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   school_id uuid NOT NULL REFERENCES public.tis_schools(id) ON DELETE RESTRICT,
@@ -83,6 +95,8 @@ CREATE TABLE IF NOT EXISTS public.tis_school_payments (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   school_id uuid NOT NULL REFERENCES public.tis_schools(id) ON DELETE RESTRICT,
   visit_date date NOT NULL,
+  payment_type text NOT NULL DEFAULT 'Onsite' CHECK (payment_type IN ('Onsite','Termly')),
+  academic_term text,
   amount numeric(14,2) NOT NULL CHECK (amount > 0),
   method text NOT NULL CHECK (method IN ('Cash','Transfer','POS')),
   reference text,
@@ -139,6 +153,7 @@ CREATE TABLE IF NOT EXISTS public.tis_commission_entries (
 
 CREATE INDEX IF NOT EXISTS tis_commission_facilitator_idx ON public.tis_commission_entries(facilitator_profile_id, created_at);
 CREATE INDEX IF NOT EXISTS tis_assignments_facilitator_idx ON public.tis_school_assignments(facilitator_profile_id, active);
+CREATE INDEX IF NOT EXISTS tis_students_school_class_idx ON public.tis_students(school_id, class_id, status);
 CREATE INDEX IF NOT EXISTS tis_classes_school_idx ON public.tis_classes(school_id);
 CREATE INDEX IF NOT EXISTS tis_attendance_school_date_idx ON public.tis_attendance_sessions(school_id, visit_date);
 CREATE INDEX IF NOT EXISTS tis_payments_school_date_idx ON public.tis_school_payments(school_id, visit_date);
@@ -148,20 +163,21 @@ CREATE INDEX IF NOT EXISTS tis_receipts_school_date_idx ON public.tis_visit_rece
 ALTER TABLE public.tis_schools ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.tis_school_assignments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.tis_classes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.tis_students ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.tis_attendance_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.tis_school_payments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.tis_facilitator_remittances ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.tis_visit_receipts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.tis_commission_entries ENABLE ROW LEVEL SECURITY;
 
-REVOKE ALL ON public.tis_schools, public.tis_school_assignments, public.tis_classes,
+REVOKE ALL ON public.tis_schools, public.tis_school_assignments, public.tis_classes, public.tis_students,
  public.tis_attendance_sessions, public.tis_school_payments,
  public.tis_facilitator_remittances, public.tis_visit_receipts, public.tis_commission_entries FROM PUBLIC, anon, authenticated;
-GRANT SELECT ON public.tis_schools, public.tis_school_assignments, public.tis_classes,
+GRANT SELECT ON public.tis_schools, public.tis_school_assignments, public.tis_classes, public.tis_students,
  public.tis_attendance_sessions, public.tis_school_payments,
  public.tis_facilitator_remittances, public.tis_visit_receipts, public.tis_commission_entries TO authenticated;
 GRANT INSERT, UPDATE ON public.tis_schools, public.tis_school_assignments,
- public.tis_classes TO authenticated;
+ public.tis_classes, public.tis_students TO authenticated;
 GRANT INSERT ON public.tis_attendance_sessions, public.tis_school_payments,
  public.tis_facilitator_remittances, public.tis_visit_receipts TO authenticated;
 GRANT UPDATE (approval_status, reviewed_by, reviewed_at) ON public.tis_school_payments TO authenticated;
@@ -183,6 +199,11 @@ CREATE POLICY tis_assignments_admin_manage ON public.tis_school_assignments
 CREATE POLICY tis_classes_read_scope ON public.tis_classes
  FOR SELECT TO authenticated USING (public.tbos_tis_can_access_school(school_id));
 CREATE POLICY tis_classes_admin_manage ON public.tis_classes
+ FOR ALL TO authenticated USING (public.tbos_tis_is_admin()) WITH CHECK (public.tbos_tis_is_admin());
+
+CREATE POLICY tis_students_read_scope ON public.tis_students
+ FOR SELECT TO authenticated USING (public.tbos_tis_can_access_school(school_id));
+CREATE POLICY tis_students_admin_manage ON public.tis_students
  FOR ALL TO authenticated USING (public.tbos_tis_is_admin()) WITH CHECK (public.tbos_tis_is_admin());
 
 CREATE POLICY tis_attendance_read_scope ON public.tis_attendance_sessions
